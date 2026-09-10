@@ -34,9 +34,9 @@ class RegistrationController extends Controller
      * so a merchant is never asked for paperwork before they have an account.
      */
     public const STEPS = [
-        1 => ['key' => 'system', 'label' => 'System & Activity'],
-        2 => ['key' => 'plan',   'label' => 'Plan & Payment'],
-        3 => ['key' => 'setup',  'label' => 'Dashboard Setup'],
+        1 => ['key' => 'system', 'label' => 'System & Activity', 'label_ar' => 'النظام والنشاط'],
+        2 => ['key' => 'plan',   'label' => 'Plan & Payment',    'label_ar' => 'الباقة والدفع'],
+        3 => ['key' => 'setup',  'label' => 'Dashboard Setup',   'label_ar' => 'إعداد لوحة التحكم'],
     ];
 
     private function draft(): array
@@ -260,6 +260,10 @@ class RegistrationController extends Controller
     /** Dependent dropdown for step 1. */
     public function specializations(Request $request)
     {
+        // This is an AJAX call, so show()'s language setup never runs for it. Without this the
+        // list comes back in English and replaces the Arabic options the page first rendered.
+        helper::language(1);
+
         if (!Systems::activityBelongsTo($request->activity_id, $request->system)) {
             return response()->json(['status' => 0, 'specializations' => []], 200);
         }

@@ -299,7 +299,9 @@
                 <p class="lead">{{ trans('landing.hero_banner_description') }}</p>
                 <div class="cta">
                     <a href="{{ $registerUrl }}" class="ocl-btn ocl-btn--primary ocl-btn--lg">{{ trans('landing.get_started') }} &rarr;</a>
-                    <a href="{{ URL::to('stores') }}" class="ocl-btn ocl-btn--ghost ocl-btn--lg">{{ trans('landing.our_stores') }}</a>
+                    {{-- Same destination and wording as the "Marketplace" item in the top menu. --}}
+                    <a href="{{ URL::to('marketplace') }}" class="ocl-btn ocl-btn--ghost ocl-btn--lg">
+                        <i class="fa-solid fa-cart-shopping"></i> {{ app()->getLocale() === 'ar' ? 'المتجر' : 'Marketplace' }}</a>
                 </div>
                 <div class="trust">
                     <div><i class="fa-brands fa-whatsapp"></i> {{ app()->getLocale() === 'ar' ? 'طلبات عبر واتساب' : 'Order via WhatsApp' }}</div>

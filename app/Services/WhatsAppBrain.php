@@ -198,9 +198,16 @@ TXT;
 
         $plans = PricingPlan::where('is_available', 1)->orderBy('reorder_id')->get();
         if ($plans->isNotEmpty()) {
+            // Quote what checkout actually charges: effectivePrice() applies an active offer,
+            // exactly as the plan payment page does.
             $out[] = 'Subscription plans: ' . $plans->map(function ($p) {
-                return $p->name . ' — ' . number_format((float) $p->price, 2) . ' ' . ($p->currency ?: 'USD')
-                    . ' for ' . Systems::label($p->system);
+                $currency = $p->currency ?: 'USD';
+                $line = $p->name . ' — ' . number_format($p->effectivePrice(), 2) . ' ' . $currency;
+                if ($label = $p->offerLabel()) {
+                    $line .= ' (offer: ' . $label . ', regular ' . number_format((float) $p->price, 2) . ' ' . $currency . ')';
+                }
+
+                return $line . ' for ' . Systems::label($p->system);
             })->implode('; ');
         }
 

@@ -73,41 +73,6 @@ class WhatsAppController extends Controller
         return redirect('admin/whatsapp/settings')->with('success', trans('messages.wa_token_regenerated'));
     }
 
-    /** Ask Meta whether the number and token actually work. */
-    public function test_connection()
-    {
-        $settings = WhatsappSetting::forVendor($this->vendorId());
-        $result = WhatsAppCloud::for($settings)->testConnection();
-
-        return empty($result['success'])
-            ? redirect()->back()->with('error', $result['error'])
-            : redirect()->back()->with('success', trans('messages.wa_connected') . ' ' . ($result['data']['verified_name'] ?? '') . ' (' . ($result['data']['display_phone_number'] ?? '') . ')');
-    }
-
-    /** Send a test message to any number, to prove the pipe end-to-end. */
-    public function send_test(Request $request)
-    {
-        $settings = WhatsappSetting::forVendor($this->vendorId());
-        $to = preg_replace('/[^0-9]/', '', (string) $request->to);
-        if ($to === '') {
-            return redirect()->back()->with('error', trans('messages.wa_enter_number'));
-        }
-
-        // WhatsApp cannot deliver a message from a number to itself. Meta accepts the API call
-        // and reports success, so nothing ever arrives and there is no error to explain it —
-        // easily mistaken for a broken integration.
-        $businessNumber = preg_replace('/[^0-9]/', '', (string) $settings->display_number);
-        if ($businessNumber !== '' && $to === $businessNumber) {
-            return redirect()->back()->with('error', trans('messages.wa_cannot_send_to_self'));
-        }
-
-        $result = WhatsAppCloud::for($settings)->sendText($to, $request->body ?: 'Order Click test message.');
-
-        return empty($result['success'])
-            ? redirect()->back()->with('error', $result['error'])
-            : redirect()->back()->with('success', trans('messages.success'));
-    }
-
     // ---------------------------------------------------------------- inbox
 
     public function conversations(Request $request)

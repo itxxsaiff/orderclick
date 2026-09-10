@@ -110,27 +110,4 @@ class WhatsAppCloud
 
         return hash_equals($expected, $header);
     }
-
-    /** Confirms the token and number are live — used by the "Test connection" button. */
-    public function testConnection(): array
-    {
-        if (empty($this->settings->access_token) || empty($this->settings->phone_number_id)) {
-            return ['success' => false, 'error' => 'Add the Phone Number ID and Access Token first.'];
-        }
-
-        try {
-            $response = Http::withToken($this->settings->access_token)->timeout(15)->acceptJson()
-                ->get($this->endpoint($this->settings->phone_number_id), [
-                    'fields' => 'display_phone_number,verified_name,quality_rating',
-                ]);
-
-            if ($response->failed()) {
-                return ['success' => false, 'error' => $response->json('error.message') ?: $response->body()];
-            }
-
-            return ['success' => true, 'data' => $response->json()];
-        } catch (\Throwable $e) {
-            return ['success' => false, 'error' => $e->getMessage()];
-        }
-    }
 }

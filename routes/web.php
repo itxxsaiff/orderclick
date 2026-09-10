@@ -112,8 +112,6 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
                 Route::get('/settings', [WhatsAppController::class, 'settings']);
                 Route::post('/settings', [WhatsAppController::class, 'save_settings']);
                 Route::get('/regenerate-token', [WhatsAppController::class, 'regenerate_token']);
-                Route::get('/test-connection', [WhatsAppController::class, 'test_connection']);
-                Route::post('/send-test', [WhatsAppController::class, 'send_test']);
                 Route::get('/conversations', [WhatsAppController::class, 'conversations']);
                 Route::get('/conversations/takeover-{id}', [WhatsAppController::class, 'takeover']);
                 Route::post('/conversations/reply-{id}', [WhatsAppController::class, 'reply']);

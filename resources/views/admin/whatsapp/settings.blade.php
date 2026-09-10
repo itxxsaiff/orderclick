@@ -39,14 +39,6 @@
                                     <i class="fa-solid fa-rotate"></i></a>
                             </div>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label fs-7 text-muted text-uppercase mb-1">{{ trans('labels.webhook_fields') }}</label>
-                            <div>
-                                <span class="badge bg-success">messages</span>
-                                <span class="badge bg-secondary">message_template_status_update</span>
-                            </div>
-                            <small class="text-muted">{{ trans('messages.wa_fields_hint') }}</small>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -85,13 +77,11 @@
                                 <label class="form-label">{{ trans('labels.access_token') }}</label>
                                 <input type="password" class="form-control" name="access_token" autocomplete="new-password"
                                     placeholder="{{ $settings->access_token ? trans('labels.saved_leave_blank') : 'EAAT…' }}">
-                                <small class="text-muted">{{ trans('messages.wa_secret_blank_keeps') }}</small>
                             </div>
                             <div class="col-12 col-md-6">
                                 <label class="form-label">{{ trans('labels.app_secret') }}</label>
                                 <input type="password" class="form-control" name="app_secret" autocomplete="new-password"
                                     placeholder="{{ $settings->app_secret ? trans('labels.saved_leave_blank') : '' }}">
-                                <small class="text-muted">{{ trans('messages.wa_app_secret_hint') }}</small>
                                 @if ($settings->app_secret)
                                     <div class="form-check mt-1">
                                         <input class="form-check-input" type="checkbox" value="1"
@@ -125,8 +115,6 @@
                             </div>
 
                             <div class="col-12 d-flex gap-2 justify-content-end">
-                                <a href="{{ URL::to('admin/whatsapp/test-connection') }}" class="btn btn-light px-4 rounded-start-5 rounded-end-5">
-                                    <i class="fa-solid fa-plug mx-1"></i>{{ trans('labels.test_connection') }}</a>
                                 <button class="btn btn-secondary px-4 rounded-start-5 rounded-end-5"
                                     @if (env('Environment') == 'sendbox') type="button" onclick="myFunction()" @else type="submit" @endif>
                                     {{ trans('labels.save') }}</button>
@@ -138,27 +126,6 @@
         </div>
 
         <div class="col-12 col-xl-4 mb-3">
-            <div class="card border-0 box-shadow mb-3">
-                <div class="card-body">
-                    <h6 class="mb-3">{{ trans('labels.send_test_message') }}</h6>
-                    <form method="POST" action="{{ URL::to('admin/whatsapp/send-test') }}">
-                        @csrf
-                        <div class="mb-2">
-                            <label class="form-label">{{ trans('labels.mobile') }}</label>
-                            <input type="text" class="form-control" name="to" placeholder="97333070341">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label">{{ trans('labels.message') }}</label>
-                            <textarea name="body" rows="2" class="form-control">Order Click test message.</textarea>
-                        </div>
-                        <button class="btn btn-secondary w-100 rounded-start-5 rounded-end-5"
-                            @if (env('Environment') == 'sendbox') type="button" onclick="myFunction()" @else type="submit" @endif>
-                            <i class="fa-brands fa-whatsapp mx-1"></i>{{ trans('labels.send') }}</button>
-                        <small class="text-muted d-block mt-2">{{ trans('messages.wa_24h_window') }}</small>
-                    </form>
-                </div>
-            </div>
-
             <div class="card border-0 box-shadow">
                 <div class="card-body">
                     <h6 class="mb-2">{{ trans('labels.status') }}</h6>

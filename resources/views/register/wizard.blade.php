@@ -98,7 +98,7 @@
                     <div class="st {{ $n === $step ? 'active' : '' }} {{ $n < $step ? 'done' : '' }}">
                         <div class="row">
                             <span class="n">@if ($n < $step)<i class="fa-solid fa-check"></i>@else{{ $n }}@endif</span>
-                            <span class="lb">{{ $meta['label'] }}</span>
+                            <span class="lb">{{ $ar ? $meta['label_ar'] : $meta['label'] }}</span>
                         </div>
                         <div class="bar"></div>
                     </div>
