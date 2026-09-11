@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    @include('partials.google_tag')
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     @php
         // Always use THIS store's own settings (appdata() is host/port-sensitive and can return the wrong vendor).

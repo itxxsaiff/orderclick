@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    @include('partials.google_tag')
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -915,17 +916,6 @@
     <input type="hidden" id="addtocarturl" value="{{ url('/add-to-cart') }}" />
     <input type="hidden" id="showitemurl" value="{{ url('/product-details') }}" />
     <input type="hidden" id="showreviewsurl" value="{{ url('/product-reviews') }}" />
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ helper::appdata(1)->tracking_id }}"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-
-        function gtag() {
-            dataLayer.push(arguments);
-        }
-        gtag('js', new Date());
-        gtag('config', '{{ helper::appdata(1)->tracking_id }}');
-    </script>
     <!--Start of Tawk.to Script-->
     @if (App\Models\SystemAddons::where('unique_identifier', 'tawk')->first() != null &&
             App\Models\SystemAddons::where('unique_identifier', 'tawk')->first()->activated == 1)

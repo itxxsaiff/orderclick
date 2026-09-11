@@ -5,6 +5,31 @@
 
     RewriteEngine On
 
+    # ---- Protect the project source ------------------------------------------------------
+    # The whole Laravel project sits inside the web folder (index.php lives next to .env),
+    # so every real file would otherwise be downloadable: .env (database password, APP_KEY,
+    # API keys), storage/logs, composer.json, uploaded zips... Only index.php, public/ and
+    # storage/app/public (images, CSS, JS) are meant to be reachable.
+
+    # Hidden files and folders: .env, .git, .htaccess ... (keep .well-known for SSL checks)
+    RewriteRule (^|/)\.(?!well-known(/|$)) - [F,L]
+
+    # Application source folders. Only paths that really exist on disk are blocked, so a route
+    # that merely starts with the same word (e.g. /lang/change) keeps working.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|tests|vendor|node_modules)(/|$) - [F,L]
+
+    # storage/ is private except storage/app/public, where every uploaded image and asset lives
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^storage/(?!app/public(/|$)) - [F,L]
+
+    # Project files, deployment archives, dumps, logs, and the SSH-only helper scripts
+    RewriteRule ^(artisan|server\.php|unzip\.php|cleanup\.php|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js|webpack\.mix\.js|README\.md)$ - [F,L,NC]
+    RewriteRule \.(zip|tar|gz|sql|log|bak|sh|env)$ - [F,L,NC]
+    # ---------------------------------------------------------------------------------------
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

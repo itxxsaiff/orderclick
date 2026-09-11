@@ -162,6 +162,36 @@ class HomeController extends Controller
      * Marketplace — the customer discovery page (its own page). Auto-lists every live
      * merchant store (type=2, not deleted, available) with country/city/category/search + filters.
      */
+    /**
+     * A business enters the Marketplace exactly once, automatically: there is no separate
+     * marketplace signup. It becomes discoverable when its account is live AND its primary
+     * branch location has passed admin review (or it is an online/remote provider).
+     * Shared with the sitemap so both always list the same stores.
+     */
+    public static function marketplaceVisibleIds()
+    {
+        return \App\Models\VendorBranch::where('is_primary', 1)
+            ->where('is_available', 1)
+            ->where('review_status', 'verified')
+            ->where(function ($q) {
+                $q->where('is_remote', 1)
+                    ->orWhere(function ($w) {
+                        $w->whereNotNull('latitude')->whereNotNull('longitude');
+                    });
+            })
+            ->pluck('vendor_id');
+    }
+
+    public static function marketplaceVendors($visibleIds = null)
+    {
+        return User::where('users.type', 2)
+            ->where('users.is_deleted', 2)
+            ->where('users.is_available', 1)
+            ->whereNull('users.archived_at')
+            ->whereIn('users.account_status', ['provisionally_active', 'correction_required', 'verified_active'])
+            ->whereIn('users.id', $visibleIds ?? self::marketplaceVisibleIds());
+    }
+
     public function marketplace(Request $request)
     {
         // ---- selected filters ----
@@ -181,27 +211,10 @@ class HomeController extends Controller
             'settings.website_title', 'settings.description', 'settings.logo',
             'settings.cover_image', 'settings.business_type',
         ];
-        // A business enters the Marketplace exactly once, automatically: there is no separate
-        // marketplace signup. It becomes discoverable when its account is live AND its primary
-        // branch location has passed admin review (or it is an online/remote provider).
-        $visibleIds = \App\Models\VendorBranch::where('is_primary', 1)
-            ->where('is_available', 1)
-            ->where('review_status', 'verified')
-            ->where(function ($q) {
-                $q->where('is_remote', 1)
-                    ->orWhere(function ($w) {
-                        $w->whereNotNull('latitude')->whereNotNull('longitude');
-                    });
-            })
-            ->pluck('vendor_id');
+        $visibleIds = self::marketplaceVisibleIds();
 
         $base = function () use ($storeCols, $visibleIds) {
-            return User::where('users.type', 2)
-                ->where('users.is_deleted', 2)
-                ->where('users.is_available', 1)
-                ->whereNull('users.archived_at')
-                ->whereIn('users.account_status', ['provisionally_active', 'correction_required', 'verified_active'])
-                ->whereIn('users.id', $visibleIds)
+            return self::marketplaceVendors($visibleIds)
                 ->join('settings', 'users.id', '=', 'settings.vendor_id')
                 ->select($storeCols);
         };

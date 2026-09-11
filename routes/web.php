@@ -529,6 +529,9 @@ Route::group(['prefix' => 'register'], function () {
     Route::get('/{step}', [\App\Http\Controllers\RegistrationController::class, 'show'])->where('step', '[1-3]');
 });
 
+// ---- SEO: sitemap for search engines (listed in the domain root robots.txt) ----
+Route::get('sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index']);
+
 // ---- WhatsApp Cloud API webhook (public: Meta calls these, no auth, no CSRF) ----
 Route::get('webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'verify']);
 Route::post('webhook/whatsapp', [\App\Http\Controllers\WhatsAppWebhookController::class, 'receive']);
