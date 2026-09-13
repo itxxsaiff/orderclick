@@ -298,13 +298,13 @@ $user = App\Models\User::where('id', $vendor_id)->where('is_available', 1)->wher
                     <li class="mb-3 d-flex color-changer"> <i class="fa-regular fa-circle-check text-secondary  "></i>
                         <span class="mx-2 fs-7">
                             {{ $plan->order_limit == -1 ? trans('labels.unlimited') : $plan->order_limit }}
-                            {{ $plan->order_limit > 1 || $plan->order_limit == -1 ? trans('labels.products') : trans('labels.product') }}
+                            {{ \App\Helpers\Systems::entityLabel($plan->system, 'primary', $plan->order_limit) }}
                         </span>
                     </li>
                     <li class="mb-3 d-flex color-changer"> <i class="fa-regular fa-circle-check text-secondary  "></i>
                         <span class="mx-2 fs-7">
                             {{ $plan->appointment_limit == -1 ? trans('labels.unlimited') : $plan->appointment_limit }}
-                            {{ $plan->appointment_limit > 1 || $plan->appointment_limit == -1 ? trans('labels.orders') : trans('labels.order') }}
+                            {{ \App\Helpers\Systems::entityLabel($plan->system, 'secondary', $plan->appointment_limit) }}
                         </span>
                     </li>
                     @php

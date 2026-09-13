@@ -80,15 +80,23 @@ class PricingPlan extends Model
             return null;
         }
         $o = $this->plan_offer;
+        $ar = app()->getLocale() === 'ar';
         switch ($o['type'] ?? '') {
             case 'percentage':
-                return round((float) ($o['discount_percentage'] ?? 0)) . '% OFF';
+                $pct = round((float) ($o['discount_percentage'] ?? 0));
+                return $ar ? ('خصم ' . $pct . '%') : ($pct . '% OFF');
             case 'fixed':
-                return 'Special Price';
+                return $ar ? 'سعر خاص' : 'Special Price';
             case 'free_duration':
-                return '+' . ($o['free_duration'] ?? '') . ' free';
+                // The field is a number of days ("Free Days" on the plan form).
+                $days = (int) ($o['free_duration'] ?? 0);
+                return $ar
+                    ? ('+' . $days . ' ' . ($days === 1 ? 'يوم مجاناً' : 'أيام مجاناً'))
+                    : ('+' . $days . ' ' . ($days === 1 ? 'Day Free' : 'Days Free'));
             case 'pay_x_get_y':
-                return 'Pay ' . ($o['paid_months'] ?? '') . ' Get ' . ($o['free_months'] ?? '') . ' Free';
+                return $ar
+                    ? ('ادفع ' . ($o['paid_months'] ?? '') . ' واحصل على ' . ($o['free_months'] ?? '') . ' مجاناً')
+                    : ('Pay ' . ($o['paid_months'] ?? '') . ' Get ' . ($o['free_months'] ?? '') . ' Free');
         }
         return null;
     }

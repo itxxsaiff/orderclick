@@ -78,6 +78,35 @@ class Systems
         return self::isValid($system) ? $system : self::ORDERS;
     }
 
+    /**
+     * What a plan's two count limits are called in each system. A Booking plan must read
+     * "20 Services / 200 Bookings", not the Orders & Stores wording, and the same strings are
+     * used on the plan cards, the checkout summary, the plan details page and the PDF.
+     */
+    public const ENTITY_LABELS = [
+        'orders' => [
+            'primary'   => ['one' => ['en' => 'Product', 'ar' => 'منتج'], 'many' => ['en' => 'Products', 'ar' => 'منتجات']],
+            'secondary' => ['one' => ['en' => 'Order', 'ar' => 'طلب'], 'many' => ['en' => 'Orders', 'ar' => 'طلبات']],
+        ],
+        'booking' => [
+            'primary'   => ['one' => ['en' => 'Service', 'ar' => 'خدمة'], 'many' => ['en' => 'Services', 'ar' => 'خدمات']],
+            'secondary' => ['one' => ['en' => 'Booking', 'ar' => 'حجز'], 'many' => ['en' => 'Bookings', 'ar' => 'حجوزات']],
+        ],
+        'service' => [
+            'primary'   => ['one' => ['en' => 'Service Listing', 'ar' => 'عرض خدمة'], 'many' => ['en' => 'Service Listings', 'ar' => 'عروض الخدمات']],
+            'secondary' => ['one' => ['en' => 'Service Request', 'ar' => 'طلب خدمة'], 'many' => ['en' => 'Service Requests', 'ar' => 'طلبات الخدمة']],
+        ],
+    ];
+
+    /** $which: 'primary' (products/services/listings) or 'secondary' (orders/bookings/requests). */
+    public static function entityLabel(?string $system, string $which = 'primary', $count = 2): string
+    {
+        $set = self::ENTITY_LABELS[self::normalise($system)][$which] ?? self::ENTITY_LABELS['orders'][$which];
+        $form = ((int) $count === 1) ? 'one' : 'many';   // -1 = unlimited reads as plural
+
+        return $set[$form][app()->getLocale() === 'ar' ? 'ar' : 'en'];
+    }
+
     public static function label(?string $system): string
     {
         $s = self::all()[self::normalise($system)];

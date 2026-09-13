@@ -277,13 +277,13 @@
                             <li class="mb-2 d-flex"> <i class="fa-regular fa-circle-check text-secondary "></i>
                                 <span class="mx-2">
                                     {{ $plan->service_limit == -1 ? trans('labels.unlimited') : $plan->service_limit }}
-                                    {{ $plan->service_limit > 1 || $plan->service_limit == -1 ? trans('labels.prducts') : trans('labels.prduct') }}
+                                    {{ \App\Helpers\Systems::entityLabel($plan->system, 'primary', $plan->service_limit) }}
                                 </span>
                             </li>
                             <li class="mb-2 d-flex"> <i class="fa-regular fa-circle-check text-secondary "></i>
                                 <span class="mx-2">
                                     {{ $plan->appoinment_limit == -1 ? trans('labels.unlimited') : $plan->appoinment_limit }}
-                                    {{ $plan->appoinment_limit > 1 || $plan->appoinment_limit == -1 ? trans('labels.orders') : trans('labels.order') }}
+                                    {{ \App\Helpers\Systems::entityLabel($plan->system, 'secondary', $plan->appoinment_limit) }}
                                 </span>
                             </li>
                             @php

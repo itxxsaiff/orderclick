@@ -676,7 +676,7 @@
                         <ul>
                             <li><i class="fa-solid fa-check"></i>
                                 {{ $plan->order_limit == -1 ? trans('landing.unlimited') : $plan->order_limit }}
-                                {{ trans('landing.products') }}</li>
+                                {{ \App\Helpers\Systems::entityLabel($plan->system, 'primary', $plan->order_limit) }}</li>
                             @if ($l = $limLine('branch', 'branches', 'فرع'))<li><i class="fa-solid fa-check"></i> {{ $l }}</li>@endif
                             @if ($l = $limLine('whatsapp', 'WhatsApp numbers', 'رقم واتساب'))<li><i class="fa-solid fa-check"></i> {{ $l }}</li>@endif
                             @if ($l = $limLine('team', 'team / staff', 'عضو فريق'))<li><i class="fa-solid fa-check"></i> {{ $l }}</li>@endif

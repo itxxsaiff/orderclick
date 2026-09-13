@@ -61,13 +61,13 @@
                 <li class="mb-2 d-flex color-changer"> <i class="fa-regular fa-circle-check text-secondary "></i>
                     <span class="mx-2">
                         {{ $plandata->order_limit == -1 ? trans('labels.unlimited') : $plandata->order_limit }}
-                        {{ $plandata->order_limit > 1 || $plandata->order_limit == -1 ? trans('labels.products') : trans('labels.product') }}
+                        {{ \App\Helpers\Systems::entityLabel($plandata->system, 'primary', $plandata->order_limit) }}
                     </span>
                 </li>
                 <li class="mb-2 d-flex color-changer"> <i class="fa-regular fa-circle-check text-secondary "></i>
                     <span class="mx-2">
                         {{ $plandata->appointment_limit == -1 ? trans('labels.unlimited') : $plandata->appointment_limit }}
-                        {{ $plandata->appointment_limit > 1 || $plandata->appointment_limit == -1 ? trans('labels.orders') : trans('labels.order') }}
+                        {{ \App\Helpers\Systems::entityLabel($plandata->system, 'secondary', $plandata->appointment_limit) }}
                     </span>
                 </li>
                 @php
