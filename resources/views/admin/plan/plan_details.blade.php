@@ -37,7 +37,9 @@
                 <div class="row g-4">
                     <div class="col-12 col-lg-6">
                         <div class="d-flex align-items-center gap-3 mb-3">
-                            <img src="{{ helper::image_path($ocCo['logo']) }}" alt="" style="height:44px;width:auto;">
+                            @if (!empty($ocCo['logo']))
+                                <img src="{{ helper::image_path($ocCo['logo']) }}" alt="" style="height:44px;width:auto;">
+                            @endif
                             <div>
                                 <div class="fw-600 fs-5 color-changer">{{ $ocCo['name'] }}</div>
                                 @if ($ocCo['legal'])

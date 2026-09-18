@@ -40,11 +40,124 @@ class LanguageController extends Controller
         if (!is_dir($dir)) {
             $dir = base_path() . '/resources/lang/en';
         }
-        $arrLabel   = json_decode(file_get_contents($dir . '/' . 'labels.json'));
-        $arrMessage   = json_decode(file_get_contents($dir . '/' . 'messages.json'));
-        $arrLanding   = json_decode(file_get_contents($dir . '/' . 'landing.json'));
+        // Read the .php files: they are what Laravel serves at runtime. The editor used to read
+        // the .json siblings, which had drifted behind by hundreds of keys - those keys could
+        // never be translated from the panel, so whole pages stayed in English.
+        $code = $currantLang->code ?? 'en';
+        $arrLabel   = (object) self::readGroup($code, 'labels');
+        $arrMessage = (object) self::readGroup($code, 'messages');
+        $arrLanding = (object) self::readGroup($code, 'landing');
         return view('admin.included.language.index', compact('getlanguages', 'currantLang', 'arrLabel', 'arrMessage', 'arrLanding'));
     }
+    /** Keys for one language file, English keys first so nothing is ever missing from the list. */
+    public static function readGroup(string $code, string $file): array
+    {
+        $base = base_path('resources/lang/');
+        $english = is_file($base . 'en/' . $file . '.php') ? (array) include($base . 'en/' . $file . '.php') : [];
+        $own = is_file($base . $code . '/' . $file . '.php') ? (array) include($base . $code . '/' . $file . '.php') : [];
+
+        // Untranslated keys fall back to the English wording so the translator sees real text.
+        return array_merge($english, array_filter($own, fn($v) => $v !== null && $v !== ''));
+    }
+
+    /**
+     * Write a language file as both .php (used at runtime) and .json (used by tooling).
+     * Built with real encoders: the previous string concatenation broke on any translation
+     * containing a quote or a backslash.
+     */
+    public static function writeGroup(string $code, string $file, array $values): void
+    {
+        $dir = base_path('resources/lang/' . $code);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
+
+        $php = "<?php\n\nreturn " . var_export($values, true) . ";\n";
+        file_put_contents($dir . '/' . $file . '.php', $php);
+        file_put_contents(
+            $dir . '/' . $file . '.json',
+            json_encode($values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        );
+    }
+
+    /** The three files a translator needs. */
+    private static function groups(): array
+    {
+        return ['labels', 'messages', 'landing'];
+    }
+
+    /**
+     * Download every key of one language as a single JSON file, ready to hand to a translator.
+     * Shape: {"labels": {...}, "messages": {...}, "landing": {...}}
+     */
+    public function export($code)
+    {
+        $language = Languages::where('code', $code)->first();
+        $payload = [];
+        foreach (self::groups() as $file) {
+            $payload[$file] = self::readGroup($code, $file);
+        }
+
+        $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        return response($json, 200, [
+            'Content-Type'        => 'application/json; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . ($language->code ?? $code) . '.json"',
+        ]);
+    }
+
+    /**
+     * Upload a translated JSON and apply it to a language. Accepts the grouped shape produced by
+     * export(), and also a flat {"labels.save": "Speichern"} map. Unknown keys are ignored and
+     * missing ones keep their current wording, so a partial translation is safe to import.
+     */
+    public function import(Request $request)
+    {
+        $code = $request->get('code');
+        $language = Languages::where('code', $code)->first();
+        if (empty($language) || !$request->hasFile('file')) {
+            return redirect()->back()->with('error', trans('messages.wrong'));
+        }
+
+        $data = json_decode(file_get_contents($request->file('file')->getRealPath()), true);
+        if (!is_array($data)) {
+            return redirect()->back()->with('error', app()->getLocale() === 'ar'
+                ? 'الملف ليس بصيغة JSON صالحة.'
+                : 'That file is not valid JSON.');
+        }
+
+        // Flat "labels.key" form -> grouped.
+        if (!array_intersect(self::groups(), array_keys($data))) {
+            $grouped = [];
+            foreach ($data as $key => $value) {
+                if (!is_string($value) || !str_contains($key, '.')) {
+                    continue;
+                }
+                [$group, $realKey] = explode('.', $key, 2);
+                if (in_array($group, self::groups(), true)) {
+                    $grouped[$group][$realKey] = $value;
+                }
+            }
+            $data = $grouped;
+        }
+
+        $applied = 0;
+        foreach (self::groups() as $file) {
+            $incoming = array_filter((array) ($data[$file] ?? []), fn($v) => is_string($v) && $v !== '');
+            if (empty($incoming)) {
+                continue;
+            }
+            $current = self::readGroup($code, $file);
+            $merged = array_merge($current, array_intersect_key($incoming, $current));
+            $applied += count(array_intersect_key($incoming, $current));
+            self::writeGroup($code, $file, $merged);
+        }
+
+        return redirect()->back()->with('success', (app()->getLocale() === 'ar'
+            ? 'تم استيراد الترجمات: '
+            : 'Translations imported: ') . $applied);
+    }
+
     public function add()
     {
         return view('admin.included.language.add');
@@ -93,46 +206,20 @@ class LanguageController extends Controller
         }
         if (isset($request->file) == "label") {
             if (isset($request->label) && !empty($request->label)) {
-                $content = "<?php return [";
-                $contentjson = "{";
-                foreach ($request->label as $key => $data) {
-                    $content .= '"' . $key . '" => "' . str_replace('\\', '', addslashes($data)) . '",';
-                    $contentjson .= '"' . $key . '":"' . $data . '",';
-                }
-                $content .= "];";
-                $contentjson .= "}";
-
-                file_put_contents($langFolder . "/labels.php", $content);
-                file_put_contents($langFolder . "/labels.json", str_replace(",}", "}", $contentjson));
+                $values = array_merge(self::readGroup($request->currantLang, 'labels'), (array) $request->label);
+                self::writeGroup($request->currantLang, 'labels', $values);
             }
         }
         if (isset($request->file) == "message") {
             if (isset($request->message) && !empty($request->message)) {
-                $content = "<?php return [";
-                $contentjson = "{";
-                foreach ($request->message as $key => $data) {
-                    $content .= '"' . $key . '" => "' . str_replace('\\', '', addslashes($data)) . '",';
-                    $contentjson .= '"' . $key . '":"' . $data . '",';
-                }
-                $content .= "];";
-                $contentjson .= "}";
-                file_put_contents($langFolder . "/messages.php", $content);
-                file_put_contents($langFolder . "/messages.json", str_replace(",}", "}", $contentjson));
+                $values = array_merge(self::readGroup($request->currantLang, 'messages'), (array) $request->message);
+                self::writeGroup($request->currantLang, 'messages', $values);
             }
         }
         if (isset($request->file) == "landing") {
-
             if (isset($request->landing) && !empty($request->landing)) {
-                $content = "<?php return [";
-                $contentjson = "{";
-                foreach ($request->landing as $key => $data) {
-                    $content .= '"' . $key . '" => "' . str_replace('\\', '', addslashes($data)) . '",';
-                    $contentjson .= '"' . $key . '" : "' . $data . '",';
-                }
-                $content .= "];";
-                $contentjson .= "}";
-                file_put_contents($langFolder . "/landing.php", $content);
-                file_put_contents($langFolder . "/landing.json", str_replace(",}", "}", $contentjson));
+                $values = array_merge(self::readGroup($request->currantLang, 'landing'), (array) $request->landing);
+                self::writeGroup($request->currantLang, 'landing', $values);
             }
         }
 

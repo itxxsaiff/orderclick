@@ -131,7 +131,7 @@
                     <label class="form-label">{{ trans('labels.impersonation_reason') }}<span class="text-danger"> *</span></label>
                     <textarea name="reason" class="form-control" rows="3" required></textarea>
                     <small class="text-muted d-block mt-2">
-                        {{ $ar ? 'سيتم تسجيل اسم المشرف ووقت الدخول والخروج في سجل التدقيق.' : 'The admin name, reason and login/logout times are recorded in the audit log.' }}
+                        {{ trans('labels.the_admin_name_reason_and_login_logout') }}
                     </small>
                 </div>
                 <div class="modal-footer">

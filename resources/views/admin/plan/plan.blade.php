@@ -27,6 +27,45 @@
         @endif
     </div>
 
+    {{-- Manual methods (Benefit, bank transfer, cash) are approved by an admin, so the merchant
+         is told their receipt arrived and is still under review. Stripe never lands here: it
+         confirms itself and the transaction is already paid. --}}
+    @if (!empty($pendingPayment))
+        @php
+            $ocAr = app()->getLocale() === 'ar';
+            $ocSupport = helper::appdata(1)->contact ?? '';
+            $ocWa = preg_replace('/[^0-9]/', '', (string) $ocSupport);
+        @endphp
+        <div class="col-12 mb-3">
+            <div class="alert alert-warning border-0 box-shadow d-flex flex-wrap align-items-center justify-content-between gap-3 mb-0">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="fa-solid fa-clock fs-4 mt-1"></i>
+                    <div>
+                        <div class="fw-semibold">
+                            {{ trans('labels.payment_pending_waiting_for_admin_approval') }}
+                        </div>
+                        <div class="fs-7">
+                            {{ trans('labels.your_payment_has_been_submitted_and_is') }}
+                        </div>
+                        <div class="fs-7 text-muted mt-1">
+                            {{ $pendingPayment->plan_name }}
+                            · {{ \App\Helpers\Subscriptions::methodName($pendingPayment->payment_type) }}
+                            · {{ helper::currency_formate($pendingPayment->grand_total ?: $pendingPayment->amount, '') }}
+                            @if ($pendingPayment->transaction_number)
+                                · {{ $pendingPayment->transaction_number }}
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @if ($ocWa)
+                    <a href="https://wa.me/{{ $ocWa }}" target="_blank"
+                        class="btn btn-sm btn-secondary rounded-start-5 rounded-end-5">
+                        <i class="fa-brands fa-whatsapp mx-1"></i>{{ trans('labels.contact_support_2') }}</a>
+                @endif
+            </div>
+        </div>
+    @endif
+
     @if (Auth::user()->type == 2 || (Auth::user()->type == 4 && Auth::user()->vendor_id != 1))
         @php $ocSys = \App\Helpers\Systems::all()[$planSystem ?? 'orders']; @endphp
         <div class="col-12 mb-3">
@@ -41,6 +80,10 @@
                         <div>
                             <span class="text-muted small d-block">{{ trans('labels.current_plan') }}</span>
                             <span class="fw-semibold">{{ $currentPlan }}</span>
+                            @if (!empty($pendingPayment))
+                                <span class="badge bg-warning ms-1">
+                                    {{ trans('labels.pending') }}</span>
+                            @endif
                         </div>
                     @endif
                     <a href="{{ URL::to('admin/setup') }}"
@@ -53,7 +96,7 @@
     @if (Auth::user()->type == 1 || (Auth::user()->type == 4 && Auth::user()->vendor_id == 1))
         <div class="col-12 mb-3">
             <div class="oc-plan-filter d-inline-flex gap-2 p-1 rounded-3" style="background:#eef2f0">
-                <button type="button" class="btn btn-sm oc-planfilter-btn active" data-filter="all">{{ app()->getLocale() === 'ar' ? 'الكل' : 'All' }}</button>
+                <button type="button" class="btn btn-sm oc-planfilter-btn active" data-filter="all">{{ trans('labels.all') }}</button>
                 <button type="button" class="btn btn-sm oc-planfilter-btn" data-filter="orders">Orders &amp; Stores</button>
                 <button type="button" class="btn btn-sm oc-planfilter-btn" data-filter="booking">Booking</button>
                 <button type="button" class="btn btn-sm oc-planfilter-btn" data-filter="service">Service Marketplace</button>

@@ -26,23 +26,15 @@ class AdminController extends Controller
             $vendor_id = Auth::user()->id;
         }
 
-        // V2 safety net: guide a brand-new merchant to the AI store-setup if they never
-        // completed it (e.g. the one-shot redirect at registration was missed). Skips the
-        // super-admin panel (vendor 1), fires only while the store is still empty, and is
-        // dismissable via the "Skip for now" link (?skip_ai=1).
-        if ($request->query('skip_ai')) {
-            session(['oc_ai_setup_skipped' => true]);
-        }
-        if (
-            Auth::user()->type != 1 && $vendor_id != 1
-            && !session('oc_ai_setup_skipped')
-            && \App\Services\AiAssistant::enabled()
+        // The AI store builder used to hijack the dashboard: merchants logged in and landed on
+        // a setup page they had not asked for, which read as "the login is broken". It is now an
+        // invitation on the dashboard (and in the sidebar) that they open when they want it.
+        $ocAiEnabled = \App\Services\AiAssistant::enabled() && Auth::user()->type != 1 && $vendor_id != 1;
+        $ocStoreEmpty = $ocAiEnabled
             && !\App\Models\Category::where('vendor_id', $vendor_id)->where('is_deleted', 2)->exists()
             && !\App\Models\Item::where('vendor_id', $vendor_id)->exists()
-            && !\App\Models\BookingService::where('vendor_id', $vendor_id)->exists()
-        ) {
-            return redirect('admin/store-setup');
-        }
+            && !\App\Models\BookingService::where('vendor_id', $vendor_id)->exists();
+        view()->share(['ocAiEnabled' => $ocAiEnabled, 'ocStoreEmpty' => $ocStoreEmpty]);
 
         $user = User::where('id', $vendor_id)->where('is_available', 1)->where('is_deleted', 2)->first();
 

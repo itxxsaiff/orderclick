@@ -53,7 +53,7 @@
                             <td colspan="6" class="text-muted fs-7">
                                 {{ trans('labels.no_records') }}
                                 @if (optional($settings)->whatsapp_number)
-                                    — {{ app()->getLocale() === 'ar' ? 'الرقم الرئيسي:' : 'primary number:' }}
+                                    — {{ trans('labels.primary_number') }}
                                     <span class="fw-500">{{ $settings->whatsapp_number }}</span>
                                 @endif
                             </td>

@@ -188,7 +188,7 @@
                     <span class="{{ request()->is('admin/bookings*') ? 'sidebariconbox' : 'sidebariconbox1' }}">
                         <i class="fa-solid fa-calendar-check"></i>
                     </span>
-                    <span class="nav-text px-2">{{ app()->getLocale() === 'ar' ? 'الحجوزات' : 'Bookings' }}</span>
+                    <span class="nav-text px-2">{{ trans('labels.bookings') }}</span>
                 </a>
             </li>
         @endif
@@ -200,7 +200,7 @@
                     <span class="{{ request()->is('admin/service-requests*') ? 'sidebariconbox' : 'sidebariconbox1' }}">
                         <i class="fa-solid fa-clipboard-list"></i>
                     </span>
-                    <span class="nav-text px-2">{{ app()->getLocale() === 'ar' ? 'طلبات الخدمة' : 'Service Requests' }}</span>
+                    <span class="nav-text px-2">{{ trans('labels.service_requests') }}</span>
                 </a>
             </li>
         @endif
@@ -262,7 +262,7 @@
         @if ($oc_is_booking)
             {{-- Booking stores: a Services catalog instead of Products --}}
             <li class="nav-item mt-3">
-                <h6 class="text-dark color-changer fw-500 mb-2 fs-7 text-uppercase mx-3">{{ app()->getLocale() === 'ar' ? 'إدارة الحجز' : 'Booking Management' }}</h6>
+                <h6 class="text-dark color-changer fw-500 mb-2 fs-7 text-uppercase mx-3">{{ trans('labels.booking_management') }}</h6>
             </li>
             <li class="nav-item mb-2 fs-7">
                 <a class="nav-link d-flex align-items-center {{ request()->is('admin/booking-services*') ? 'active' : '' }}"
@@ -270,7 +270,7 @@
                     <span class="{{ request()->is('admin/booking-services*') ? 'sidebariconbox' : 'sidebariconbox1' }}">
                         <i class="fa-solid fa-hand-holding-medical"></i>
                     </span>
-                    <span class="px-2">{{ app()->getLocale() === 'ar' ? 'الخدمات' : 'Services' }}</span>
+                    <span class="px-2">{{ trans('labels.services') }}</span>
                 </a>
             </li>
             {{-- Clinics: Doctors manager · Salons: Team/specialists manager (same doctors module) --}}
@@ -283,9 +283,9 @@
                         </span>
                         <span class="px-2">
                             @if ($oc_is_salon)
-                                {{ app()->getLocale() === 'ar' ? 'الفريق' : 'Team' }}
+                                {{ trans('labels.team') }}
                             @else
-                                {{ app()->getLocale() === 'ar' ? 'الأطباء' : 'Doctors' }}
+                                {{ trans('labels.doctors') }}
                             @endif
                         </span>
                     </a>
@@ -295,6 +295,19 @@
             <li
                 class="nav-item mt-3 {{ helper::check_menu($role_id, 'role_categories') == 1 || helper::check_menu($role_id, 'role_products') == 1 || false && helper::check_menu($role_id, 'role_global_extras') == 1 || false && helper::check_menu($role_id, 'role_import_product') == 1 || false && helper::check_menu($role_id, 'role_product_review') == 1 || helper::check_menu($role_id, 'role_shipping_management') == 1 || false && helper::check_menu($role_id, 'role_question_answer') == 1 ? 'd-block' : 'd-none' }}">
                 <h6 class="text-dark color-changer fw-500 mb-2 fs-7 text-uppercase mx-3">{{ trans('labels.product_managment') }}</h6>
+            </li>
+        @endif
+        {{-- AI store builder: no longer forced on the merchant after login, so it needs a
+             permanent home in the menu. --}}
+        @if (Auth::user()->type != 1 && $vendor_id != 1 && \App\Services\AiAssistant::enabled())
+            <li class="nav-item mb-2 fs-7">
+                <a class="nav-link d-flex align-items-center {{ request()->is('admin/store-setup*') ? 'active' : '' }}"
+                    aria-current="page" href="{{ URL::to('admin/store-setup') }}">
+                    <span class="{{ request()->is('admin/store-setup*') ? 'sidebariconbox' : 'sidebariconbox1' }}">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </span>
+                    <span class="mx-2">{{ trans('labels.ai_assistant') }}</span>
+                </a>
             </li>
         @endif
         <li

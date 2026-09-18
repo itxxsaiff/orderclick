@@ -30,7 +30,7 @@
                         <div class="col-12 col-md-6 col-xl-4">
                             <label class="form-label fs-7 text-muted text-uppercase mb-1">{{ trans('labels.name') }}<span class="text-danger"> *</span></label>
                             <input type="text" class="form-control" name="name" value="{{ $ocVal('name') }}"
-                                placeholder="{{ $ocAr ? 'ضريبة اشتراك أوردر كليك' : 'Order Click Subscription Tax' }}" required>
+                                placeholder="{{ trans('labels.order_click_subscription_tax') }}" required>
                         </div>
 
                         <div class="col-12 col-md-6 col-xl-4">
@@ -200,7 +200,7 @@
                 status.disabled = noRate;
                 if (noRate) status.value = '2';
                 if (hint) hint.textContent = noRate
-                    ? '{{ $ocAr ? "أدخل قيمة أكبر من صفر لتفعيل القاعدة." : "Enter a value above zero before this rule can be activated." }}'
+                    ? '{{ trans('labels.enter_a_value_above_zero_before_this') }}'
                     : '';
             }
         }

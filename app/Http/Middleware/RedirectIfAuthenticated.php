@@ -23,7 +23,9 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect(RouteServiceProvider::HOME);
+                // Someone already signed in has no business on the login or signup pages; this
+                // app has no /home route, so send them to the panel they are logged in to.
+                return redirect('admin/dashboard');
             }
         }
 

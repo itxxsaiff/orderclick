@@ -211,6 +211,76 @@ class helper
         return 'https://images.unsplash.com/photo-' . $pick . '?auto=format&fit=crop&w=640&q=72';
     }
 
+    /**
+     * Public URL of a vendor verification document (PDF or image).
+     *
+     * These live in admin-assets/documents. image_path() knows nothing about that folder, so it
+     * silently returned the "no image" placeholder - the admin opened a document and got a grey
+     * picture instead of the file.
+     */
+    /**
+     * The platform logo as a data: URI for PDF invoices.
+     *
+     * The PDF renderer cannot fetch the logo over HTTP reliably, so the bytes are embedded. The
+     * uploaded logo can be several megabytes, which would bloat and slow every invoice, so a
+     * height-capped copy is generated once and cached outside the public folder.
+     */
+    public static function invoice_logo(?string $logo, int $maxHeight = 120): ?string
+    {
+        $logo = basename((string) $logo);
+        if ($logo === '') {
+            return null;
+        }
+
+        $source = storage_path('app/public/admin-assets/images/about/logo/' . $logo);
+        if (!is_file($source)) {
+            return null;
+        }
+
+        try {
+            $cache = storage_path('app/invoice-logo-' . md5($logo . filemtime($source)) . '.png');
+
+            if (!is_file($cache) && extension_loaded('gd') && filesize($source) > 120000) {
+                $size = @getimagesize($source);
+                if ($size && $size[1] > $maxHeight) {
+                    $img = match (strtolower(pathinfo($source, PATHINFO_EXTENSION))) {
+                        'png'          => @imagecreatefrompng($source),
+                        'jpg', 'jpeg'  => @imagecreatefromjpeg($source),
+                        'webp'         => @imagecreatefromwebp($source),
+                        default        => null,
+                    };
+                    if ($img) {
+                        $scaled = imagescale($img, (int) round($size[0] * $maxHeight / $size[1]), $maxHeight);
+                        if ($scaled) {
+                            imagealphablending($scaled, false);
+                            imagesavealpha($scaled, true);
+                            imagepng($scaled, $cache, 8);
+                            imagedestroy($scaled);
+                        }
+                        imagedestroy($img);
+                    }
+                }
+            }
+
+            $file = is_file($cache) ? $cache : $source;
+            $type = strtolower(pathinfo($file, PATHINFO_EXTENSION)) ?: 'png';
+
+            return 'data:image/' . ($type === 'jpg' ? 'jpeg' : $type) . ';base64,' . base64_encode(file_get_contents($file));
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    public static function document_path($file)
+    {
+        $file = basename((string) $file);
+        if ($file === '') {
+            return '';
+        }
+
+        return asset('storage/app/public/admin-assets/documents/' . $file);
+    }
+
     public static function image_path($image)
     {
         if ($image == "" && $image == null) {

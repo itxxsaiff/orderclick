@@ -88,7 +88,7 @@ $user = App\Models\User::where('id', $vendor_id)->where('is_available', 1)->wher
                             @endif
                         @endforeach
                         <li class="list-group-item d-flex justify-content-between px-0 oc-addon-total-row" style="display:none">
-                            <p class="fw-600 color-changer fs-15">{{ app()->getLocale() === 'ar' ? 'الإضافات' : 'Add-ons' }}</p>
+                            <p class="fw-600 color-changer fs-15">{{ trans('labels.add_ons') }}</p>
                             <p class="fw-600 color-changer fs-15" id="oc_addon_total">—</p>
                         </li>
                         @if (session()->has('discount_data'))
@@ -434,7 +434,7 @@ $user = App\Models\User::where('id', $vendor_id)->where('is_available', 1)->wher
                         <a href="#" target="_blank" rel="noopener" id="payment_link"
                             class="btn btn-secondary px-4 rounded-start-5 rounded-end-5">
                             <i class="fa-solid fa-up-right-from-square"></i>
-                            {{ app()->getLocale() === 'ar' ? 'ادفع عبر الرابط' : 'Pay via link' }}
+                            {{ trans('labels.pay_via_link') }}
                         </a>
                     </div>
                     <p class="payment_description color-changer" id="payment_description"></p>
@@ -442,8 +442,12 @@ $user = App\Models\User::where('id', $vendor_id)->where('is_available', 1)->wher
                     <div class="form-group col-md-12">
                         <label for="screenshot" class="form-label"> {{ trans('labels.screenshot') }} </label>
                         <div class="controls">
-                            <input type="file" name="screenshot" id="screenshot"
-                                class="form-control  @error('screenshot') is-invalid @enderror" required>
+                            {{-- Not `required`: on a phone the picked photo often does not attach
+                                 (HEIC, camera capture), and the browser then blocks the submit with a
+                                 validation bubble the user cannot see inside the modal - the button
+                                 simply appeared dead. The receipt is optional server-side too. --}}
+                            <input type="file" name="screenshot" id="screenshot" accept="image/*"
+                                class="form-control  @error('screenshot') is-invalid @enderror">
                             @error('screenshot')
                             <span class="text-danger"> {{ $message }} </span>
                             @enderror
@@ -453,7 +457,8 @@ $user = App\Models\User::where('id', $vendor_id)->where('is_available', 1)->wher
                 <div class="modal-footer gap-2">
                     <button type="button" class="btn btn-danger px-4 rounded-start-5 rounded-end-5 m-0"
                         data-bs-dismiss="modal">{{ trans('labels.close') }}</button>
-                    <button @if (env('Environment')=='sendbox' ) type="button" onclick="myFunction()" type="submit" @endif
+                    <button id="ocBankSave"
+                        @if (env('Environment') == 'sendbox') type="button" onclick="myFunction()" @else type="submit" @endif
                         class="btn btn-secondary px-4 rounded-start-5 rounded-end-5 m-0"> {{ trans('labels.save') }}
                     </button>
                 </div>
@@ -461,6 +466,24 @@ $user = App\Models\User::where('id', $vendor_id)->where('is_available', 1)->wher
         </div>
     </div>
 </div>
+
+@if (env('Environment') != 'sendbox')
+    <script>
+        // Some mobile browsers do not fire the form's default submit from inside a modal footer.
+        // Submitting explicitly makes the button behave the same on phone and desktop.
+        document.addEventListener('DOMContentLoaded', function () {
+            var btn = document.getElementById('ocBankSave');
+            if (!btn) return;
+            btn.addEventListener('click', function (e) {
+                var form = btn.closest('form');
+                if (!form) return;
+                e.preventDefault();
+                btn.disabled = true;
+                if (typeof form.requestSubmit === 'function') form.requestSubmit(); else form.submit();
+            });
+        });
+    </script>
+@endif
 
 <!-- Modal -->
 <div class="modal fade" id="couponmodal" tabindex="-1" aria-labelledby="couponmodalLabel" aria-hidden="true">

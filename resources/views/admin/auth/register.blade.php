@@ -589,7 +589,7 @@
                         }
 
                         // Reverse-geocode to auto-fill city / area / country (free, no key).
-                        var lang = '{{ app()->getLocale() === "ar" ? "ar" : "en" }}';
+                        var lang = '{{ trans('labels.en') }}';
                         fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=' + lang, {
                             headers: { 'Accept': 'application/json' }
                         }).then(function (r) { return r.json(); }).then(function (g) {

@@ -32,17 +32,17 @@
     <div class="ocb-wrap">
         <div class="container">
             <div class="ocb-card">
-                <h1>{{ $isAr ? 'احجز موعدك' : 'Book an Appointment' }}</h1>
-                <p class="ocb-sub">{{ $isAr ? 'اختر الطبيب والوقت المناسب لك.' : 'Choose a doctor and a time that works for you.' }}</p>
+                <h1>{{ trans('labels.book_an_appointment') }}</h1>
+                <p class="ocb-sub">{{ trans('labels.choose_a_doctor_and_a_time_that') }}</p>
 
                 <form action="{{ URL::to(@$storeinfo->slug . '/save-booking') }}" method="POST">
                     @csrf
                     @php $ocDocs = collect($doctors ?? []); @endphp
                     <div class="ocb-field">
-                        <label>{{ $isAr ? 'الطبيب' : 'Doctor' }} <span class="req">*</span></label>
+                        <label>{{ trans('labels.doctor') }} <span class="req">*</span></label>
                         @if ($ocDocs->count() > 0)
                             <select name="service_name" id="ocb_service" class="ocb-in" required onchange="ocbService(this)">
-                                <option value="">{{ $isAr ? 'اختر طبيباً' : 'Select a doctor' }}</option>
+                                <option value="">{{ trans('labels.select_a_doctor') }}</option>
                                 @foreach ($ocDocs as $d)
                                     <option value="{{ $d->name }}{{ $d->specialty ? ' — ' . $d->specialty : '' }}" data-id="{{ $d->id }}" data-price="{{ $d->fee }}"
                                         {{ (string) ($selectedDoctor ?? '') === (string) $d->id ? 'selected' : '' }}>
@@ -53,7 +53,7 @@
                             <input type="hidden" name="service_id" id="ocb_service_id" value="{{ $selectedDoctor ?? '' }}">
                         @elseif (count($services) > 0)
                             <select name="service_name" id="ocb_service" class="ocb-in" required onchange="ocbService(this)">
-                                <option value="">{{ $isAr ? 'اختر خدمة' : 'Select a service' }}</option>
+                                <option value="">{{ trans('labels.select_a_service') }}</option>
                                 @foreach ($services as $s)
                                     <option value="{{ $s->name }}" data-id="{{ $s->id }}" data-price="{{ $s->price }}" {{ (string) $selected === (string) $s->id ? 'selected' : '' }}>
                                         {{ $s->name }}@if ($s->price > 0) — {{ helper::currency_formate($s->price, $vdata) }}@endif
@@ -62,39 +62,39 @@
                             </select>
                             <input type="hidden" name="service_id" id="ocb_service_id" value="{{ $selected }}">
                         @else
-                            <input type="text" name="service_name" class="ocb-in" required placeholder="{{ $isAr ? 'اسم الخدمة' : 'Service' }}">
+                            <input type="text" name="service_name" class="ocb-in" required placeholder="{{ trans('labels.service') }}">
                         @endif
                     </div>
 
                     <div class="ocb-grid2">
                         <div class="ocb-field">
-                            <label>{{ $isAr ? 'التاريخ' : 'Date' }} <span class="req">*</span></label>
+                            <label>{{ trans('labels.date') }} <span class="req">*</span></label>
                             <input type="date" name="booking_date" class="ocb-in" required min="{{ date('Y-m-d') }}">
                         </div>
                         <div class="ocb-field">
-                            <label>{{ $isAr ? 'الوقت' : 'Time' }}</label>
+                            <label>{{ trans('labels.time') }}</label>
                             <input type="time" name="booking_time" class="ocb-in">
                         </div>
                     </div>
 
                     <div class="ocb-grid2">
                         <div class="ocb-field">
-                            <label>{{ $isAr ? 'الاسم' : 'Your Name' }} <span class="req">*</span></label>
+                            <label>{{ trans('labels.your_name') }} <span class="req">*</span></label>
                             <input type="text" name="customer_name" class="ocb-in" required>
                         </div>
                         <div class="ocb-field">
-                            <label>{{ $isAr ? 'رقم الجوال' : 'Mobile' }} <span class="req">*</span></label>
+                            <label>{{ trans('labels.mobile') }} <span class="req">*</span></label>
                             <input type="text" name="mobile" class="ocb-in" required>
                         </div>
                     </div>
 
                     <div class="ocb-field">
-                        <label>{{ $isAr ? 'البريد الإلكتروني (اختياري)' : 'Email (optional)' }}</label>
+                        <label>{{ trans('labels.email_optional') }}</label>
                         <input type="email" name="email" class="ocb-in">
                     </div>
                     <div class="ocb-field">
-                        <label>{{ $isAr ? 'ملاحظات' : 'Notes' }}</label>
-                        <textarea name="notes" rows="2" class="ocb-in" placeholder="{{ $isAr ? 'أي تفاصيل إضافية' : 'Anything the provider should know' }}"></textarea>
+                        <label>{{ trans('labels.notes') }}</label>
+                        <textarea name="notes" rows="2" class="ocb-in" placeholder="{{ trans('labels.anything_the_provider_should_know') }}"></textarea>
                     </div>
 
                     {{-- Payment method (reuses the vendor's enabled methods; pay at location or online) --}}
@@ -106,7 +106,7 @@
                         })->values();
                     @endphp
                     @if ($bkPayments->count() > 0)
-                        <div class="ocb-sec">{{ $isAr ? 'طريقة الدفع' : 'Payment Method' }}</div>
+                        <div class="ocb-sec">{{ trans('labels.payment_method') }}</div>
                         <div class="ocb-pay">
                             @foreach ($bkPayments as $i => $payment)
                                 <label class="ocb-opt {{ $i == 0 ? 'sel' : '' }}" data-opt="{{ $payment->payment_type }}">
@@ -122,7 +122,7 @@
                                         @endif
                                         @if ($payment->payment_type == '21' && !empty($payment->payment_link))
                                             <a href="{{ $payment->payment_link }}" target="_blank" class="btn btn-sm btn-primary mb-2">
-                                                <i class="fa-solid fa-up-right-from-square"></i> {{ $isAr ? 'ادفع عبر الرابط' : 'Pay via link' }}
+                                                <i class="fa-solid fa-up-right-from-square"></i> {{ trans('labels.pay_via_link') }}
                                             </a><br>
                                         @endif
                                         @if (!empty($payment->payment_description))
@@ -135,12 +135,12 @@
                     @endif
 
                     <div class="ocb-total" id="ocb_total_row" style="display:none;">
-                        <span>{{ $isAr ? 'الإجمالي' : 'Total' }}</span>
+                        <span>{{ trans('labels.total') }}</span>
                         <span id="ocb_total">—</span>
                     </div>
 
                     <button type="submit" class="ocb-submit">
-                        <i class="fa-solid fa-calendar-check"></i> {{ $isAr ? 'تأكيد الحجز' : 'Confirm Booking' }}
+                        <i class="fa-solid fa-calendar-check"></i> {{ trans('labels.confirm_booking') }}
                     </button>
                 </form>
             </div>

@@ -663,7 +663,7 @@
                                                                 <a href="{{ $payment->payment_link }}" target="_blank"
                                                                     class="btn btn-sm btn-primary mb-2">
                                                                     <i class="fa-solid fa-up-right-from-square"></i>
-                                                                    {{ app()->getLocale() === 'ar' ? 'ادفع عبر الرابط' : 'Pay via link' }}
+                                                                    {{ trans('labels.pay_via_link') }}
                                                                 </a>
                                                             @endif
                                                             @if (!empty($payment->payment_description))

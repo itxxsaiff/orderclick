@@ -56,13 +56,15 @@ use App\Http\Controllers\landing\HomeController as LandingHomeController;
 //  -------------------------------  FOR ADMIN  -----------------------------------------   //
 //  ------------------------------- ----------- -----------------------------------------   //	
 Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
-    Route::get('/', [AdminController::class, 'login']);
+    // 'guest': an already signed-in user who opens the login or signup page is bounced to the
+    // dashboard instead of being shown a form they cannot use.
+    Route::get('/', [AdminController::class, 'login'])->middleware('guest');
     Route::post('checklogin-{logintype}', [AdminController::class, 'check_admin_login']);
     // The old single-page signup is superseded by the public wizard.
-    Route::get('register', fn() => redirect('register/1'));
+    Route::get('register', fn() => redirect('register/1'))->middleware('guest');
     Route::post('register_vendor', [VendorController::class, 'register_vendor']);
     Route::get('register/check', [VendorController::class, 'check_availability']);
-    Route::get('forgot_password', [VendorController::class, 'forgot_password']);
+    Route::get('forgot_password', [VendorController::class, 'forgot_password'])->middleware('guest');
     Route::post('send_password', [VendorController::class, 'send_password']);
     Route::post('/getarea', [VendorController::class, 'getarea']);
 
@@ -257,6 +259,7 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
                             Route::get('record-{id}', [VendorRecordController::class, 'show']);
                             Route::post('record-{id}/status', [VendorRecordController::class, 'update_status']);
                             Route::post('record-{id}/note', [VendorRecordController::class, 'save_note']);
+                            Route::post('record-{id}/document-{docId}/review', [VendorRecordController::class, 'review_document']);
                         }
                     );
 
@@ -526,7 +529,8 @@ Route::group(['prefix' => 'register'], function () {
     Route::get('/agreement', [\App\Http\Controllers\RegistrationController::class, 'agreement']);
     Route::post('/system', [\App\Http\Controllers\RegistrationController::class, 'save_system']);
     Route::post('/complete', [\App\Http\Controllers\RegistrationController::class, 'complete']);
-    Route::get('/{step}', [\App\Http\Controllers\RegistrationController::class, 'show'])->where('step', '[1-3]');
+    Route::get('/{step}', [\App\Http\Controllers\RegistrationController::class, 'show'])
+        ->where('step', '[1-3]')->middleware('guest');   // no signup wizard while signed in
 });
 
 // ---- SEO: sitemap for search engines (listed in the domain root robots.txt) ----

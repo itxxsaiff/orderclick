@@ -28,7 +28,7 @@
                                 <label class="form-label">{{ trans('labels.name') }}<span class="text-danger"> *</span></label>
                                 <input type="text" class="form-control" name="name"
                                     value="{{ old('name', $branch->name ?? '') }}" required
-                                    placeholder="{{ $ar ? 'مثال: فرع المنامة' : 'e.g. Manama Branch' }}">
+                                    placeholder="{{ trans('labels.e_g_manama_branch') }}">
                             </div>
                             <div class="form-group col-md-3 mb-3">
                                 <label class="form-label">{{ trans('labels.mobile') }}</label>
@@ -46,7 +46,7 @@
                                 {{ old('is_remote', $branch->is_remote ?? 2) == 1 ? 'checked' : '' }}>
                             <label class="form-check-label" for="ocRemote">
                                 {{ trans('labels.online_remote_service') }}
-                                <span class="text-muted fs-7">— {{ $ar ? 'يبقى ظاهراً في السوق بدون تحديد موقع' : 'stays searchable in the Marketplace without GPS' }}</span>
+                                <span class="text-muted fs-7">— {{ trans('labels.stays_searchable_in_the_marketplace_without_gps') }}</span>
                             </label>
                         </div>
 
@@ -81,12 +81,12 @@
                                     <label class="form-label">{{ trans('labels.service_coverage_km') }}</label>
                                     <input type="number" step="0.5" min="0" class="form-control" name="coverage_km"
                                         value="{{ old('coverage_km', $branch->coverage_km ?? '') }}" placeholder="20">
-                                    <small class="text-muted">{{ $ar ? 'نطاق تغطية المزود أو السائق.' : 'How far this provider or driver travels.' }}</small>
+                                    <small class="text-muted">{{ trans('labels.how_far_this_provider_or_driver_travels') }}</small>
                                 </div>
                             @else
                                 <div class="col-12 mb-3">
                                     <p class="fs-7 text-muted mb-0">
-                                        {{ $ar ? 'يتم استقبال العملاء في هذا الفرع — لا حاجة لنطاق تغطية.' : 'Customers are seen at this branch — no coverage radius needed.' }}
+                                        {{ trans('labels.customers_are_seen_at_this_branch_no') }}
                                     </p>
                                 </div>
                             @endif
@@ -102,7 +102,7 @@
                                 <div class="form-group col-md-4 mb-3">
                                     <label class="form-label">{{ trans('labels.reason') }}</label>
                                     <input type="text" class="form-control" name="change_reason"
-                                        placeholder="{{ $ar ? 'سبب تغيير الموقع (اختياري)' : 'Reason for moving the pin (optional)' }}">
+                                        placeholder="{{ trans('labels.reason_for_moving_the_pin_optional') }}">
                                 </div>
                             @endif
                         </div>

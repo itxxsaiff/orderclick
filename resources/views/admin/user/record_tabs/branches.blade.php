@@ -36,7 +36,7 @@
                         <tr>
                             <td colspan="6" class="text-muted fs-7">
                                 {{ trans('labels.no_records') }} —
-                                {{ app()->getLocale() === 'ar' ? 'يستخدم هذا التاجر عنوان المتجر الرئيسي فقط.' : 'this vendor is still on the single primary store address.' }}
+                                {{ trans('labels.this_vendor_is_still_on_the_single') }}
                                 @if (optional($settings)->address)
                                     <div class="mt-2">{{ $settings->address }}</div>
                                 @endif

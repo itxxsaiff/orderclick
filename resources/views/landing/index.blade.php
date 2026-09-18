@@ -294,27 +294,27 @@
     <section class="ocl-hero" id="home">
         <div class="wrap grid">
             <div>
-                <span class="badge">{{ app()->getLocale() === 'ar' ? 'أطلق متجرك في دقائق' : 'Launch your store in minutes' }}</span>
+                <span class="badge">{{ trans('landing.launch_your_store_in_minutes') }}</span>
                 <h1>{{ trans('landing.hero_banner_title') }}</h1>
                 <p class="lead">{{ trans('landing.hero_banner_description') }}</p>
                 <div class="cta">
                     <a href="{{ $registerUrl }}" class="ocl-btn ocl-btn--primary ocl-btn--lg">{{ trans('landing.get_started') }} &rarr;</a>
                     {{-- Same destination and wording as the "Marketplace" item in the top menu. --}}
                     <a href="{{ URL::to('marketplace') }}" class="ocl-btn ocl-btn--ghost ocl-btn--lg">
-                        <i class="fa-solid fa-cart-shopping"></i> {{ app()->getLocale() === 'ar' ? 'المتجر' : 'Marketplace' }}</a>
+                        <i class="fa-solid fa-cart-shopping"></i> {{ trans('landing.marketplace') }}</a>
                 </div>
                 <div class="trust">
-                    <div><i class="fa-brands fa-whatsapp"></i> {{ app()->getLocale() === 'ar' ? 'طلبات عبر واتساب' : 'Order via WhatsApp' }}</div>
-                    <div><i class="fa-solid fa-store"></i> {{ app()->getLocale() === 'ar' ? 'متجر خاص بك' : 'Your own store' }}</div>
-                    <div><i class="fa-solid fa-language"></i> {{ app()->getLocale() === 'ar' ? 'عربي و إنجليزي' : 'Arabic & English' }}</div>
+                    <div><i class="fa-brands fa-whatsapp"></i> {{ trans('landing.order_via_whatsapp') }}</div>
+                    <div><i class="fa-solid fa-store"></i> {{ trans('landing.your_own_store') }}</div>
+                    <div><i class="fa-solid fa-language"></i> {{ trans('landing.arabic_english') }}</div>
                 </div>
             </div>
             <div class="ocl-hero__art">
                 <div class="frame">
                     <img src="{{ helper::image_path(helper::appdata('')->landing_home_banner) }}" alt="Order Click">
                 </div>
-                <div class="chip c1"><i class="fa-solid fa-bag-shopping"></i> {{ app()->getLocale() === 'ar' ? 'طلب جديد' : 'New order' }}</div>
-                <div class="chip c2"><i class="fa-solid fa-bolt"></i> {{ app()->getLocale() === 'ar' ? 'إعداد سريع' : 'Fast setup' }}</div>
+                <div class="chip c1"><i class="fa-solid fa-bag-shopping"></i> {{ trans('landing.new_order') }}</div>
+                <div class="chip c2"><i class="fa-solid fa-bolt"></i> {{ trans('landing.fast_setup') }}</div>
             </div>
         </div>
     </section>
@@ -322,9 +322,9 @@
     {{-- ===================== BUSINESS CATEGORIES ===================== --}}
     <section class="ocl-sec" id="categories">
         <div class="wrap center">
-            <span class="eyebrow">{{ app()->getLocale() === 'ar' ? 'فئات الأنشطة' : 'Business Categories' }}</span>
-            <h2 class="sec-title">{{ app()->getLocale() === 'ar' ? 'اختر الفئة المناسبة لمتجرك' : 'Choose the right category for your store' }}</h2>
-            <p class="sec-sub">{{ app()->getLocale() === 'ar' ? 'اختر أي فئة للانتقال مباشرة إلى التسجيل وابدأ البيع بسرعة.' : 'Pick any category to jump straight to registration and start selling fast.' }}</p>
+            <span class="eyebrow">{{ trans('landing.business_categories') }}</span>
+            <h2 class="sec-title">{{ trans('landing.choose_the_right_category_for_your_store') }}</h2>
+            <p class="sec-sub">{{ trans('landing.pick_any_category_to_jump_straight_to') }}</p>
             @php
                 // Arabic names for the built-in store categories (falls back to the DB name for custom ones).
                 $ocCatAr = [
@@ -359,8 +359,8 @@
                                 @endif
                             </div>
                             <h4>{{ $categoryDisplay }}</h4>
-                            <p>{{ app()->getLocale() === 'ar' ? 'أطلق متجرك في هذه الفئة' : 'Launch your store in this category' }}</p>
-                            <span class="go">{{ app()->getLocale() === 'ar' ? 'سجّل الآن ←' : 'Register now →' }}</span>
+                            <p>{{ trans('landing.launch_your_store_in_this_category') }}</p>
+                            <span class="go">{{ trans('landing.register_now') }}</span>
                         </a>
                     @endforeach
                 </div>
@@ -396,7 +396,7 @@
     @if ($ocGeneralFeatures->count())
         <section class="ocl-sec" id="features">
             <div class="wrap center">
-                <span class="eyebrow">{{ $ar ? 'المزايا' : 'Features' }}</span>
+                <span class="eyebrow">{{ trans('landing.features') }}</span>
                 <h2 class="sec-title">{{ trans('labels.features_general') }}</h2>
                 <div class="ocl-svcs">
                     @foreach ($ocGeneralFeatures as $f)
@@ -419,9 +419,9 @@
 
     <section class="ocl-sec ocl-sec--alt" id="services-marketplace">
         <div class="wrap center">
-            <span class="eyebrow">{{ $ar ? 'سوق الخدمات' : 'Services Marketplace' }}</span>
-            <h2 class="sec-title">{{ $ar ? 'سوق الخدمات' : 'Services Marketplace' }}</h2>
-            <p class="sec-sub">{{ $ar ? 'اكتشف أفضل المحترفين في مختلف الفئات' : 'Discover top professionals in different categories' }}</p>
+            <span class="eyebrow">{{ trans('landing.services_marketplace') }}</span>
+            <h2 class="sec-title">{{ trans('landing.services_marketplace') }}</h2>
+            <p class="sec-sub">{{ trans('landing.discover_top_professionals_in_different_categories') }}</p>
             @php
                 $ocServices = [
                     ['fa-pen-nib', '#7c5cff', 'Graphic Design', 'التصميم الجرافيكي'],
@@ -477,10 +477,10 @@
     {{-- ===================== BOOKING SYSTEMS ===================== --}}
     <section class="ocl-sec" id="booking-systems">
         <div class="wrap center">
-            <span class="eyebrow">{{ $ar ? 'أنظمة الحجوزات' : 'Booking Systems' }}</span>
-            <h2 class="sec-title">{{ $ar ? 'أنظمة الحجوزات' : 'Booking Systems' }}</h2>
-            <p class="sec-sub">{{ $ar ? 'مجموعة متكاملة من أنظمة الحجوزات الذكية لجميع الخدمات والمواعيد' : 'A complete set of smart booking systems for all services and appointments' }}</p>
-            <span class="ocl-tagline">{{ $ar ? 'إدارة أسهل، تجربة أفضل، وحجوزات أكثر' : 'Easy management, better experience, more bookings' }}</span>
+            <span class="eyebrow">{{ trans('landing.booking_systems') }}</span>
+            <h2 class="sec-title">{{ trans('landing.booking_systems') }}</h2>
+            <p class="sec-sub">{{ trans('landing.a_complete_set_of_smart_booking_systems') }}</p>
+            <span class="ocl-tagline">{{ trans('landing.easy_management_better_experience_more_bookings') }}</span>
             @php
                 $ocBookings = [
                     ['fa-stethoscope', '#22c55e', 'Clinics & Medical Centers', 'العيادات والمراكز الطبية', 'Book appointments with doctors and specialists.', 'حجز المواعيد مع الأطباء والمتخصصين.'],
@@ -548,7 +548,7 @@
                         $ocWorkSub   = trim((string) (helper::appdata('')->work_subtitle_ar ?? '')) ?: $ocWorkSub;
                     }
                 @endphp
-                <span class="eyebrow">{{ app()->getLocale() === 'ar' ? 'كيف يعمل' : 'How it works' }}</span>
+                <span class="eyebrow">{{ trans('landing.how_it_works') }}</span>
                 <h2 class="sec-title">{{ $ocWorkTitle ?: (app()->getLocale() === 'ar' ? 'من واتساب إلى الطلب في خطوات بسيطة' : 'From WhatsApp to order in a few simple steps') }}</h2>
                 <p class="sec-sub">{{ $ocWorkSub ?: (app()->getLocale() === 'ar' ? 'الطلب يبدأ من واتساب وينتهي في لوحة تحكم البائع مباشرة.' : 'Ordering starts on WhatsApp and lands straight in the merchant dashboard.') }}</p>
             </div>
@@ -619,13 +619,13 @@
                     <img src="{{ helper::image_path($featuredImg) }}" alt="Store template preview" loading="lazy">
                 </div>
                 <div>
-                    <span class="eyebrow eyebrow--left">{{ app()->getLocale() === 'ar' ? 'قوالب جاهزة' : 'Ready templates' }}</span>
-                    <h2 class="sec-title" style="text-align:start;">{{ app()->getLocale() === 'ar' ? 'قوالب أنيقة تجذب عملاءك' : 'Beautiful templates that convert' }}</h2>
-                    <p style="text-align:start;">{{ app()->getLocale() === 'ar' ? 'اختر قالباً، خصّص الألوان والتخطيط، وأطلق متجرك بمظهر احترافي في دقائق.' : 'Pick a template, customise colours and layout, and launch a professional-looking store in minutes.' }}</p>
+                    <span class="eyebrow eyebrow--left">{{ trans('landing.ready_templates') }}</span>
+                    <h2 class="sec-title" style="text-align:start;">{{ trans('landing.beautiful_templates_that_convert') }}</h2>
+                    <p style="text-align:start;">{{ trans('landing.pick_a_template_customise_colours_and_layout') }}</p>
                     <ul class="ocl-tpl__list">
-                        <li><i class="fa-solid fa-circle-check"></i> {{ app()->getLocale() === 'ar' ? 'تخطيط شبكي أو قائمة' : 'Grid or list layout' }}</li>
-                        <li><i class="fa-solid fa-circle-check"></i> {{ app()->getLocale() === 'ar' ? 'ألوان وشعار خاص بك' : 'Your own colours & logo' }}</li>
-                        <li><i class="fa-solid fa-circle-check"></i> {{ app()->getLocale() === 'ar' ? 'متجاوب مع الجوال بالكامل' : 'Fully mobile responsive' }}</li>
+                        <li><i class="fa-solid fa-circle-check"></i> {{ trans('landing.grid_or_list_layout') }}</li>
+                        <li><i class="fa-solid fa-circle-check"></i> {{ trans('landing.your_own_colours_logo') }}</li>
+                        <li><i class="fa-solid fa-circle-check"></i> {{ trans('landing.fully_mobile_responsive') }}</li>
                     </ul>
                     <div style="margin-top:24px;">
                         <a href="{{ $registerUrl }}" class="ocl-btn ocl-btn--primary ocl-btn--lg">{{ trans('landing.get_started') }} &rarr;</a>
@@ -641,8 +641,8 @@
         <div class="wrap">
             <div class="center">
                 <span class="eyebrow">{{ trans('landing.pricing_plan') }}</span>
-                <h2 class="sec-title">{{ app()->getLocale() === 'ar' ? 'اختر خطتك' : 'Choose your plan' }}</h2>
-                <p class="sec-sub">{{ app()->getLocale() === 'ar' ? 'خطط بسيطة وواضحة تنمو مع نشاطك التجاري.' : 'Simple, transparent plans that grow with your business.' }}</p>
+                <h2 class="sec-title">{{ trans('landing.choose_your_plan') }}</h2>
+                <p class="sec-sub">{{ trans('landing.simple_transparent_plans_that_grow_with_your') }}</p>
             </div>
             <div class="ocl-plans">
                 @foreach ($planlist as $index => $plan)
@@ -770,14 +770,14 @@
         <div class="wrap">
             <div class="center">
                 <span class="eyebrow">{{ trans('landing.contact_us') }}</span>
-                <h2 class="sec-title">{{ app()->getLocale() === 'ar' ? 'تواصل معنا' : 'Get in touch' }}</h2>
+                <h2 class="sec-title">{{ trans('landing.get_in_touch') }}</h2>
                 <p class="sec-sub">{{ trans('landing.contact_section_title') }}</p>
             </div>
             <div class="ocl-contact">
                 <div class="ocl-contact__info">
                     <div class="ocl-ci"><i class="fa-solid fa-envelope"></i><div><div class="k">{{ trans('landing.email') }}</div><div class="v">{{ helper::appdata('')->email }}</div></div></div>
                     <div class="ocl-ci"><i class="fa-solid fa-phone"></i><div><div class="k">{{ trans('landing.mobile') }}</div><div class="v">{{ helper::appdata('')->contact }}</div></div></div>
-                    <div class="ocl-ci"><i class="fa-solid fa-location-dot"></i><div><div class="k">{{ app()->getLocale() === 'ar' ? 'العنوان' : 'Address' }}</div><div class="v">{{ helper::appdata('')->address }}</div></div></div>
+                    <div class="ocl-ci"><i class="fa-solid fa-location-dot"></i><div><div class="k">{{ trans('landing.address') }}</div><div class="v">{{ helper::appdata('')->address }}</div></div></div>
                 </div>
                 <form class="ocl-form" action="{{ URL::to('inquiry') }}" method="POST">
                     @csrf
@@ -787,7 +787,7 @@
                         <div class="fld"><label>{{ trans('landing.email') }} *</label><input type="email" name="emaill" required></div>
                         <div class="fld"><label>{{ trans('landing.mobile') }} *</label><input type="number" name="mobile" onKeyPress="if(this.value.length==10) return false;" required></div>
                     </div>
-                    <div class="fld"><label>{{ trans('landing.message') }} *</label><textarea rows="4" name="message" placeholder="{{ app()->getLocale() === 'ar' ? 'اكتب رسالتك..' : 'Write your message..' }}" required></textarea></div>
+                    <div class="fld"><label>{{ trans('landing.message') }} *</label><textarea rows="4" name="message" placeholder="{{ trans('landing.write_your_message_2') }}" required></textarea></div>
                     @include('landing.layout.recaptcha')
                     <button type="submit" class="ocl-btn ocl-btn--primary ocl-btn--lg" style="width:100%;">{{ trans('landing.submit') }}</button>
                 </form>
@@ -805,7 +805,7 @@
                 <p>{{ trans('landing.subscribe_section_description') }}</p>
                 <form action="{{ URL::to('emailsubscribe') }}" method="POST">
                     @csrf
-                    <input type="email" name="email" placeholder="{{ app()->getLocale() === 'ar' ? 'أدخل بريدك الإلكتروني' : 'Enter your email' }}" required>
+                    <input type="email" name="email" placeholder="{{ trans('landing.enter_your_email') }}" required>
                     <button type="submit" class="ocl-btn ocl-btn--primary">{{ trans('landing.subscribe') }}</button>
                 </form>
             </div>

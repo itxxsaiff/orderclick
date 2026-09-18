@@ -52,7 +52,19 @@ class PlanPricingController extends Controller
             $currentPlan = Systems::planName($vendor);
             $isUpgrade = Systems::hasPaid($vendor);
 
-            return view('admin.plan.plan', compact("allplan", "planSystem", "currentPlan", "isUpgrade"));
+            // Benefit / bank transfer / cash are approved by hand, so the merchant must be able to
+            // see that their receipt is in and still waiting - not just a silent "success".
+            $pendingPayment = null;
+            if (!empty($vendor)) {
+                $pendingPayment = Transaction::where('vendor_id', $vendor->id)
+                    ->whereNull('transaction_type')
+                    ->where('status', 1)
+                    ->whereIn('payment_type', Subscriptions::MANUAL)
+                    ->orderByDesc('id')
+                    ->first();
+            }
+
+            return view('admin.plan.plan', compact("allplan", "planSystem", "currentPlan", "isUpgrade", "pendingPayment"));
         }
     }
     /**
@@ -933,7 +945,10 @@ class PlanPricingController extends Controller
             session()->forget('discount_data');
             if (Subscriptions::isManual($request->payment_type)) {
                 helper::bank_transfer_request(Auth::user()->email, Auth::user()->name, $plan->name, helper::get_plan_exp_date($plan->duration, $plan->days), helper::currency_formate($plan->price, ""), helper::getpayment($request->payment_type, 1)->payment_name, @$payment_id);
-                return redirect('admin/plan')->with('success', trans('messages.success'));
+
+                return redirect('admin/plan')->with('success', app()->getLocale() === 'ar'
+                    ? 'تم استلام إيصال الدفع. الدفعة قيد المراجعة بانتظار موافقة الإدارة.'
+                    : 'Payment receipt received. Your payment is pending Admin approval.');
             } else {
 
                 helper::send_subscription_email(Auth::user()->email, Auth::user()->name, $plan->name, helper::get_plan_exp_date($plan->duration, $plan->days), helper::currency_formate($plan->price, ""), helper::getpayment($request->payment_type, 1)->payment_name, @$payment_id);

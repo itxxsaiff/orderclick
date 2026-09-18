@@ -106,6 +106,33 @@
                             @endif
                         </div>
 
+                        {{-- Bulk translation: hand the JSON to a translator, import it back.
+                             Much faster than typing ~1,700 keys one by one in the panel. --}}
+                        @php $ocAr = app()->getLocale() === 'ar'; $ocCode = $currantLang->code ?? 'en'; @endphp
+                        <div class="d-flex flex-wrap align-items-center gap-2 mt-3 p-3 rounded-3" style="background:#f4f7f4">
+                            <div class="me-auto">
+                                <div class="fw-600">{{ trans('labels.translation_files_json') }}</div>
+                                <div class="fs-7 text-muted">
+                                    {{ trans('labels.export_every_key_as_one_file_send') }}
+                                </div>
+                            </div>
+                            <a href="{{ URL::to('admin/language-settings/export/' . $ocCode) }}"
+                                class="btn btn-sm btn-secondary rounded-start-5 rounded-end-5">
+                                <i class="fa-solid fa-download mx-1"></i>{{ trans('labels.export') }} {{ strtoupper($ocCode) }}.json
+                            </a>
+                            <form action="{{ URL::to('admin/language-settings/import') }}" method="POST"
+                                enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
+                                @csrf
+                                <input type="hidden" name="code" value="{{ $ocCode }}">
+                                <input type="file" name="file" accept=".json,application/json" required
+                                    class="form-control form-control-sm" style="max-width:230px">
+                                <button class="btn btn-sm btn-light rounded-start-5 rounded-end-5"
+                                    @if (env('Environment') == 'sendbox') type="button" onclick="myFunction()" @else type="submit" @endif>
+                                    <i class="fa-solid fa-upload mx-1"></i>{{ trans('labels.import') }}
+                                </button>
+                            </form>
+                        </div>
+
                         <ul class="nav nav-tabs mt-3" id="myTab" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="labels-tab" data-bs-toggle="tab"

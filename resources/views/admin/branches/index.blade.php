@@ -43,7 +43,7 @@
                         </div>
                     @endif
                     <span class="fs-7 text-muted">
-                        {{ $ar ? 'يتم تعبئة الدولة والمدينة والمنطقة تلقائياً من الخريطة.' : 'Country, city and area are filled automatically from the map.' }}
+                        {{ trans('labels.country_city_and_area_are_filled_automatically') }}
                     </span>
                 </div>
             </div>

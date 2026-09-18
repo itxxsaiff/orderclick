@@ -1390,6 +1390,9 @@ class HomeController extends Controller
                 return response()->json(['status' => 1, 'url' => $checkoutSession->url], 200);
             }
             if ($request->payment_type == '6') {
+                // The receipt is optional (a phone often fails to attach the picked photo), so
+                // $filename must exist either way - it is passed to createorder() below.
+                $filename = null;
                 if ($request->hasFile('screenshot')) {
                     $validator = Validator::make($request->all(), [
                         'screenshot' => 'image|max:' . helper::imagesize() . '|' . helper::imageext(),

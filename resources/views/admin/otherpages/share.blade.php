@@ -27,9 +27,9 @@
         <div class="col-lg-5 col-12">
             <div class="card border-0 box-shadow h-100">
                 <div class="card-body text-center">
-                    <h6 class="mb-3 fw-600">{{ $isAr ? 'رمز QR للمتجر' : 'Store QR Code' }}</h6>
+                    <h6 class="mb-3 fw-600">{{ trans('labels.store_qr_code') }}</h6>
                     <img src="{{ $qr }}" width="220" height="220" class="rounded border p-2" alt="Store QR">
-                    <p class="text-muted fs-7 mt-2 mb-3">{{ $isAr ? 'يمسحه العميل ليفتح متجرك مباشرة' : 'Customers scan this to open your store' }}</p>
+                    <p class="text-muted fs-7 mt-2 mb-3">{{ trans('labels.customers_scan_this_to_open_your_store') }}</p>
                     <a href="{{ $qr }}" target="_blank" class="btn btn-secondary btn-sm">
                         <i class="fa-solid fa-arrow-down-to-line me-1"></i>{{ trans('labels.download') }}
                     </a>
@@ -39,23 +39,23 @@
         <div class="col-lg-7 col-12">
             <div class="card border-0 box-shadow h-100">
                 <div class="card-body">
-                    <h6 class="mb-2 fw-600">{{ $isAr ? 'رابط متجرك' : 'Your Store Link' }}</h6>
+                    <h6 class="mb-2 fw-600">{{ trans('labels.your_store_link') }}</h6>
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" id="ocStoreLink" value="{{ $url }}" readonly>
                         <button class="btn btn-primary" type="button" onclick="ocCopyLink()">
-                            <i class="fa-regular fa-copy me-1"></i><span id="ocCopyTxt">{{ $isAr ? 'نسخ' : 'Copy' }}</span>
+                            <i class="fa-regular fa-copy me-1"></i><span id="ocCopyTxt">{{ trans('labels.copy') }}</span>
                         </button>
                     </div>
                     <div class="d-flex gap-2 flex-wrap mb-4">
                         <a href="{{ $url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
-                            <i class="fa-solid fa-up-right-from-square me-1"></i>{{ $isAr ? 'فتح المتجر' : 'Open store' }}
+                            <i class="fa-solid fa-up-right-from-square me-1"></i>{{ trans('labels.open_store') }}
                         </a>
                         <button type="button" class="btn btn-success btn-sm" onclick="ocShare()">
-                            <i class="fa-solid fa-share-nodes me-1"></i>{{ $isAr ? 'مشاركة' : 'Share' }}
+                            <i class="fa-solid fa-share-nodes me-1"></i>{{ trans('labels.share') }}
                         </button>
                     </div>
 
-                    <h6 class="mb-3 fw-600">{{ $isAr ? 'شارك على' : 'Share on' }}</h6>
+                    <h6 class="mb-3 fw-600">{{ trans('labels.share_on') }}</h6>
                     <div class="row g-2">
                         <div class="col-sm-6 col-12">
                             <a href="{{ $isMob == '1' ? 'whatsapp://send/send?text=' . urlencode($url) : 'https://web.whatsapp.com/send?text=' . urlencode($url) }}"
@@ -94,8 +94,8 @@
             i.setSelectionRange(0, 99999);
             var done = function () {
                 var t = document.getElementById('ocCopyTxt');
-                t.textContent = '{{ $isAr ? 'تم النسخ ✓' : 'Copied ✓' }}';
-                setTimeout(function () { t.textContent = '{{ $isAr ? 'نسخ' : 'Copy' }}'; }, 2000);
+                t.textContent = '{{ trans('labels.copied_2') }}';
+                setTimeout(function () { t.textContent = '{{ trans('labels.copy') }}'; }, 2000);
             };
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(i.value).then(done).catch(function () { document.execCommand('copy'); done(); });

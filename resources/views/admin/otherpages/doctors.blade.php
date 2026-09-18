@@ -38,12 +38,12 @@
                         <thead>
                             <tr class="text-uppercase fs-8 text-muted">
                                 <th></th>
-                                <th>{{ $isAr ? 'الاسم' : 'Name' }}</th>
-                                <th>{{ $isAr ? 'التخصص' : 'Specialty' }}</th>
-                                <th>{{ $isAr ? 'الخبرة' : 'Experience' }}</th>
-                                <th>{{ $isAr ? 'الرسوم' : 'Fee' }}</th>
-                                <th>{{ $isAr ? 'الحالة' : 'Active' }}</th>
-                                <th class="text-end">{{ $isAr ? 'إجراء' : 'Action' }}</th>
+                                <th>{{ trans('labels.name') }}</th>
+                                <th>{{ trans('labels.specialty') }}</th>
+                                <th>{{ trans('labels.experience') }}</th>
+                                <th>{{ trans('labels.fee') }}</th>
+                                <th>{{ trans('labels.active') }}</th>
+                                <th class="text-end">{{ trans('labels.action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -62,7 +62,7 @@
                                     </td>
                                     <td class="text-end">
                                         <button type="button" class="btn btn-sm btn-light" onclick='ocdrEdit(@json($d))'><i class="fa-solid fa-pen"></i></button>
-                                        <form action="{{ URL::to('admin/doctors/delete') }}" method="POST" class="d-inline" onsubmit="return confirm('{{ $isAr ? 'حذف هذا الطبيب؟' : 'Delete this doctor?' }}')">
+                                        <form action="{{ URL::to('admin/doctors/delete') }}" method="POST" class="d-inline" onsubmit="return confirm('{{ trans('labels.delete_this_doctor') }}')">
                                             @csrf<input type="hidden" name="id" value="{{ $d->id }}">
                                             <button class="btn btn-sm btn-light text-danger"><i class="fa-solid fa-trash"></i></button>
                                         </form>
@@ -75,7 +75,7 @@
             @else
                 <div class="text-center py-5 text-muted">
                     <i class="fa-solid fa-user-doctor fs-1 mb-3 d-block"></i>
-                    {{ $isAr ? 'لا يوجد أطباء بعد. أضف أول طبيب ليظهر في متجرك.' : 'No doctors yet. Add your first doctor to show them on your storefront.' }}
+                    {{ trans('labels.no_doctors_yet_add_your_first_doctor') }}
                 </div>
             @endif
         </div>
@@ -92,46 +92,46 @@
                 <input type="hidden" name="id" id="ocdr_id">
                 <div class="ocdr-f">
                     <label>{{ $ocMemberLabel . ($isAr ? '' : ' name') }} <span class="req">*</span></label>
-                    <input type="text" name="name" id="ocdr_name" class="form-control" required placeholder="{{ $isAr ? 'مثال: د. أحمد خالد' : 'e.g. Dr. Ahmed Khaled' }}">
+                    <input type="text" name="name" id="ocdr_name" class="form-control" required placeholder="{{ trans('labels.e_g_dr_ahmed_khaled') }}">
                 </div>
                 <div class="ocdr-g2">
                     <div class="ocdr-f">
-                        <label>{{ $isAr ? 'التخصص / القسم' : 'Specialty / Department' }}</label>
-                        <input type="text" name="specialty" id="ocdr_specialty" class="form-control" placeholder="{{ $isAr ? 'قلب، أسنان، أطفال...' : 'Cardiology, Dental, Paediatrics...' }}">
+                        <label>{{ trans('labels.specialty_department') }}</label>
+                        <input type="text" name="specialty" id="ocdr_specialty" class="form-control" placeholder="{{ trans('labels.cardiology_dental_paediatrics') }}">
                     </div>
                     <div class="ocdr-f">
-                        <label>{{ $isAr ? 'الخبرة' : 'Experience' }}</label>
-                        <input type="text" name="experience" id="ocdr_experience" class="form-control" placeholder="{{ $isAr ? '12 سنة' : '12 years' }}">
+                        <label>{{ trans('labels.experience') }}</label>
+                        <input type="text" name="experience" id="ocdr_experience" class="form-control" placeholder="{{ trans('labels.12_years') }}">
                     </div>
                 </div>
                 <div class="ocdr-g2">
                     <div class="ocdr-f">
-                        <label>{{ $isAr ? 'المؤهلات' : 'Qualification' }}</label>
+                        <label>{{ trans('labels.qualification') }}</label>
                         <input type="text" name="qualification" id="ocdr_qualification" class="form-control" placeholder="MBBS, MD">
                     </div>
                     <div class="ocdr-f">
-                        <label>{{ $isAr ? 'رسوم الكشف' : 'Consultation fee' }}</label>
+                        <label>{{ trans('labels.consultation_fee') }}</label>
                         <input type="number" step="0.01" min="0" name="fee" id="ocdr_fee" class="form-control" placeholder="0.00">
                     </div>
                 </div>
                 <div class="ocdr-f">
-                    <label>{{ $isAr ? 'اللغات' : 'Languages' }}</label>
-                    <input type="text" name="languages" id="ocdr_languages" class="form-control" placeholder="{{ $isAr ? 'العربية، الإنجليزية' : 'English, Arabic' }}">
+                    <label>{{ trans('labels.languages') }}</label>
+                    <input type="text" name="languages" id="ocdr_languages" class="form-control" placeholder="{{ trans('labels.english_arabic') }}">
                 </div>
                 <div class="ocdr-f">
-                    <label>{{ $isAr ? 'نبذة' : 'About' }}</label>
+                    <label>{{ trans('labels.about_2') }}</label>
                     <textarea name="about" id="ocdr_about" rows="2" class="form-control"></textarea>
                 </div>
                 <div class="ocdr-f">
-                    <label>{{ $isAr ? 'صورة' : 'Photo' }}</label>
+                    <label>{{ trans('labels.photo') }}</label>
                     <input type="file" name="image" class="form-control" accept="image/*">
                     <small class="text-muted" id="ocdr_curimg"></small>
                 </div>
                 <div class="ocdr-f form-check">
                     <input type="checkbox" name="is_available" id="ocdr_active" class="form-check-input" value="1" checked>
-                    <label for="ocdr_active" class="form-check-label">{{ $isAr ? 'متاح للحجز' : 'Available for booking' }}</label>
+                    <label for="ocdr_active" class="form-check-label">{{ trans('labels.available_for_booking') }}</label>
                 </div>
-                <button type="submit" class="btn btn-primary w-100 mt-2"><i class="fa-solid fa-check"></i> {{ $isAr ? 'حفظ' : 'Save' }}</button>
+                <button type="submit" class="btn btn-primary w-100 mt-2"><i class="fa-solid fa-check"></i> {{ trans('labels.save') }}</button>
             </form>
         </div>
     </div>
@@ -160,7 +160,7 @@
             document.getElementById('ocdr_languages').value = d.languages || '';
             document.getElementById('ocdr_about').value = d.about || '';
             document.getElementById('ocdr_active').checked = (d.is_available == 1);
-            document.getElementById('ocdr_curimg').innerText = d.image ? "{{ $isAr ? 'الصورة الحالية محفوظة' : 'Current image kept unless replaced' }}" : '';
+            document.getElementById('ocdr_curimg').innerText = d.image ? "{{ trans('labels.current_image_kept_unless_replaced') }}" : '';
             document.getElementById('ocdrModal').classList.add('show');
         }
         document.getElementById('ocdrModal').addEventListener('click', function (e) { if (e.target === this) ocdrClose(); });

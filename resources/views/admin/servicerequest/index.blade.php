@@ -3,7 +3,7 @@
     @php $isAr = app()->getLocale() === 'ar'; @endphp
     <div class="row justify-content-between align-items-center mb-3">
         <div class="col-12">
-            <h5 class="pages-title color-changer fs-2">{{ $isAr ? 'طلبات الخدمة' : 'Service Requests' }}</h5>
+            <h5 class="pages-title color-changer fs-2">{{ trans('labels.service_requests') }}</h5>
             @include('admin.layout.breadcrumb')
         </div>
     </div>
@@ -17,12 +17,12 @@
                         <thead>
                             <tr class="text-uppercase fs-8 text-muted">
                                 <th>#</th>
-                                <th>{{ $isAr ? 'العميل' : 'Customer' }}</th>
-                                <th>{{ $isAr ? 'الخدمة' : 'Service' }}</th>
-                                <th>{{ $isAr ? 'العنوان' : 'Address' }}</th>
-                                <th>{{ $isAr ? 'الموعد' : 'Preferred' }}</th>
-                                <th>{{ $isAr ? 'الجوال' : 'Mobile' }}</th>
-                                <th>{{ $isAr ? 'الحالة' : 'Status' }}</th>
+                                <th>{{ trans('labels.customer_2') }}</th>
+                                <th>{{ trans('labels.service') }}</th>
+                                <th>{{ trans('labels.address') }}</th>
+                                <th>{{ trans('labels.preferred') }}</th>
+                                <th>{{ trans('labels.mobile') }}</th>
+                                <th>{{ trans('labels.status') }}</th>
                             </tr>
                         </thead>
                         <tbody>

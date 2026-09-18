@@ -61,15 +61,15 @@
 
 {{-- Subscription Plan Offer --}}
 <div class="oc-sec">
-    <div class="oc-sec__h">{{ $isAr ? 'عرض الاشتراك' : 'Subscription Plan Offer' }} <span class="tag">new</span></div>
+    <div class="oc-sec__h">{{ trans('labels.subscription_plan_offer') }} <span class="tag">new</span></div>
     <div class="row g-3">
         <div class="col-md-3">
-            <label class="form-label d-block">{{ $isAr ? 'تفعيل العرض' : 'Enable Offer' }}</label>
+            <label class="form-label d-block">{{ trans('labels.enable_offer') }}</label>
             <input type="checkbox" class="form-check-input" name="offer[enabled]" id="oc_offer_enable" value="1" {{ !empty($off['enabled']) ? 'checked' : '' }}>
         </div>
         <div class="col-md-9 oc-offer-fields row g-3" id="oc_offer_fields">
             <div class="col-md-4">
-                <label class="form-label">{{ $isAr ? 'نوع العرض' : 'Offer Type' }}</label>
+                <label class="form-label">{{ trans('labels.offer_type_2') }}</label>
                 <select class="form-select" name="offer[type]" id="oc_offer_type">
                     <option value="percentage" {{ ($off['type'] ?? '') === 'percentage' ? 'selected' : '' }}>Percentage Discount</option>
                     <option value="fixed" {{ ($off['type'] ?? '') === 'fixed' ? 'selected' : '' }}>Fixed Offer Price (Special Price)</option>
@@ -79,10 +79,10 @@
             </div>
             <div class="col-md-4 oc-offv" data-for="percentage"><label class="form-label">Discount %</label><input type="text" class="form-control numbers_only" name="offer[discount_percentage]" value="{{ $off['discount_percentage'] ?? '' }}"></div>
             <div class="col-md-4 oc-offv" data-for="fixed"><label class="form-label">Offer Price</label><input type="text" class="form-control numbers_only" name="offer[offer_amount]" value="{{ $off['offer_amount'] ?? '' }}"></div>
-            <div class="col-md-4 oc-offv" data-for="free_duration"><label class="form-label">{{ $isAr ? 'أيام مجانية' : 'Free Days' }}</label><input type="text" class="form-control numbers_only" name="offer[free_duration]" value="{{ $off['free_duration'] ?? '' }}"></div>
+            <div class="col-md-4 oc-offv" data-for="free_duration"><label class="form-label">{{ trans('labels.free_days') }}</label><input type="text" class="form-control numbers_only" name="offer[free_duration]" value="{{ $off['free_duration'] ?? '' }}"></div>
             <div class="col-md-2 oc-offv" data-for="pay_x_get_y"><label class="form-label">Paid Months</label><input type="text" class="form-control numbers_only" name="offer[paid_months]" value="{{ $off['paid_months'] ?? '' }}"></div>
             <div class="col-md-2 oc-offv" data-for="pay_x_get_y"><label class="form-label">Free Months</label><input type="text" class="form-control numbers_only" name="offer[free_months]" value="{{ $off['free_months'] ?? '' }}"></div>
-            <div class="col-md-3 oc-offv" data-for="percentage fixed"><label class="form-label">Discounted Billing Cycles</label><input type="text" class="form-control numbers_only" name="offer[cycles]" value="{{ $off['cycles'] ?? '' }}" placeholder="{{ $isAr ? 'فارغ = كل الدورات' : 'blank = all cycles' }}"></div>
+            <div class="col-md-3 oc-offv" data-for="percentage fixed"><label class="form-label">Discounted Billing Cycles</label><input type="text" class="form-control numbers_only" name="offer[cycles]" value="{{ $off['cycles'] ?? '' }}" placeholder="{{ trans('labels.blank_all_cycles') }}"></div>
             <div class="col-md-3"><label class="form-label">Offer Starts At</label><input type="datetime-local" class="form-control" name="offer[starts_at]" value="{{ $off['starts_at'] ?? '' }}"></div>
             <div class="col-md-3"><label class="form-label">Offer Ends At</label><input type="datetime-local" class="form-control" name="offer[ends_at]" value="{{ $off['ends_at'] ?? '' }}"></div>
             <div class="col-md-3"><label class="form-label">Applies To</label>
@@ -94,7 +94,7 @@
             <div class="col-md-3"><label class="form-label">After Offer</label>
                 <select class="form-select" name="offer[after_offer]"><option value="regular" selected>Return to Regular Price</option></select>
             </div>
-            <div class="col-12"><small class="text-muted">{{ $isAr ? 'ينتهي العرض تلقائياً بعد تاريخ الانتهاء ويعود السعر للأصل. يُعرض السعر الأصلي والمخفّض للعميل.' : 'The offer auto-expires after the end date and returns to the regular price. Original & discounted prices are shown to the customer.' }}</small></div>
+            <div class="col-12"><small class="text-muted">{{ trans('labels.the_offer_auto_expires_after_the_end') }}</small></div>
         </div>
     </div>
 </div>
@@ -118,13 +118,13 @@
                 <input type="checkbox" class="form-check-input ms-2 oc-addon-allow" name="addon[team][allow]" value="1" data-price="addonprice_team" {{ !empty($add['team']['allow']) ? 'checked' : '' }}></label>
             <input type="text" class="form-control numbers_only oc-addon-price" id="addonprice_team" name="addon[team][price]" value="{{ $add['team']['price'] ?? '' }}" placeholder="Price / extra / month">
         </div>
-        <div class="col-12"><small class="text-muted">{{ $isAr ? 'الإجمالي = سعر الخطة + الإضافات المختارة. جميع أسعار الإضافات بعملة الخطة، وتُسجَّل في فاتورة العميل واشتراكه.' : 'Total = base plan + selected add-ons. All add-on prices use the plan currency and are stored in the customer invoice & subscription.' }}</small></div>
+        <div class="col-12"><small class="text-muted">{{ trans('labels.total_base_plan_selected_add_ons_all') }}</small></div>
     </div>
 </div>
 
 {{-- Plan Display & Status --}}
 <div class="oc-sec">
-    <div class="oc-sec__h">{{ $isAr ? 'العرض والحالة' : 'Plan Display & Status' }} <span class="tag">new</span></div>
+    <div class="oc-sec__h">{{ trans('labels.plan_display_status') }} <span class="tag">new</span></div>
     <div class="row g-3">
         <div class="col-md-3"><label class="form-label">Display Order</label>
             <select class="form-select" name="display_order">

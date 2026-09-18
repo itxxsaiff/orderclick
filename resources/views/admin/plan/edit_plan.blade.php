@@ -442,7 +442,7 @@
                                         </div>
                                     @endforeach
                                     <div class="col-12 oc-no-theme text-muted small" style="display:none">
-                                        {{ app()->getLocale() === 'ar' ? 'لا توجد قوالب لهذا النظام بعد.' : 'No themes available for this system yet.' }}
+                                        {{ trans('labels.no_themes_available_for_this_system_yet') }}
                                     </div>
                                 </div>
                             </div>

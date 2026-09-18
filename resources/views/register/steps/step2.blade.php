@@ -1,8 +1,8 @@
 {{-- STEP 4 — Plan, login and payment. The account is created when this is submitted. --}}
-<span class="ocw__pill">{{ trans('labels.step') }} 2 {{ $ar ? 'من' : 'of' }} 3</span>
-<h1 class="ocw__title">{{ $ar ? 'اختر باقتك وافتح حسابك' : 'Choose your plan and open your account' }}</h1>
+<span class="ocw__pill">{{ trans('labels.step') }} 2 {{ trans('labels.of_2') }} 3</span>
+<h1 class="ocw__title">{{ trans('labels.choose_your_plan_and_open_your_account') }}</h1>
 <p class="ocw__sub">
-    {{ $ar ? 'المحدد:' : 'Selected:' }}
+    {{ trans('labels.selected') }}
     <strong>{{ \App\Helpers\Systems::label($system) }}</strong>
     @php $ocAct = \App\Models\Activity::find($draft['activity_id'] ?? null); @endphp
     @if ($ocAct) &bull; <strong>{{ $ocAct->display_name }}</strong> @endif
@@ -22,7 +22,7 @@
                 <div class="ocw__pick ocw-plan {{ (string) old('plan_id') === (string) $p->id ? 'sel' : '' }}" data-id="{{ $p->id }}">
                     <span class="tick"><i class="fa-solid fa-check"></i></span>
                     <h4>{{ $p->name }}
-                        @if ($p->recommended == 1)<span class="ocw__badge">{{ $ar ? 'الأكثر شيوعاً' : 'Most popular' }}</span>@endif
+                        @if ($p->recommended == 1)<span class="ocw__badge">{{ trans('labels.most_popular') }}</span>@endif
                     </h4>
                     <p>{{ \Illuminate\Support\Str::limit(strip_tags($p->description), 60) }}</p>
                     <ul>
@@ -32,7 +32,7 @@
                     </ul>
                     <div class="ocw__price">
                         {{ number_format((float) $p->price, 2) }} {{ $p->currency ?: 'USD' }}
-                        <span style="font-weight:500;color:#7d887f;">/ {{ $ar ? 'شهر' : 'month' }}</span>
+                        <span style="font-weight:500;color:#7d887f;">/ {{ trans('labels.month') }}</span>
                     </div>
                 </div>
             @endforeach
@@ -41,9 +41,9 @@
 
     <div class="row" style="margin-top:26px;">
         <div class="col-12 col-lg-6">
-            <h6 style="font-weight:700;margin-bottom:14px;">{{ $ar ? 'أنشئ بيانات الدخول' : 'Create your login' }}</h6>
+            <h6 style="font-weight:700;margin-bottom:14px;">{{ trans('labels.create_your_login') }}</h6>
             <div class="fg">
-                <label class="f">{{ $ar ? 'البريد الإلكتروني أو رقم الجوال' : 'Email address or mobile number' }}<span class="req"> *</span></label>
+                <label class="f">{{ trans('labels.email_address_or_mobile_number') }}<span class="req"> *</span></label>
                 <input type="text" class="in" name="login" value="{{ old('login', $draft['contact_email'] ?? '') }}" required
                     placeholder="name@example.com">
                 @error('login')<span class="err">{{ $message }}</span>@enderror
@@ -61,7 +61,7 @@
                     @error('password')<span class="err">{{ $message }}</span>@enderror
                 </div>
                 <div class="col-12 col-md-6 fg">
-                    <label class="f">{{ $ar ? 'تأكيد كلمة المرور' : 'Confirm password' }}<span class="req"> *</span></label>
+                    <label class="f">{{ trans('labels.confirm_password_2') }}<span class="req"> *</span></label>
                     <div style="position:relative;">
                         <input type="password" class="in oc-pw" name="password_confirmation" id="ocwPw2" required style="padding-right:44px;">
                         <button type="button" class="oc-eye" data-target="ocwPw2" aria-label="Show password"
@@ -75,7 +75,7 @@
         </div>
 
         <div class="col-12 col-lg-6">
-            <h6 style="font-weight:700;margin-bottom:14px;">{{ $ar ? 'ماذا بعد؟' : 'What happens next' }}</h6>
+            <h6 style="font-weight:700;margin-bottom:14px;">{{ trans('labels.what_happens_next') }}</h6>
             <div class="ocw__note" style="margin-top:0;">
                 <i class="fa-solid fa-circle-check" style="margin-top:2px;"></i>
                 <span>{{ trans('messages.after_account_checkout_note') }}</span>
@@ -96,7 +96,7 @@
             <a href="{{ URL::to('/') }}#contact" style="color:#1f9d55;font-weight:600;">{{ trans('labels.contact_support') }}</a>
         </span>
         <button type="submit" class="ocw__btn ocw__btn--p">
-            {{ $ar ? 'إنشاء الحساب والمتابعة للدفع' : 'Create account & continue to checkout' }} &rarr;
+            {{ trans('labels.create_account_continue_to_checkout') }} &rarr;
         </button>
     </div>
     <div class="ocw__note">

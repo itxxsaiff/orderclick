@@ -18,14 +18,14 @@
                             <div class="ocl-blog__body">
                                 <h4>{{ $blog->title }}</h4>
                                 <p>{{ \Illuminate\Support\Str::limit(strip_tags((string) @$blog->description), 110) }}</p>
-                                <span class="go">{{ app()->getLocale() === 'ar' ? 'اقرأ المزيد ←' : 'Read more →' }}</span>
+                                <span class="go">{{ trans('landing.read_more_2') }}</span>
                             </div>
                         </a>
                     @endforeach
                 </div>
                 <div style="margin-top:34px;">{{ $blogs->links() }}</div>
             @else
-                <div class="ocl-empty">{{ app()->getLocale() === 'ar' ? 'لا توجد مقالات بعد.' : 'No blog posts yet.' }}</div>
+                <div class="ocl-empty">{{ trans('landing.no_blog_posts_yet') }}</div>
             @endif
         </div>
     </div>

@@ -237,13 +237,13 @@
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 <label class="form-label">
-                                                    {{ app()->getLocale() === 'ar' ? 'صورة رمز QR للدفع' : 'Payment QR Code Image' }}
+                                                    {{ trans('labels.payment_qr_code_image') }}
                                                 </label>
                                                 <input type="file" class="form-control" name="qr_image" accept="image/*">
                                                 @if (!empty($pmdata->qr_image))
                                                     <img src="{{ helper::image_path($pmdata->qr_image) }}" alt="" class="img-fluid rounded hw-70 mt-2">
                                                 @endif
-                                                <small class="text-muted d-block mt-1">{{ app()->getLocale() === 'ar' ? 'يمسح العميل الرمز للدفع' : 'Customer scans this to pay' }}</small>
+                                                <small class="text-muted d-block mt-1">{{ trans('labels.customer_scans_this_to_pay') }}</small>
                                             </div>
                                         </div>
                                     @endif
@@ -251,7 +251,7 @@
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label class="form-label">
-                                                    {{ app()->getLocale() === 'ar' ? 'رابط الدفع' : 'Payment Link (URL)' }}
+                                                    {{ trans('labels.payment_link_url') }}
                                                     <span class="text-danger">*</span>
                                                 </label>
                                                 <input type="url" class="form-control" name="payment_link"
@@ -263,10 +263,10 @@
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label class="form-label">
-                                                    {{ app()->getLocale() === 'ar' ? 'تعليمات الدفع (تظهر للعميل عند الطلب)' : 'Payment instructions (shown to the customer)' }}
+                                                    {{ trans('labels.payment_instructions_shown_to_the_customer') }}
                                                 </label>
                                                 <textarea class="form-control" name="payment_description" rows="2"
-                                                    placeholder="{{ app()->getLocale() === 'ar' ? 'مثال: حوّل المبلغ إلى الرقم ... ثم أرسل الإيصال عبر واتساب' : 'e.g. Send payment to +973 XXXX then share the receipt on WhatsApp' }}">{{ @$pmdata->payment_description }}</textarea>
+                                                    placeholder="{{ trans('labels.e_g_send_payment_to_973_xxxx') }}">{{ @$pmdata->payment_description }}</textarea>
                                             </div>
                                         </div>
                                     @endif

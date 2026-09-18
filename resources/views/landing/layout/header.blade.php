@@ -9,13 +9,13 @@
         <button class="burger" data-bs-toggle="offcanvas" data-bs-target="#oclMobileMenu" aria-controls="oclMobileMenu" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
         <a href="{{ URL::to('/') }}" class="logo"><img src="{{ helper::image_path(helper::appdata('')->logo) }}" alt="logo"></a>
         <div class="links">
-            <a href="{{ URL::to('/#categories') }}">{{ $ocIsAr ? 'الفئات' : 'Categories' }}</a>
-            <a href="{{ URL::to('/#how') }}">{{ $ocIsAr ? 'كيف يعمل' : 'How it works' }}</a>
+            <a href="{{ URL::to('/#categories') }}">{{ trans('landing.categories') }}</a>
+            <a href="{{ URL::to('/#how') }}">{{ trans('landing.how_it_works') }}</a>
             @if (App\Models\SystemAddons::where('unique_identifier', 'subscription')->first() != null &&
                     App\Models\SystemAddons::where('unique_identifier', 'subscription')->first()->activated == 1)
                 <a href="{{ URL::to('/#pricing') }}">{{ trans('landing.pricing_plan') }}</a>
             @endif
-            <a href="{{ URL::to('marketplace') }}">{{ $ocIsAr ? 'المتجر' : 'Marketplace' }}</a>
+            <a href="{{ URL::to('marketplace') }}">{{ trans('landing.marketplace') }}</a>
             @if (App\Models\SystemAddons::where('unique_identifier', 'blog')->first() != null &&
                     App\Models\SystemAddons::where('unique_identifier', 'blog')->first()->activated == 1)
                 <a href="{{ URL::to('blog_list') }}">{{ trans('landing.blogs') }}</a>
@@ -39,7 +39,7 @@
                     </ul>
                 </div>
             @endif
-            <a href="{{ URL::to('/admin') }}" class="ocl-btn ocl-btn--ghost">{{ $ocIsAr ? 'تسجيل الدخول' : 'Login' }}</a>
+            <a href="{{ URL::to('/admin') }}" class="ocl-btn ocl-btn--ghost">{{ trans('landing.login') }}</a>
             <a href="{{ $ocRegisterUrl }}" class="ocl-btn ocl-btn--primary">{{ trans('landing.get_started') }}</a>
         </div>
     </div>
@@ -59,12 +59,12 @@
     </div>
     <div class="ocl-mnav__body">
         <nav class="ocl-mnav__links">
-            <a href="{{ URL::to('/#categories') }}" data-bs-dismiss="offcanvas"><span class="ic"><i class="fa-solid fa-grip"></i></span>{{ $ocIsAr ? 'الفئات' : 'Categories' }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
-            <a href="{{ URL::to('/#how') }}" data-bs-dismiss="offcanvas"><span class="ic"><i class="fa-solid fa-wand-magic-sparkles"></i></span>{{ $ocIsAr ? 'كيف يعمل' : 'How it works' }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
+            <a href="{{ URL::to('/#categories') }}" data-bs-dismiss="offcanvas"><span class="ic"><i class="fa-solid fa-grip"></i></span>{{ trans('landing.categories') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
+            <a href="{{ URL::to('/#how') }}" data-bs-dismiss="offcanvas"><span class="ic"><i class="fa-solid fa-wand-magic-sparkles"></i></span>{{ trans('landing.how_it_works') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
             @if ($ocSubOn)
                 <a href="{{ URL::to('/#pricing') }}" data-bs-dismiss="offcanvas"><span class="ic"><i class="fa-solid fa-tag"></i></span>{{ trans('landing.pricing_plan') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
             @endif
-            <a href="{{ URL::to('marketplace') }}"><span class="ic"><i class="fa-solid fa-store"></i></span>{{ $ocIsAr ? 'المتجر' : 'Marketplace' }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
+            <a href="{{ URL::to('marketplace') }}"><span class="ic"><i class="fa-solid fa-store"></i></span>{{ trans('landing.marketplace') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
             @if ($ocBlogOn)
                 <a href="{{ URL::to('blog_list') }}"><span class="ic"><i class="fa-solid fa-newspaper"></i></span>{{ trans('landing.blogs') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
             @endif
@@ -74,7 +74,7 @@
 
         @if ($ocLangOn)
             <div class="ocl-mnav__lang">
-                <span class="ocl-mnav__lbl">{{ $ocIsAr ? 'اللغة' : 'Language' }}</span>
+                <span class="ocl-mnav__lbl">{{ trans('landing.language') }}</span>
                 <div class="ocl-mnav__flags">
                     @foreach (helper::listoflanguage() as $languagelist)
                         <a href="{{ URL::to('/lang/change?lang=' . $languagelist->code) }}" class="{{ session()->get('flag') == $languagelist->image ? 'on' : '' }}">
@@ -87,7 +87,7 @@
         @endif
     </div>
     <div class="ocl-mnav__foot">
-        <a href="{{ URL::to('/admin') }}" class="ocl-btn ocl-btn--ghost">{{ $ocIsAr ? 'تسجيل الدخول' : 'Login' }}</a>
+        <a href="{{ URL::to('/admin') }}" class="ocl-btn ocl-btn--ghost">{{ trans('landing.login') }}</a>
         <a href="{{ $ocRegisterUrl }}" class="ocl-btn ocl-btn--primary">{{ trans('landing.get_started') }}</a>
     </div>
 </div>

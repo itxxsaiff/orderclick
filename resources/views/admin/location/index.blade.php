@@ -125,7 +125,7 @@
                                             {{ trim(($b->city ?: '—') . ' · ' . ($b->area ?: '—'), ' ·') }}
                                             <div class="text-muted">{{ \Illuminate\Support\Str::limit($b->address, 38) ?: ($b->country ?: '—') }}</div>
                                         </td>
-                                        <td>{{ $u['used'] }} {{ $ar ? 'من' : 'of' }} {{ $u['limit'] === null ? '∞' : $u['limit'] }}</td>
+                                        <td>{{ $u['used'] }} {{ trans('labels.of_2') }} {{ $u['limit'] === null ? '∞' : $u['limit'] }}</td>
                                         <td>{{ $b->coverageLabel($b->system) }}</td>
                                         <td>
                                             <span class="{{ $gps['class'] }} fw-500">{{ $gps['text'] }}</span>

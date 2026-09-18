@@ -50,13 +50,15 @@
 </div>
 
 @if (!$vendor->document_submitted_date)
+    {{-- This view is included inside the wizard's own <form action="admin/setup/save-6">, and
+         HTML does not allow a nested form: the browser dropped the inner one, so the button
+         posted to save-6 and the setup could never actually be submitted (no store could be
+         activated). `formaction` sends this button to the submit route from the outer form. --}}
     <div class="d-flex justify-content-end mt-3">
-        <form method="POST" action="{{ URL::to('admin/setup/submit') }}">
-            @csrf
-            <button class="btn btn-secondary px-4 rounded-start-5 rounded-end-5 {{ $allDone ? '' : 'disabled' }}"
-                @if (env('Environment') == 'sendbox') type="button" onclick="myFunction()" @else type="submit" @endif>
-                <i class="fa-solid fa-paper-plane mx-1"></i>{{ trans('labels.submit_for_verification') }}
-            </button>
-        </form>
+        <button class="btn btn-secondary px-4 rounded-start-5 rounded-end-5 {{ $allDone ? '' : 'disabled' }}"
+            formaction="{{ URL::to('admin/setup/submit') }}"
+            @if (env('Environment') == 'sendbox') type="button" onclick="myFunction()" @else type="submit" @endif>
+            <i class="fa-solid fa-paper-plane mx-1"></i>{{ trans('labels.submit_for_verification') }}
+        </button>
     </div>
 @endif

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BookingService;
 use App\Models\Category;
 use App\Models\Item;
+use App\Models\User;
 use App\Models\Settings;
 use App\Services\AiAssistant;
 use Illuminate\Http\Request;
@@ -24,8 +25,11 @@ class AiBuildController extends Controller
     {
         $vid = $this->vendorId();
         $settings = Settings::where('vendor_id', $vid)->first();
-        // Already has content, or AI not configured → straight to dashboard.
-        if (!AiAssistant::enabled() || $this->alreadyBuilt($vid)) {
+        // The assistant is a permanent tool, not a one-time setup step: a merchant who already
+        // has products must still be able to open it and add more. Only a missing AI key sends
+        // them back (previously an existing catalogue bounced them to the dashboard, so the
+        // "Open AI Assistant" button looked dead).
+        if (!AiAssistant::enabled()) {
             return redirect('admin/dashboard');
         }
         $storeName = ($settings && $settings->website_title) ? $settings->website_title : Auth::user()->name;
@@ -108,10 +112,6 @@ class AiBuildController extends Controller
         if (empty($settings)) {
             return response()->json(['success' => false, 'error' => 'Store not found.'], 422);
         }
-        if ($this->alreadyBuilt($vid)) {
-            return response()->json(['success' => true, 'text' => 'Already set up.']);
-        }
-
         $storeName = $settings->website_title ?: Auth::user()->name;
         $businessType = $settings->business_type ?: 'food';
         $offerings = trim((string) $request->input('offerings', ''));
@@ -147,33 +147,35 @@ class AiBuildController extends Controller
 
         $items = is_array($data['items'] ?? null) ? $data['items'] : [];
 
-        if ($businessType === 'booking') {
+        // Decide from the account's System, not the storefront template. business_type only
+        // listed food/grocery/retail/booking, so a pharmacy, clinic or salon fell through to
+        // "do nothing" - the assistant reported success and created no products at all.
+        $system = \App\Helpers\Systems::normalise(optional(User::find($vid))->system ?: $businessType);
+        if ($system === \App\Helpers\Systems::BOOKING) {
             $count = $this->saveBookingServices($vid, $items);
-        } elseif (in_array($businessType, ['food', 'grocery', 'retail'], true)) {
-            $count = $this->saveProducts($vid, $data['categories'] ?? [], $items);
+        } elseif ($system === \App\Helpers\Systems::SERVICE) {
+            $count = 0; // a service profile has no catalogue; description + colours are enough
         } else {
-            $count = 0; // service-type has no catalog; description + colour are enough
+            $count = $this->saveProducts($vid, $data['categories'] ?? [], $items);
         }
 
         return response()->json(['success' => true, 'count' => $count, 'redirect' => url('admin/dashboard')]);
     }
 
-    private function alreadyBuilt($vid): bool
-    {
-        return Item::where('vendor_id', $vid)->exists()
-            || BookingService::where('vendor_id', $vid)->exists()
-            || Category::where('vendor_id', $vid)->where('is_deleted', 2)->exists();
-    }
 
     private function saveProducts($vid, array $categories, array $items): int
     {
-        // Build category name → id map (create as needed).
+        // Build category name → id map. The assistant can be run again later, so an existing
+        // category with the same name is reused instead of being duplicated.
         $catMap = [];
-        $reorder = 1;
+        foreach (Category::where('vendor_id', $vid)->where('is_deleted', 2)->get() as $existing) {
+            $catMap[strtolower(trim((string) $existing->name))] = $existing->id;
+        }
+        $reorder = (int) Category::where('vendor_id', $vid)->max('reorder_id') + 1;
         $names = !empty($categories) ? $categories : collect($items)->pluck('category')->filter()->unique()->values()->all();
         foreach ($names as $name) {
             $name = trim((string) $name);
-            if ($name === '') continue;
+            if ($name === '' || isset($catMap[strtolower($name)])) continue;
             $c = new Category;
             $c->vendor_id = $vid;
             $c->name = Str::limit($name, 60, '');
@@ -192,6 +194,10 @@ class AiBuildController extends Controller
             if ($itemName === '') continue;
             $catId = $catMap[strtolower(trim((string) ($it['category'] ?? '')))] ?? $firstCat;
             if (!$catId) continue;
+            // Running the assistant twice should not duplicate what is already on the menu.
+            if (Item::where('vendor_id', $vid)->where('cat_id', $catId)->where('item_name', Str::limit($itemName, 100, ''))->exists()) {
+                continue;
+            }
             $item = new Item;
             $item->vendor_id = $vid;
             $item->cat_id = $catId;

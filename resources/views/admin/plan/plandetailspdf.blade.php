@@ -108,14 +108,17 @@
     @php
         $ocInv = \App\Helpers\Subscriptions::invoice($plan);
         $ocCo  = $ocInv['company'];
-        $ocLogo = public_path(env('ASSETSPATHURL') . 'admin-assets/images/logo/' . $ocCo['logo']);
+        // The logo lives in admin-assets/images/about/logo (not images/logo), and this project is
+        // served from its own root, so public_path() pointed at a "public/" folder that holds no
+        // uploads - file_exists() failed and the invoice printed with no logo at all.
+        $ocLogoSrc = helper::invoice_logo($ocCo['logo']);
     @endphp
 
     {{-- Company header: logo + legal entity + tax registration, all from General Settings. --}}
     <div class="w-100" style="border-bottom:1px solid #e2e2e2; padding-bottom:8px;">
         <div class="w-50 float-left">
-            @if ($ocCo['logo'] && file_exists($ocLogo))
-                <img src="{{ $ocLogo }}" style="max-height:52px;width:auto;" alt="">
+            @if ($ocLogoSrc)
+                <img src="{{ $ocLogoSrc }}" style="max-height:52px;width:auto;" alt="">
             @endif
             <p class="m-0 pt-5 text-bold">{{ $ocCo['name'] }}</p>
             @if ($ocCo['legal'])

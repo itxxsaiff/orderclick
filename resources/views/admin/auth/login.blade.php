@@ -15,6 +15,12 @@
         .ocl-inp { width: 100%; height: 48px; border: 1px solid #d9e0d4; border-radius: 10px; padding: 0 14px;
             font-size: 15px; color: #17201a; background: #fff; transition: .15s; }
         .ocl-inp:focus { outline: none; border-color: #1f9d55; box-shadow: 0 0 0 3px rgba(31,157,85,.12); }
+        .ocl-pw { position: relative; }
+        .ocl-pw .ocl-inp { padding-inline-end: 46px; }
+        .ocl-eye { position: absolute; inset-inline-end: 2px; top: 0; height: 48px; width: 44px; border: 0;
+            background: none; color: #8a978d; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; border-radius: 10px; }
+        .ocl-eye:hover { color: #1f9d55; }
         .ocl-forgot { text-align: end; margin: -4px 0 18px; }
         .ocl-forgot a { font-size: 13px; font-weight: 600; color: #6b7669; text-decoration: none; }
         .ocl-forgot a:hover { color: #1f9d55; }
@@ -37,7 +43,7 @@
                     <a href="{{ URL::to('admin/register') }}">{{ trans('labels.register') }}</a>
                 </p>
             @else
-                <p class="ocl-auth__sub">{{ app()->getLocale() === 'ar' ? 'سجّل الدخول للمتابعة إلى لوحة التحكم.' : 'Sign in to continue to your dashboard.' }}</p>
+                <p class="ocl-auth__sub">{{ trans('labels.sign_in_to_continue_to_your_dashboard') }}</p>
             @endif
 
             <form method="POST" action="{{ URL::to('admin/checklogin-normal') }}">
@@ -49,7 +55,12 @@
                 </div>
                 <div class="ocl-fld">
                     <label>{{ trans('labels.password') }} <span class="req">*</span></label>
-                    <input type="password" class="ocl-inp" name="password" id="password" placeholder="{{ trans('labels.password') }}" required>
+                    <div class="ocl-pw">
+                        <input type="password" class="ocl-inp" name="password" id="password" placeholder="{{ trans('labels.password') }}" required>
+                        <button type="button" class="ocl-eye" id="oclEye" aria-label="{{ trans('labels.show_password') }}">
+                            <i class="fa-regular fa-eye"></i>
+                        </button>
+                    </div>
                     @error('password')<span class="ocl-err">{{ $message }}</span>@enderror
                 </div>
                 <div class="ocl-forgot">
@@ -80,6 +91,20 @@
 @endsection
 @section('scripts')
     <script>
+        // Show / hide the password, same behaviour as the registration wizard.
+        (function () {
+            var btn = document.getElementById('oclEye');
+            var input = document.getElementById('password');
+            if (!btn || !input) return;
+            btn.addEventListener('click', function () {
+                var show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.querySelector('i').className = show ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+                btn.setAttribute('aria-label', show ? '{{ trans('labels.hide_password') }}'
+                                                    : '{{ trans('labels.show_password') }}');
+                input.focus();
+            });
+        })();
         function fillData(email, password) {
             "use strict";
             document.getElementById('email').value = email;

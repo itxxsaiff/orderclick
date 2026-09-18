@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ app()->getLocale() === 'ar' ? 'إعداد متجرك بالذكاء الاصطناعي' : 'Set up your store with AI' }}</title>
+    <title>{{ trans('labels.set_up_your_store_with_ai') }}</title>
     <link rel="stylesheet" href="{{ url(env('ASSETSPATHURL') . 'web-assets/font-awesome/css/all.min.css') }}">
     @php
         $ar = app()->getLocale() === 'ar';
@@ -90,84 +90,84 @@
     <div class="ss-card">
         {{-- ===== Step 1: quick question ===== --}}
         <div class="ss-form" id="ssForm">
-            <span class="ss-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> {{ $ar ? 'إعداد ذكي' : 'AI Setup' }}</span>
-            <h1>{{ $ar ? 'لنجهّز' : "Let's set up" }} <b>{{ $storeName }}</b> {{ $ar ? 'لك' : '' }}</h1>
-            <p class="sub">{{ $ar ? 'أخبرنا بما يقدّمه نشاطك، وسيقوم الذكاء الاصطناعي بإنشاء متجرك — الأقسام والمنتجات والوصف — تلقائياً.' : 'Tell us what your business offers, and AI will build your store — categories, products and descriptions — automatically.' }}</p>
+            <span class="ss-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> {{ trans('labels.ai_setup') }}</span>
+            <h1>{{ trans('labels.let_s_set_up') }} <b>{{ $storeName }}</b> {{ $ar ? 'لك' : '' }}</h1>
+            <p class="sub">{{ trans('labels.tell_us_what_your_business_offers_and') }}</p>
 
             {{-- AI file upload: read a menu / product list (image or PDF) and pre-fill the form --}}
             <div class="ss-field">
                 <div class="ss-drop" id="ssDrop">
                     <div class="ss-drop__idle">
                         <div class="ss-drop__ic"><i class="fa-solid fa-file-arrow-up"></i></div>
-                        <div class="ss-drop__t">{{ $ar ? 'ارفع قائمتك أو منتجاتك' : 'Upload your menu or product list' }}</div>
-                        <div class="ss-drop__s">{{ $ar ? 'صورة أو PDF — سيقرأها الذكاء الاصطناعي ويملأ كل شيء لك' : 'Photo or PDF — AI reads it and fills everything for you' }}</div>
+                        <div class="ss-drop__t">{{ trans('labels.upload_your_menu_or_product_list') }}</div>
+                        <div class="ss-drop__s">{{ trans('labels.photo_or_pdf_ai_reads_it_and') }}</div>
                     </div>
                     <div class="ss-drop__steps">
                         <div class="ss-spin"></div>
-                        <div class="ss-drop__t" id="ssDropState">{{ $ar ? 'جارٍ القراءة…' : 'Reading your file…' }}</div>
-                        <div class="ss-drop__s">{{ $ar ? 'قد يستغرق ذلك بضع ثوانٍ' : 'This can take a few seconds' }}</div>
+                        <div class="ss-drop__t" id="ssDropState">{{ trans('labels.reading_your_file') }}</div>
+                        <div class="ss-drop__s">{{ trans('labels.this_can_take_a_few_seconds') }}</div>
                     </div>
                     <input type="file" id="ssFile" accept="image/jpeg,image/png,image/webp,application/pdf,.jpg,.jpeg,.png,.webp,.pdf" hidden>
                 </div>
                 <div class="ss-drop__ok" id="ssDropOk"></div>
                 <div class="ss-drop__msg" id="ssDropMsg"></div>
-                <div class="ss-or">{{ $ar ? 'أو املأ التفاصيل يدوياً بالأسفل' : 'or fill it in manually below' }}</div>
+                <div class="ss-or">{{ trans('labels.or_fill_it_in_manually_below') }}</div>
             </div>
 
             <div class="ss-field">
-                <label>{{ $ar ? 'ما المنتجات أو الخدمات التي تقدّمها؟' : 'What products or services do you offer?' }}</label>
-                <textarea id="ssOfferings" placeholder="{{ $ar ? 'مثال: مطعم إيطالي — بيتزا مارغريتا 3.5، باستا، سلطات، مشروبات...' : 'e.g. Italian restaurant — Margherita pizza 3.5, pasta, salads, drinks...' }}"></textarea>
-                <div class="ss-hint">{{ $ar ? 'اذكر بعض المنتجات مع الأسعار إن أمكن — وسيكمل الذكاء الاصطناعي الباقي.' : 'List a few products with prices if you can — AI will build out the rest.' }}</div>
+                <label>{{ trans('labels.what_products_or_services_do_you_offer') }}</label>
+                <textarea id="ssOfferings" placeholder="{{ trans('labels.e_g_italian_restaurant_margherita_pizza_3') }}"></textarea>
+                <div class="ss-hint">{{ trans('labels.list_a_few_products_with_prices_if') }}</div>
             </div>
             <div class="ss-field">
-                <label>{{ $ar ? 'الأقسام الرئيسية (اختياري)' : 'Main categories (optional)' }}</label>
-                <input type="text" id="ssCategories" placeholder="{{ $ar ? 'مثال: بيتزا، برجر، مشروبات' : 'e.g. Pizzas, Burgers, Drinks' }}">
-                <div class="ss-hint">{{ $ar ? 'اتركه فارغاً وسيختار الذكاء الاصطناعي الأقسام المناسبة.' : 'Leave blank and AI will choose sensible categories for you.' }}</div>
+                <label>{{ trans('labels.main_categories_optional') }}</label>
+                <input type="text" id="ssCategories" placeholder="{{ trans('labels.e_g_pizzas_burgers_drinks') }}">
+                <div class="ss-hint">{{ trans('labels.leave_blank_and_ai_will_choose_sensible') }}</div>
             </div>
             <div class="ss-field">
-                <label>{{ $ar ? 'رقم واتساب للطلبات' : 'WhatsApp number for orders' }} <span style="color:#d64545">*</span></label>
+                <label>{{ trans('labels.whatsapp_number_for_orders') }} <span style="color:#d64545">*</span></label>
                 <div class="ss-wa">
                     <select id="ssWaCode" class="ss-code">
                         @foreach (helper::countries() as $c)
                             <option value="{{ ltrim($c['dial'], '+') }}" {{ $c['iso'] === 'BH' ? 'selected' : '' }}>{{ $c['flag'] }} {{ $c['dial'] }}</option>
                         @endforeach
                     </select>
-                    <input type="text" id="ssWhatsapp" inputmode="numeric" placeholder="{{ $ar ? 'مثال: 33001234' : 'e.g. 33001234' }}">
+                    <input type="text" id="ssWhatsapp" inputmode="numeric" placeholder="{{ trans('labels.e_g_33001234') }}">
                 </div>
-                <div id="ssWaErr" style="display:none;color:#d64545;font-size:12.5px;margin-top:6px;">{{ $ar ? 'رقم الواتساب مطلوب' : 'WhatsApp number is required' }}</div>
+                <div id="ssWaErr" style="display:none;color:#d64545;font-size:12.5px;margin-top:6px;">{{ trans('labels.whatsapp_number_is_required') }}</div>
             </div>
             <div class="ss-field">
-                <label>{{ $ar ? 'بادئة رقم الطلب (اختياري)' : 'Order number prefix (optional)' }}</label>
-                <input type="text" id="ssPrefix" maxlength="6" placeholder="{{ $ar ? 'مثال: ORD' : 'e.g. ORD' }}">
-                <div class="ss-hint">{{ $ar ? 'سيصل الطلب إلى واتساب، وتظهر أرقام الطلبات هكذا: ORD-1001' : 'Orders arrive on WhatsApp; order numbers look like ORD-1001.' }}</div>
+                <label>{{ trans('labels.order_number_prefix_optional') }}</label>
+                <input type="text" id="ssPrefix" maxlength="6" placeholder="{{ trans('labels.e_g_ord') }}">
+                <div class="ss-hint">{{ trans('labels.orders_arrive_on_whatsapp_order_numbers_look') }}</div>
             </div>
             <button type="button" class="ss-btn" onclick="ssBuild()">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> {{ $ar ? 'أنشئ متجري بالذكاء الاصطناعي' : 'Build my store with AI' }}
+                <i class="fa-solid fa-wand-magic-sparkles"></i> {{ trans('labels.build_my_store_with_ai') }}
             </button>
             <div class="ss-err" id="ssErr"></div>
-            <a href="{{ url('admin/dashboard') }}?skip_ai=1" class="ss-skip">{{ $ar ? 'تخطّي الآن' : 'Skip for now' }}</a>
+            <a href="{{ url('admin/dashboard') }}" class="ss-skip">{{ trans('labels.back_to_dashboard') }}</a>
         </div>
 
         {{-- ===== Step 2: working ===== --}}
         <div class="ss-working" id="ssWorking">
             <div class="ss-spinner"></div>
-            <h2>{{ $ar ? 'جارٍ إنشاء متجرك…' : 'Building your store…' }}</h2>
-            <div class="ss-progress" id="ssProgress">{{ $ar ? 'يتم التجهيز' : 'Getting started' }}</div>
+            <h2>{{ trans('labels.building_your_store') }}</h2>
+            <div class="ss-progress" id="ssProgress">{{ trans('labels.getting_started') }}</div>
             <ul class="ss-steps" id="ssSteps">
-                <li data-i="0"><i class="fa-regular fa-circle"></i> {{ $ar ? 'قراءة معلومات نشاطك' : 'Reading your business info' }}</li>
-                <li data-i="1"><i class="fa-regular fa-circle"></i> {{ $ar ? 'إنشاء الأقسام' : 'Creating categories' }}</li>
-                <li data-i="2"><i class="fa-regular fa-circle"></i> {{ $ar ? 'إضافة المنتجات والخدمات' : 'Adding products & services' }}</li>
-                <li data-i="3"><i class="fa-regular fa-circle"></i> {{ $ar ? 'كتابة الأوصاف واختيار الألوان' : 'Writing descriptions & colours' }}</li>
-                <li data-i="4"><i class="fa-regular fa-circle"></i> {{ $ar ? 'اللمسات الأخيرة' : 'Finishing touches' }}</li>
+                <li data-i="0"><i class="fa-regular fa-circle"></i> {{ trans('labels.reading_your_business_info') }}</li>
+                <li data-i="1"><i class="fa-regular fa-circle"></i> {{ trans('labels.creating_categories') }}</li>
+                <li data-i="2"><i class="fa-regular fa-circle"></i> {{ trans('labels.adding_products_services') }}</li>
+                <li data-i="3"><i class="fa-regular fa-circle"></i> {{ trans('labels.writing_descriptions_colours') }}</li>
+                <li data-i="4"><i class="fa-regular fa-circle"></i> {{ trans('labels.finishing_touches') }}</li>
             </ul>
-            <p class="ss-note">{{ $ar ? 'قد يستغرق هذا حتى دقيقة. من فضلك لا تغلق الصفحة.' : 'This can take up to a minute. Please don’t close this page.' }}</p>
+            <p class="ss-note">{{ trans('labels.this_can_take_up_to_a_minute') }}</p>
         </div>
     </div>
 
     <script>
         var ssUrl = "{{ url('admin/store-setup/build') }}";
         var ssToken = document.querySelector('meta[name="csrf-token"]').content;
-        var ssLang = "{{ $ar ? 'Arabic' : 'English' }}";
+        var ssLang = "{{ trans('labels.english') }}";
         var ssMessages = @json($ssMessages);
 
         function ssBuild() {
@@ -213,7 +213,7 @@
                     clearInterval(timer);
                     steps.forEach(function (s) { s.classList.add('done'); s.querySelector('i').className = 'fa-solid fa-circle-check'; });
                     if (res.ok && res.d.success) {
-                        prog.textContent = "{{ $ar ? 'تم! جارٍ فتح لوحة التحكم…' : 'Done! Opening your dashboard…' }}";
+                        prog.textContent = "{{ trans('labels.done_opening_your_dashboard') }}";
                         setTimeout(function () { window.location.href = res.d.redirect || "{{ url('admin/dashboard') }}"; }, 900);
                     } else {
                         ssFail((res.d && res.d.error) ? res.d.error : 'Something went wrong.');
@@ -252,8 +252,8 @@
 
             function handle(file) {
                 var okType = /^image\/(jpeg|png|webp)$/.test(file.type) || file.type === 'application/pdf' || /\.(jpe?g|png|webp|pdf)$/i.test(file.name);
-                if (!okType) { showMsg("{{ $ar ? 'يرجى رفع صورة (JPG أو PNG أو WEBP) أو ملف PDF.' : 'Please upload an image (JPG, PNG, WEBP) or a PDF.' }}"); return; }
-                if (file.size > 10 * 1024 * 1024) { showMsg("{{ $ar ? 'الملف كبير جداً — أبقه أقل من 10 ميغابايت.' : 'File is too large — keep it under 10 MB.' }}"); return; }
+                if (!okType) { showMsg("{{ trans('labels.please_upload_an_image_jpg_png_webp') }}"); return; }
+                if (file.size > 10 * 1024 * 1024) { showMsg("{{ trans('labels.file_is_too_large_keep_it_under') }}"); return; }
 
                 okEl.style.display = 'none'; msgEl.style.display = 'none';
                 drop.classList.add('busy');
@@ -275,15 +275,15 @@
                         if (res.ok && d.success) {
                             document.getElementById('ssOfferings').value = d.offerings || '';
                             if (d.categories) document.getElementById('ssCategories').value = d.categories;
-                            okEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + "{{ $ar ? 'قرأنا ملفك — راجع العناصر بالأسفل وعدّل ما تريد ثم أنشئ متجرك.' : 'We read your file — review the items below, edit anything, then build your store.' }}";
+                            okEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> ' + "{{ trans('labels.we_read_your_file_review_the_items') }}";
                             okEl.style.display = 'block';
                         } else {
                             // relevance/clarity/other errors — guide the merchant back to manual entry.
-                            showMsg(d.error || "{{ $ar ? 'تعذّرت قراءة الملف. جرّب صورة أوضح أو اكتب عناصرك بالأسفل.' : 'Could not read that file. Try a clearer photo, or type your items below.' }}");
+                            showMsg(d.error || "{{ trans('labels.could_not_read_that_file_try_a') }}");
                         }
                     }).catch(function () {
                         clearInterval(timer); drop.classList.remove('busy'); fileInput.value = '';
-                        showMsg("{{ $ar ? 'تعذّر الوصول إلى خدمة الذكاء الاصطناعي. حاول مرة أخرى.' : 'Could not reach the AI service. Please try again.' }}");
+                        showMsg("{{ trans('labels.could_not_reach_the_ai_service_please') }}");
                     });
             }
         })();

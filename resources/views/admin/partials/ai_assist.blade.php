@@ -12,13 +12,13 @@
         </button>
         <span class="oc-ai-load" style="display:none;"><i class="fa-solid fa-spinner fa-spin"></i></span>
         <div class="oc-ai-menu">
-            <button type="button" data-action="improve"><i class="fa-solid fa-wand-magic-sparkles"></i> {{ app()->getLocale() === 'ar' ? 'تحسين النص' : 'Improve' }}</button>
-            <button type="button" data-action="grammar"><i class="fa-solid fa-spell-check"></i> {{ app()->getLocale() === 'ar' ? 'تصحيح الإملاء' : 'Fix grammar' }}</button>
-            <button type="button" data-action="professional"><i class="fa-solid fa-briefcase"></i> {{ app()->getLocale() === 'ar' ? 'صياغة احترافية' : 'Make professional' }}</button>
-            <button type="button" data-action="seo"><i class="fa-solid fa-magnifying-glass-chart"></i> {{ app()->getLocale() === 'ar' ? 'مناسب لمحركات البحث' : 'SEO-friendly' }}</button>
+            <button type="button" data-action="improve"><i class="fa-solid fa-wand-magic-sparkles"></i> {{ trans('labels.improve') }}</button>
+            <button type="button" data-action="grammar"><i class="fa-solid fa-spell-check"></i> {{ trans('labels.fix_grammar') }}</button>
+            <button type="button" data-action="professional"><i class="fa-solid fa-briefcase"></i> {{ trans('labels.make_professional') }}</button>
+            <button type="button" data-action="seo"><i class="fa-solid fa-magnifying-glass-chart"></i> {{ trans('labels.seo_friendly') }}</button>
             <div class="oc-ai-sep"></div>
-            <button type="button" data-action="translate" data-lang="English"><i class="fa-solid fa-language"></i> {{ app()->getLocale() === 'ar' ? 'ترجمة إلى الإنجليزية' : 'Translate → English' }}</button>
-            <button type="button" data-action="translate" data-lang="Arabic"><i class="fa-solid fa-language"></i> {{ app()->getLocale() === 'ar' ? 'ترجمة إلى العربية' : 'Translate → Arabic' }}</button>
+            <button type="button" data-action="translate" data-lang="English"><i class="fa-solid fa-language"></i> {{ trans('labels.translate_english') }}</button>
+            <button type="button" data-action="translate" data-lang="Arabic"><i class="fa-solid fa-language"></i> {{ trans('labels.translate_arabic') }}</button>
         </div>
     </span>
 @endif

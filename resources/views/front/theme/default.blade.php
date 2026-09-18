@@ -677,8 +677,10 @@
                         <div class="form-group col-md-12">
                             <label for="screenshot" class="form-label"> {{ trans('labels.screenshot') }} </label>
                             <div class="controls">
-                                <input type="file" name="screenshot" id="screenshot"
-                                    class="form-control  @error('screenshot') is-invalid @enderror" required>
+                                {{-- Not `required`: on mobile the chosen photo often does not attach and
+                                     the browser then blocks submit with an invisible validation bubble. --}}
+                                <input type="file" name="screenshot" id="screenshot" accept="image/*"
+                                    class="form-control  @error('screenshot') is-invalid @enderror">
                                 @error('screenshot')
                                     <span class="text-danger"> {{ $message }} </span>
                                 @enderror

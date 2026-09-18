@@ -22,6 +22,9 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
             Route::get('/', [LanguageController::class, 'index']);
             Route::get('/add', [LanguageController::class, 'add']);
             Route::post('/store', [LanguageController::class, 'store']);
+            // Registered before the /{code} catch-all, or that would swallow them.
+            Route::get('/export/{code}', [LanguageController::class, 'export']);
+            Route::post('/import', [LanguageController::class, 'import']);
             Route::get('/{code}', [LanguageController::class, 'index']);
 
             Route::middleware('adminmiddleware')->group(function () {

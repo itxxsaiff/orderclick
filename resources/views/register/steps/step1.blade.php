@@ -1,6 +1,6 @@
 {{-- STEP 1 — System, Activity, Specialization --}}
-<span class="ocw__pill">{{ trans('labels.step') }} 1 {{ $ar ? 'من' : 'of' }} 3</span>
-<h1 class="ocw__title">{{ $ar ? 'اختر نظامك ونشاطك' : 'Choose your system and activity' }}</h1>
+<span class="ocw__pill">{{ trans('labels.step') }} 1 {{ trans('labels.of_2') }} 3</span>
+<h1 class="ocw__title">{{ trans('labels.choose_your_system_and_activity') }}</h1>
 <p class="ocw__sub">{{ trans('messages.step_system_sub') }}</p>
 
 <form method="POST" action="{{ URL::to('register/system') }}" id="ocwForm">

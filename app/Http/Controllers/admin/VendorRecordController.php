@@ -241,6 +241,57 @@ class VendorRecordController extends Controller
         return redirect()->back()->with('success', trans('messages.success'));
     }
 
+    /**
+     * Approve or reject one uploaded verification document.
+     *
+     * Rejecting records the reason against that document and puts the whole account back into
+     * "Changes Required", so the vendor is told exactly which file to replace and why.
+     */
+    public function review_document(Request $request, $id, $docId)
+    {
+        $vendor = User::where('id', $id)->where('type', 2)->firstOrFail();
+        $doc = VendorDocument::where('id', $docId)->where('vendor_id', $vendor->id)->firstOrFail();
+
+        $decision = $request->get('decision') === 'approve' ? 'approved' : 'rejected';
+        $reason = trim((string) $request->get('review_note'));
+
+        if ($decision === 'rejected' && $reason === '') {
+            return redirect()->back()->with('error', app()->getLocale() === 'ar'
+                ? 'يرجى كتابة سبب رفض هذا المستند.'
+                : 'Please write the reason for rejecting this document.');
+        }
+
+        $doc->status = $decision;
+        $doc->review_note = $reason ?: null;
+        $doc->reviewed_by = Auth::id();
+        $doc->reviewed_at = now();
+        $doc->save();
+
+        VendorAuditLog::record($vendor->id, 'document_' . $decision, $doc->doc_type, $decision, $reason ?: null, 'admin');
+
+        if ($decision === 'rejected') {
+            $vendor->verification_status = 'changes_required';
+            $vendor->account_status = Systems::CORRECTION_REQUIRED;
+            $vendor->save();
+        } elseif ($this->allDocumentsApproved($vendor)) {
+            // Every required document is approved - move the account to Pending Review so the
+            // admin only has to press "Approve verification" once.
+            if ($vendor->verification_status !== 'approved') {
+                $vendor->verification_status = 'pending_review';
+                $vendor->save();
+            }
+        }
+
+        return redirect()->back()->with('success', trans('messages.success'));
+    }
+
+    private function allDocumentsApproved(User $vendor): bool
+    {
+        $docs = VendorDocument::where('vendor_id', $vendor->id)->get();
+
+        return $docs->isNotEmpty() && $docs->every(fn($d) => $d->status === 'approved');
+    }
+
     /** Save a private admin note. Never shown to the vendor, never exposed to the AI layer. */
     public function save_note(Request $request, $id)
     {

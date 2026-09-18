@@ -245,7 +245,7 @@
         @if (count($storereview) > 0)
             <div class="rt-tst">
                 <div class="wrap">
-                    <div class="rt-head"><span class="rt-eyebrow">{{ $isAr ? 'آراء العملاء' : 'Reviews' }}</span><h2>{{ $isAr ? 'ماذا يقول عملاؤنا؟' : 'What our customers say' }}</h2></div>
+                    <div class="rt-head"><span class="rt-eyebrow">{{ trans('labels.reviews_2') }}</span><h2>{{ trans('labels.what_our_customers_say') }}</h2></div>
                     <div class="rt-tst__grid">
                         @foreach (collect($storereview)->take(3) as $review)
                             <div class="rt-tcard">

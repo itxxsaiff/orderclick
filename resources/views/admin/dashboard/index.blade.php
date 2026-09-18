@@ -15,6 +15,71 @@
             <h5 class="pages-title color-changer fs-2">{{ trans('labels.welcome_dashboard') }}</h5>
         </div>
     </div>
+
+    {{-- AI store builder. It used to open by itself right after login, which merchants read as a
+         broken sign-in. It now lives here: loud while the store is still empty, quieter once the
+         catalogue exists, and always reachable from the sidebar. --}}
+    @if (!empty($ocAiEnabled))
+        @php $ocAr = app()->getLocale() === 'ar'; @endphp
+        <style>
+            .oc-ai { position: relative; overflow: hidden; border-radius: 18px; color: #fff; margin-bottom: 1.5rem;
+                background: linear-gradient(120deg, #0f7a4a 0%, #16a34a 45%, #0ea5a4 100%); }
+            .oc-ai__in { position: relative; z-index: 2; padding: 26px 28px; display: flex; flex-wrap: wrap;
+                align-items: center; justify-content: space-between; gap: 18px; }
+            .oc-ai__eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700;
+                letter-spacing: .12em; text-transform: uppercase; background: rgba(255,255,255,.18);
+                padding: 5px 12px; border-radius: 999px; }
+            .oc-ai h3 { font-size: clamp(20px, 2.4vw, 28px); font-weight: 800; margin: 12px 0 6px; color: #fff; }
+            .oc-ai p { margin: 0; opacity: .92; max-width: 46em; font-size: 14.5px; }
+            .oc-ai__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+            .oc-ai__chips span { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.25);
+                padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; }
+            .oc-ai__btn { background: #fff; color: #0f7a4a; font-weight: 700; border-radius: 999px;
+                padding: 13px 26px; white-space: nowrap; border: 0; text-decoration: none; display: inline-flex;
+                align-items: center; gap: 9px; box-shadow: 0 14px 30px -14px rgba(0,0,0,.55); transition: transform .15s ease; }
+            .oc-ai__btn:hover { transform: translateY(-2px); color: #0f7a4a; }
+            .oc-ai__spark { position: absolute; inset: 0; z-index: 1; opacity: .5;
+                background: radial-gradient(520px 170px at 88% 18%, rgba(255,255,255,.35), transparent 62%),
+                            radial-gradient(360px 150px at 12% 92%, rgba(255,255,255,.22), transparent 60%); }
+            .oc-ai__shine { position: absolute; top: 0; bottom: 0; width: 42%; z-index: 1; transform: skewX(-18deg);
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,.16), transparent);
+                animation: ocAiShine 4.5s ease-in-out infinite; }
+            @keyframes ocAiShine { 0% { left: -45%; } 55%, 100% { left: 115%; } }
+            @media (prefers-reduced-motion: reduce) { .oc-ai__shine { animation: none; opacity: 0; } }
+            .oc-ai--compact .oc-ai__in { padding: 18px 22px; }
+            .oc-ai--compact h3 { font-size: 18px; margin: 8px 0 4px; }
+            .oc-ai--compact .oc-ai__chips { display: none; }
+        </style>
+        <div class="oc-ai {{ empty($ocStoreEmpty) ? 'oc-ai--compact' : '' }}">
+            <div class="oc-ai__spark"></div>
+            <div class="oc-ai__shine"></div>
+            <div class="oc-ai__in">
+                <div>
+                    <span class="oc-ai__eyebrow"><i class="fa-solid fa-wand-magic-sparkles"></i>
+                        {{ trans('labels.ai_assistant') }}</span>
+                    @if (!empty($ocStoreEmpty))
+                        <h3>{{ trans('labels.let_ai_build_your_store_in_a') }}</h3>
+                        <p>{{ trans('labels.tell_it_what_you_offer_or_upload') }}</p>
+                        <div class="oc-ai__chips">
+                            <span><i class="fa-solid fa-layer-group mx-1"></i>{{ trans('labels.categories') }}</span>
+                            <span><i class="fa-solid fa-box mx-1"></i>{{ trans('labels.products') }}</span>
+                            <span><i class="fa-solid fa-pen-nib mx-1"></i>{{ trans('labels.descriptions') }}</span>
+                            <span><i class="fa-solid fa-file-arrow-up mx-1"></i>{{ trans('labels.menu_photo_or_pdf') }}</span>
+                        </div>
+                    @else
+                        <h3>{{ trans('labels.add_more_products_with_ai') }}</h3>
+                        <p>{{ trans('labels.upload_a_new_menu_or_type_what') }}</p>
+                    @endif
+                </div>
+                <a href="{{ URL::to('admin/store-setup') }}" class="oc-ai__btn">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    {{ !empty($ocStoreEmpty)
+                        ? ($ocAr ? 'ابدأ الإعداد بالذكاء الاصطناعي' : 'Build my store with AI')
+                        : ($ocAr ? 'فتح مساعد الذكاء الاصطناعي' : 'Open AI Assistant') }}
+                </a>
+            </div>
+        </div>
+    @endif
     <div class="row mb-0 mb-md-4">
         <div class="col-12 col-md-12 col-lg-12 col-xl-6">
             <div class="card h-100 border-0 shadow desh_left">

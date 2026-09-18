@@ -355,11 +355,11 @@
                           {{-- QR code (BenefitPay / Bank QR Code) --}}
                           @if (in_array((string) $payment->payment_type, ['19', '20']) && !empty($payment->qr_image))
                             <img src="{{ helper::image_path($payment->qr_image) }}" alt="QR" style="max-width:190px;border-radius:12px;display:block;margin-bottom:10px;">
-                            <p class="small muted" style="margin:0 0 10px">{{ app()->getLocale() === 'ar' ? 'امسح رمز QR للدفع ثم أرسل الإيصال عبر واتساب' : 'Scan the QR code to pay, then share your receipt on WhatsApp.' }}</p>
+                            <p class="small muted" style="margin:0 0 10px">{{ trans('labels.scan_the_qr_code_to_pay_then') }}</p>
                           @endif
                           {{-- Payment link --}}
                           @if ((string) $payment->payment_type === '21' && !empty($payment->payment_link))
-                            <a href="{{ $payment->payment_link }}" target="_blank" rel="noopener" class="btn btn-primary btn-sm mb-2">{{ app()->getLocale() === 'ar' ? 'ادفع عبر الرابط' : 'Pay via link' }} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="width:14px;height:14px;vertical-align:-2px"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
+                            <a href="{{ $payment->payment_link }}" target="_blank" rel="noopener" class="btn btn-primary btn-sm mb-2">{{ trans('labels.pay_via_link') }} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="width:14px;height:14px;vertical-align:-2px"><path d="M7 17L17 7M9 7h8v8"/></svg></a>
                           @endif
                           {{-- Bank transfer: structured details if present --}}
                           @if ((string) $payment->payment_type === '6')

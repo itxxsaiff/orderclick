@@ -1149,12 +1149,12 @@
                                                 <div class="form-group">
                                                     <label class="form-label">
                                                         <i class="fa-brands fa-whatsapp text-success"></i>
-                                                        {{ app()->getLocale() === 'ar' ? 'رقم واتساب (للطلبات)' : 'WhatsApp Number (for orders)' }}
+                                                        {{ trans('labels.whatsapp_number_for_orders_2') }}
                                                     </label>
                                                     <input type="text" class="form-control" name="whatsapp_number"
                                                         value="{{ @$settingdata->whatsapp_number }}"
                                                         placeholder="+973 3XXXXXXX">
-                                                    <small class="text-muted">{{ app()->getLocale() === 'ar' ? 'تُرسل طلبات العملاء إلى هذا الرقم عبر واتساب (مع رمز الدولة)' : 'Customer orders are sent here on WhatsApp (include country code)' }}</small>
+                                                    <small class="text-muted">{{ trans('labels.customer_orders_are_sent_here_on_whatsapp') }}</small>
                                                 </div>
                                             </div>
                                             <div class="col-12">
@@ -1185,22 +1185,22 @@
                                                 <div class="col-12 mb-3">
                                                     <label class="form-label">
                                                         <i class="fa-solid fa-location-dot text-danger"></i>
-                                                        {{ app()->getLocale() === 'ar' ? 'موقع المتجر على خرائط جوجل' : 'Store Location (Google Maps)' }}
+                                                        {{ trans('labels.store_location_google_maps') }}
                                                     </label>
                                                     <input type="text" class="form-control" name="map_link" id="oc_map_link"
                                                         value="{{ @$settingdata->map_link }}" placeholder="https://maps.google.com/...">
                                                     <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
                                                         <button type="button" class="btn btn-sm btn-outline-success" id="oc_gps_btn">
                                                             <i class="fa-solid fa-location-crosshairs"></i>
-                                                            {{ app()->getLocale() === 'ar' ? 'تحديد موقعي الآن' : 'Detect my location' }}
+                                                            {{ trans('labels.detect_my_location') }}
                                                         </button>
                                                         <span class="small text-muted" id="oc_gps_status">
                                                             @if (@$user->latitude && @$user->longitude)
                                                                 <a href="https://maps.google.com/?q={{ $user->latitude }},{{ $user->longitude }}" target="_blank" class="text-success fw-600">
-                                                                    <i class="fa-solid fa-map-pin"></i> {{ app()->getLocale() === 'ar' ? 'الموقع محفوظ' : 'Saved' }} ({{ $user->latitude }}, {{ $user->longitude }})
+                                                                    <i class="fa-solid fa-map-pin"></i> {{ trans('labels.saved') }} ({{ $user->latitude }}, {{ $user->longitude }})
                                                                 </a>
                                                             @else
-                                                                {{ app()->getLocale() === 'ar' ? 'اختياري — الصق رابط خرائط جوجل أو حدّد موقعك' : 'Optional — paste a Google Maps link or detect your location' }}
+                                                                {{ trans('labels.optional_paste_a_google_maps_link_or') }}
                                                             @endif
                                                         </span>
                                                     </div>
@@ -2445,7 +2445,7 @@
                                                 <img class="img-fluid rounded-3 hw-70 object-fit-cover my-2"
                                                     src="{{ helper::image_Path($settingdata->landing_home_banner) }}"
                                                     alt="">
-                                                <small class="text-muted d-block">{{ app()->getLocale() === 'ar' ? 'الموصى به' : 'Recommended' }}: 1200 × 900 px (4:3) — {{ app()->getLocale() === 'ar' ? 'يظهر في القسم العلوي للصفحة الرئيسية (سطح المكتب)' : 'shown in the landing hero (desktop)' }}</small>
+                                                <small class="text-muted d-block">{{ trans('labels.recommended') }}: 1200 × 900 px (4:3) — {{ trans('labels.shown_in_the_landing_hero_desktop') }}</small>
                                             </div>
 
                                             <div class="form-group col-sm-6">
@@ -2456,7 +2456,7 @@
                                                 <img class="img-fluid rounded hw-70 mt-2 object-fit-cover"
                                                     src="{{ helper::image_path(@$settingdata->store_unavailable_image) }}"
                                                     alt="">
-                                                <small class="text-muted d-block">{{ app()->getLocale() === 'ar' ? 'الموصى به' : 'Recommended' }}: 600 × 500 px — {{ app()->getLocale() === 'ar' ? 'صورة توضيحية بخلفية شفافة (PNG) في صفحة «المتجر غير متاح»' : 'transparent PNG illustration, shown on the “Store Not Available” page' }}</small>
+                                                <small class="text-muted d-block">{{ trans('labels.recommended') }}: 600 × 500 px — {{ trans('labels.transparent_png_illustration_shown_on_the_store') }}</small>
                                             </div>
                                             <div class="form-group col-sm-6">
                                                 <label
@@ -2466,7 +2466,7 @@
                                                 <img class="img-fluid rounded hw-70 mt-2 object-fit-cover"
                                                     src="{{ helper::image_path(@$settingdata->subscribe_newsletter_image) }}"
                                                     alt="">
-                                                <small class="text-muted d-block">{{ app()->getLocale() === 'ar' ? 'الموصى به' : 'Recommended' }}: 1600 × 500 px — {{ app()->getLocale() === 'ar' ? 'خلفية عريضة لقسم النشرة البريدية (يُضاف تعتيم تلقائياً للنص)' : 'wide background for the newsletter section (a dark overlay is applied for text)' }}</small>
+                                                <small class="text-muted d-block">{{ trans('labels.recommended') }}: 1600 × 500 px — {{ trans('labels.wide_background_for_the_newsletter_section_a') }}</small>
                                             </div>
                                         @endif
                                         {{-- Auth Page Image removed: the new login/register are clean card pages with no background image. --}}

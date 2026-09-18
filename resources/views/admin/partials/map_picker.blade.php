@@ -72,7 +72,7 @@
         var startLat = {{ $ocLat ?: 26.2285 }};   // default view: Bahrain
         var startLng = {{ $ocLng ?: 50.5860 }};
         var hasPin = {{ $ocLat && $ocLng ? 'true' : 'false' }};
-        var lang = '{{ app()->getLocale() === "ar" ? "ar" : "en" }}';
+        var lang = '{{ trans('labels.en') }}';
 
         var map = L.map('ocMap').setView([startLat, startLng], hasPin ? 15 : 11);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -112,7 +112,7 @@
 
         // Coordinates -> country / city / area / written address.
         function reverseGeocode(lat, lng) {
-            setStatus('{{ $ocAr ? "جارٍ قراءة العنوان…" : "Reading address…" }}');
+            setStatus('{{ trans('labels.reading_address') }}');
 
             fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng + '&accept-language=' + lang, {
                 headers: { 'Accept': 'application/json' }
@@ -130,10 +130,10 @@
                     var addr = document.getElementById('ocAddress');
                     if (g.display_name) addr.value = g.display_name;
 
-                    setStatus('{{ $ocAr ? "✓ تم تعبئة العنوان تلقائياً" : "✓ Address filled automatically" }}', 'text-success fw-600');
+                    setStatus('{{ trans('labels.address_filled_automatically') }}', 'text-success fw-600');
                 })
                 .catch(function () {
-                    setStatus('{{ $ocAr ? "تعذّر قراءة العنوان — يمكنك كتابته يدوياً" : "Could not read the address — you can type it in" }}', 'text-danger');
+                    setStatus('{{ trans('labels.could_not_read_the_address_you_can') }}', 'text-danger');
                 });
         }
 
@@ -145,17 +145,17 @@
         // ---- Use current GPS location ----
         document.getElementById('ocGpsBtn').addEventListener('click', function () {
             if (!navigator.geolocation) {
-                setStatus('{{ $ocAr ? "الموقع غير مدعوم على هذا الجهاز" : "GPS is not supported on this device" }}', 'text-danger');
+                setStatus('{{ trans('labels.gps_is_not_supported_on_this_device') }}', 'text-danger');
                 return;
             }
-            setStatus('{{ $ocAr ? "جارٍ تحديد موقعك…" : "Detecting your location…" }}');
+            setStatus('{{ trans('labels.detecting_your_location') }}');
             navigator.geolocation.getCurrentPosition(function (p) {
                 map.setView([p.coords.latitude, p.coords.longitude], 16);
                 placePin(p.coords.latitude, p.coords.longitude, 'gps');
             }, function (e) {
                 setStatus(e.code === 1
-                    ? '{{ $ocAr ? "تم رفض إذن الموقع" : "Location permission denied" }}'
-                    : '{{ $ocAr ? "تعذّر تحديد الموقع" : "Could not get your location" }}', 'text-danger');
+                    ? '{{ trans('labels.location_permission_denied') }}'
+                    : '{{ trans('labels.could_not_get_your_location') }}', 'text-danger');
             }, { enableHighAccuracy: true, timeout: 10000 });
         });
 
@@ -166,7 +166,7 @@
             var q = document.getElementById('ocGeoSearch').value.trim();
             if (q.length < 3) return;
 
-            setStatus('{{ $ocAr ? "جارٍ البحث…" : "Searching…" }}');
+            setStatus('{{ trans('labels.searching') }}');
             fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=' + lang + '&q=' + encodeURIComponent(q), {
                 headers: { 'Accept': 'application/json' }
             })
@@ -174,7 +174,7 @@
                 .then(function (list) {
                     results.innerHTML = '';
                     if (!list.length) {
-                        setStatus('{{ $ocAr ? "لا توجد نتائج" : "No matches found" }}', 'text-danger');
+                        setStatus('{{ trans('labels.no_matches_found') }}', 'text-danger');
                         results.style.display = 'none';
                         return;
                     }
@@ -191,10 +191,10 @@
                         results.appendChild(a);
                     });
                     results.style.display = 'block';
-                    setStatus('{{ $ocAr ? "اختر نتيجة ثم اسحب الدبوس للضبط" : "Pick a result, then drag the pin to fine-tune" }}');
+                    setStatus('{{ trans('labels.pick_a_result_then_drag_the_pin') }}');
                 })
                 .catch(function () {
-                    setStatus('{{ $ocAr ? "تعذّر البحث" : "Search failed" }}', 'text-danger');
+                    setStatus('{{ trans('labels.search_failed') }}', 'text-danger');
                 });
         }
 
