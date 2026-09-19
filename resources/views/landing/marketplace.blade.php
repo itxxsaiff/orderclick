@@ -42,6 +42,21 @@
         .mk-htile span { color:#aab6ae; font-size:12px; }
         @media (max-width:900px){ .mk-hero__in { grid-template-columns:1fr; gap:32px; } .mk-htiles { grid-template-columns:1fr 1fr; } }
         @media (max-width:560px){ .mk-hsearch { grid-template-columns:1fr; } }
+        /* Grid and flex children are min-width:auto by default, so they refuse to shrink below
+           their content: on a 320-360px phone the hero column stayed 390px wide and the hero's
+           overflow:hidden simply cut the text off. Letting them shrink fixes the whole page. */
+        .mk-hero__in > *, .mk-hsearch > *, .mk-hfld, .mk-htile, .mk-htile > * { min-width: 0; }
+        .mk-hfld { overflow: hidden; }
+        .mk-hero h1, .mk-hero p.lead, .mk-htile b, .mk-htile span { overflow-wrap: anywhere; }
+        @media (max-width:430px){
+            .mk .wrap { padding: 22px 16px; }
+            .mk-hero__in { min-height: 0; padding: 64px 0 72px; gap: 24px; }
+            .mk-hero h1 { font-size: 30px; }
+            .mk-hero p.lead { font-size: 15px; }
+            .mk-htiles { grid-template-columns: 1fr; }
+            .mk-htile { padding: 14px; }
+            .mk-trust { gap: 14px; }
+        }
 
         /* ===== features strip ===== */
         .mk-feat { position:relative; z-index:3; margin-top:-38px; }
