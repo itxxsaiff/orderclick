@@ -56,14 +56,14 @@
         @endif
         <div class="mk-status">
             @if ($store->is_open)
-                <span class="on"><i class="fa-solid fa-circle"></i> {{ $mkAr ? 'مفتوح الآن' : 'Open now' }}</span>
+                <span class="on"><i class="fa-solid fa-circle"></i> {{ trans('landing.open_now') }}</span>
             @endif
             @if ($store->business_type === 'booking')
-                <span><i class="fa-regular fa-calendar-check"></i> {{ $mkAr ? 'حجز مواعيد' : 'Bookings' }}</span>
+                <span><i class="fa-regular fa-calendar-check"></i> {{ trans('landing.bookings') }}</span>
             @elseif ($store->is_delivery == 1)
-                <span><i class="fa-solid fa-truck"></i> {{ $mkAr ? 'توصيل' : 'Delivery' }}</span>
+                <span><i class="fa-solid fa-truck"></i> {{ trans('landing.delivery') }}</span>
             @endif
         </div>
-        <span class="mk-open-btn">{{ $mkAr ? 'زيارة المتجر' : 'Open Store' }} <i class="fa-solid fa-arrow-{{ $mkAr ? 'left' : 'right' }}"></i></span>
+        <span class="mk-open-btn">{{ trans('landing.open_store') }} <i class="fa-solid fa-arrow-{{ $mkAr ? 'left' : 'right' }}"></i></span>
     </div>
 </a>

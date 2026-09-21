@@ -191,7 +191,7 @@
             var sp = document.getElementById('ocb_specialist');
             if (sp && sp.value) {
                 var notes = document.getElementById('ocb_notes');
-                var line = @json($isAr ? 'المختص المفضل: ' : 'Preferred specialist: ') + sp.value;
+                var line = @json(trans('landing.preferred_specialist')) + sp.value;
                 if (notes) notes.value = notes.value ? (line + '\n' + notes.value) : line;
             }
             return true;

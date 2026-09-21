@@ -1,4 +1,6 @@
-<?php return array (
+<?php
+
+return array (
   'promocode_expired' => 'انتهت صلاحية الرمز الترويجي!!',
   'limit_over' => 'تجاوز الحد الأقصى للرمز الترويجي',
   'success' => 'نجاح',

@@ -123,6 +123,8 @@
         .ocl-svc:hover { transform: translateY(-4px); border-color: #bfe0cd; box-shadow: 0 22px 44px -30px rgba(20,40,28,.5); }
         .ocl-ic { width: 62px; height: 62px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; flex: none; }
         .ocl-svc h4 { font-size: 13.5px; font-weight: 600; color: var(--ink); margin: 0; line-height: 1.35; }
+        /* Long compounds (German, French) hyphenate instead of snapping mid-word. */
+        .ocl-svc h4, .ocl-bk h4, .ocl-cat b, .ocl-theme__body h4 { overflow-wrap: break-word; hyphens: auto; }
         @media (max-width: 1000px) { .ocl-svcs { grid-template-columns: repeat(4, 1fr); } }
         @media (max-width: 680px) { .ocl-svcs { grid-template-columns: repeat(3, 1fr); } }
         @media (max-width: 420px) { .ocl-svcs { grid-template-columns: repeat(2, 1fr); } }
@@ -326,16 +328,6 @@
             <h2 class="sec-title">{{ trans('landing.choose_the_right_category_for_your_store') }}</h2>
             <p class="sec-sub">{{ trans('landing.pick_any_category_to_jump_straight_to') }}</p>
             @php
-                // Arabic names for the built-in store categories (falls back to the DB name for custom ones).
-                $ocCatAr = [
-                    'restaurants' => 'مطاعم', 'restaurant' => 'مطاعم', 'cafés' => 'مقاهي', 'cafes' => 'مقاهي', 'cafe' => 'مقهى',
-                    'grocery stores' => 'بقالات', 'grocery' => 'بقالة', 'supermarkets' => 'أسواق', 'pharmacies' => 'صيدليات',
-                    'pharmacy' => 'صيدلية', 'flower shops' => 'محلات ورود', 'clothing stores' => 'متاجر ملابس', 'gift shops' => 'محلات هدايا',
-                    'bakeries' => 'مخابز', 'fruit & vegetable markets' => 'أسواق الفواكه والخضار', 'dairy stores' => 'محلات ألبان',
-                    'ice cream shops' => 'محلات آيس كريم', 'electronics' => 'إلكترونيات', 'perfumes' => 'عطور', 'toys' => 'ألعاب',
-                    'salons' => 'صالونات', 'salon' => 'صالون', 'clinics' => 'عيادات', 'clinic' => 'عيادة', 'retail' => 'تجزئة',
-                    'hotels' => 'فنادق', 'booking' => 'حجوزات',
-                ];
                 $ocIsAr = app()->getLocale() === 'ar';
             @endphp
             @if (count($landingCategories) > 0)
@@ -343,7 +335,7 @@
                     @foreach ($landingCategories as $category)
                         @php
                             $categoryName = strtolower($category->name ?? '');
-                            $categoryDisplay = $ocIsAr && isset($ocCatAr[$categoryName]) ? $ocCatAr[$categoryName] : $category->name;
+                            $categoryDisplay = helper::category_label($category->name);
                             $categoryIcon = 'fa-store';
                             foreach ($categoryIcons as $keyword => $icon) {
                                 if (str_contains($categoryName, $keyword)) { $categoryIcon = $icon; break; }
@@ -424,31 +416,31 @@
             <p class="sec-sub">{{ trans('landing.discover_top_professionals_in_different_categories') }}</p>
             @php
                 $ocServices = [
-                    ['fa-pen-nib', '#7c5cff', 'Graphic Design', 'التصميم الجرافيكي'],
-                    ['fa-clapperboard', '#ef4444', 'UGC Content Creators', 'صنّاع محتوى UGC'],
-                    ['fa-camera', '#f59e0b', 'Photography', 'التصوير الفوتوغرافي'],
-                    ['fa-video', '#3b82f6', 'Videography', 'تصوير الفيديو'],
-                    ['fa-film', '#6366f1', 'Video Editing', 'مونتاج الفيديو'],
-                    ['fa-share-nodes', '#ec4899', 'Social Media Management', 'إدارة وسائل التواصل'],
-                    ['fa-pen', '#22c55e', 'Content Writing', 'كتابة المحتوى'],
-                    ['fa-magnifying-glass-chart', '#2563eb', 'SEO Services', 'خدمات SEO'],
-                    ['fa-file-lines', '#64748b', 'Article Writing', 'كتابة المقالات'],
-                    ['fa-language', '#14b8a6', 'Translation Services', 'خدمات الترجمة'],
-                    ['fa-code', '#0f172a', 'Website Development', 'تطوير المواقع'],
-                    ['fa-mobile-screen', '#8b5cf6', 'Mobile App Development', 'تطوير التطبيقات'],
-                    ['fa-bullhorn', '#2563eb', 'Digital Marketing', 'التسويق الرقمي'],
-                    ['fa-envelope', '#4f46e5', 'Email Marketing', 'التسويق بالبريد'],
-                    ['fa-microphone', '#6b7280', 'Voice Over', 'التعليق الصوتي'],
-                    ['fa-crown', '#eab308', 'Celebrities & Public Figures', 'المشاهير والشخصيات'],
-                    ['fa-headset', '#22c55e', 'Virtual Assistant', 'مساعد افتراضي'],
-                    ['fa-ellipsis', '#94a3b8', 'More Services', 'المزيد من الخدمات'],
+                    ['fa-pen-nib', '#7c5cff', 'svc_graphic_design'],
+                    ['fa-clapperboard', '#ef4444', 'svc_ugc_content_creators'],
+                    ['fa-camera', '#f59e0b', 'svc_photography'],
+                    ['fa-video', '#3b82f6', 'svc_videography'],
+                    ['fa-film', '#6366f1', 'svc_video_editing'],
+                    ['fa-share-nodes', '#ec4899', 'svc_social_media_management'],
+                    ['fa-pen', '#22c55e', 'svc_content_writing'],
+                    ['fa-magnifying-glass-chart', '#2563eb', 'svc_seo_services'],
+                    ['fa-file-lines', '#64748b', 'svc_article_writing'],
+                    ['fa-language', '#14b8a6', 'svc_translation_services'],
+                    ['fa-code', '#0f172a', 'svc_website_development'],
+                    ['fa-mobile-screen', '#8b5cf6', 'svc_mobile_app_development'],
+                    ['fa-bullhorn', '#2563eb', 'svc_digital_marketing'],
+                    ['fa-envelope', '#4f46e5', 'svc_email_marketing'],
+                    ['fa-microphone', '#6b7280', 'svc_voice_over'],
+                    ['fa-crown', '#eab308', 'svc_celebrities_public_figures'],
+                    ['fa-headset', '#22c55e', 'svc_virtual_assistant'],
+                    ['fa-ellipsis', '#94a3b8', 'svc_more_services'],
                 ];
             @endphp
             <div class="ocl-svcs">
                 @foreach ($ocServices as $s)
                     <a href="{{ $registerUrl }}" class="ocl-svc">
                         <span class="ocl-ic" style="background:{{ $s[1] }}1a;color:{{ $s[1] }};"><i class="fa-solid {{ $s[0] }}"></i></span>
-                        <h4>{{ $ar ? $s[3] : $s[2] }}</h4>
+                        <h4>{{ trans('landing.' . $s[2]) }}</h4>
                     </a>
                 @endforeach
             </div>
@@ -483,29 +475,29 @@
             <span class="ocl-tagline">{{ trans('landing.easy_management_better_experience_more_bookings') }}</span>
             @php
                 $ocBookings = [
-                    ['fa-stethoscope', '#22c55e', 'Clinics & Medical Centers', 'العيادات والمراكز الطبية', 'Book appointments with doctors and specialists.', 'حجز المواعيد مع الأطباء والمتخصصين.'],
-                    ['fa-scale-balanced', '#d97706', 'Lawyers & Consultants', 'المحامون والمستشارون', 'Book legal consultations and meetings easily.', 'حجز الاستشارات القانونية والمواعيد بسهولة.'],
-                    ['fa-graduation-cap', '#16a34a', 'Tutors & Courses', 'المدرسون والدورات', 'Book tutoring sessions and training courses.', 'حجز الدروس والدورات التدريبية بمرونة.'],
-                    ['fa-scissors', '#ec4899', 'Salons & Beauty', 'الصالونات والتجميل', 'Book hair, beauty and skincare appointments.', 'حجز مواعيد العناية بالشعر والبشرة والتجميل.'],
-                    ['fa-dumbbell', '#3b82f6', 'Gyms & Fitness', 'الأندية الرياضية واللياقة', 'Book workouts and fitness programs.', 'حجز البرامج التدريبية والحصص الرياضية.'],
-                    ['fa-bell-concierge', '#8b5cf6', 'Hotels & Accommodation', 'الفنادق والمنتجعات', 'Book rooms and stays at the best prices.', 'حجز الغرف والإقامات بأفضل الأسعار.'],
-                    ['fa-car', '#0f172a', 'Car Rentals', 'تأجير السيارات', 'Book daily or monthly car rentals in simple steps.', 'حجز السيارات اليومية أو الشهرية بخطوات بسيطة.'],
-                    ['fa-calendar-check', '#14b8a6', 'Event & Venues', 'قاعات المناسبات', 'Book venues and halls for events and gatherings.', 'حجز القاعات للمناسبات والحفلات والاجتماعات.'],
-                    ['fa-camera-retro', '#ec4899', 'Photographers', 'المصورون', 'Book photography sessions for individuals and companies.', 'حجز جلسات التصوير للأفراد والشركات.'],
-                    ['fa-screwdriver-wrench', '#6b7280', 'Maintenance & Repair', 'خدمات الصيانة والإصلاح', 'Book maintenance and repair for homes and devices.', 'حجز مواعيد الصيانة والإصلاح للمنازل والأجهزة.'],
-                    ['fa-truck', '#22c55e', 'Delivery Services', 'خدمات النقل والتوصيل', 'Book delivery for items within or between cities.', 'حجز خدمات نقل البضائع داخل المدن أو بينها.'],
-                    ['fa-spa', '#ec4899', 'Spa & Wellness', 'المنتجعات والسبا', 'Book spa, massage and wellness sessions.', 'حجز جلسات الاسترخاء والعلاج الطبيعي.'],
-                    ['fa-paw', '#d97706', 'Pet Care', 'رعاية الحيوانات الأليفة', 'Book pet care, grooming and veterinary visits.', 'حجز مواعيد الرعاية والتجميل والفحص البيطري.'],
-                    ['fa-plane', '#3b82f6', 'Flights & Travel', 'حجز تذاكر الطيران', 'Book domestic and international flights.', 'حجز رحلات الطيران الداخلية والدولية.'],
-                    ['fa-ellipsis', '#94a3b8', 'More Services', 'المزيد من الخدمات', 'Discover more services available for booking.', 'اكتشف المزيد من الخدمات المتاحة للحجز.'],
+                    ['fa-stethoscope', '#22c55e', 'bk_clinics_medical_centers', 'bk_desc_clinics_medical_centers'],
+                    ['fa-scale-balanced', '#d97706', 'bk_lawyers_consultants', 'bk_desc_lawyers_consultants'],
+                    ['fa-graduation-cap', '#16a34a', 'bk_tutors_courses', 'bk_desc_tutors_courses'],
+                    ['fa-scissors', '#ec4899', 'bk_salons_beauty', 'bk_desc_salons_beauty'],
+                    ['fa-dumbbell', '#3b82f6', 'bk_gyms_fitness', 'bk_desc_gyms_fitness'],
+                    ['fa-bell-concierge', '#8b5cf6', 'bk_hotels_accommodation', 'bk_desc_hotels_accommodation'],
+                    ['fa-car', '#0f172a', 'bk_car_rentals', 'bk_desc_car_rentals'],
+                    ['fa-calendar-check', '#14b8a6', 'bk_event_venues', 'bk_desc_event_venues'],
+                    ['fa-camera-retro', '#ec4899', 'bk_photographers', 'bk_desc_photographers'],
+                    ['fa-screwdriver-wrench', '#6b7280', 'bk_maintenance_repair', 'bk_desc_maintenance_repair'],
+                    ['fa-truck', '#22c55e', 'bk_delivery_services', 'bk_desc_delivery_services'],
+                    ['fa-spa', '#ec4899', 'bk_spa_wellness', 'bk_desc_spa_wellness'],
+                    ['fa-paw', '#d97706', 'bk_pet_care', 'bk_desc_pet_care'],
+                    ['fa-plane', '#3b82f6', 'bk_flights_travel', 'bk_desc_flights_travel'],
+                    ['fa-ellipsis', '#94a3b8', 'bk_more_services', 'bk_desc_more_services'],
                 ];
             @endphp
             <div class="ocl-bks">
                 @foreach ($ocBookings as $b)
                     <div class="ocl-bk">
                         <span class="ocl-ic" style="background:{{ $b[1] }}1a;color:{{ $b[1] }};"><i class="fa-solid {{ $b[0] }}"></i></span>
-                        <h4>{{ $ar ? $b[3] : $b[2] }}</h4>
-                        <p>{{ $ar ? $b[5] : $b[4] }}</p>
+                        <h4>{{ trans('landing.' . $b[2]) }}</h4>
+                        <p>{{ trans('landing.' . $b[3]) }}</p>
                     </div>
                 @endforeach
             </div>
@@ -649,7 +641,7 @@
                     @if ((int) ($plan->visibility ?? 1) === 2) @continue @endif
                     @php
                         $isAr = app()->getLocale() === 'ar';
-                        $mo = $isAr ? 'شهر' : 'month'; $mos = $isAr ? 'أشهر' : 'months'; $yr = $isAr ? 'سنة' : 'year';
+                        $mo = trans('landing.month'); $mos = trans('landing.months'); $yr = trans('landing.year');
                         $durMap = [1 => '/ '.$mo, 2 => '/ 3 '.$mos, 3 => '/ 6 '.$mos, 4 => '/ '.$yr, 5 => trans('landing.lifetime')];
                         $dur = $plan->duration && isset($durMap[$plan->duration]) ? $durMap[$plan->duration] : '';
                         $planFeatures = array_filter(explode('|', (string) $plan->features));
@@ -661,7 +653,7 @@
                         $xf = is_array($plan->plan_extra_features ?? null) ? $plan->plan_extra_features : [];
                         $limLine = function ($k, $labelEn, $labelAr) use ($lim, $isAr) {
                             if (empty($lim[$k]['type'])) return null;
-                            $val = (string) $lim[$k]['type'] === '2' ? ($isAr ? 'غير محدود' : 'Unlimited') : ($lim[$k]['count'] ?? 0);
+                            $val = (string) $lim[$k]['type'] === '2' ? (trans('landing.unlimited')) : ($lim[$k]['count'] ?? 0);
                             return $val . ' ' . ($isAr ? $labelAr : $labelEn);
                         };
                     @endphp
@@ -703,51 +695,39 @@
         $isArLp = app()->getLocale() === 'ar';
         // Short blurb per theme (the theme table has no description column).
         $themeBlurbs = [
-            'Restaurant' => $isArLp
-                ? 'قالب دافئ يفتح الشهية للمطاعم والكافيهات والمطابخ السحابية — قائمة أنيقة، سلة جانبية، صفحات منتجات ودفع سلس، متجاوب بالكامل.'
-                : 'A warm, appetite-first storefront for restaurants, cafés & cloud kitchens — hero menu, live cart drawer, product pages and a smooth checkout, fully mobile.',
-            'Retail' => $isArLp
-                ? 'متجر أنيق للأزياء والأحذية والإكسسوارات — قائمة تسوّق بفلاتر، صفحات منتجات بخيارات ومقاسات، سلة جانبية ودفع كامل، متجاوب بالكامل.'
-                : 'A polished storefront for fashion, shoes, bags & accessories — filterable shop, product pages with options & sizes, side bag and full checkout, fully mobile.',
-            'Grocery' => $isArLp
-                ? 'متجر بقالة وخضار وفواكه سريع — أرفف بفلاتر، بطاقات منتجات مدمجة، سلة جانبية ودفع كامل مع الطلب عبر واتساب.'
-                : 'A fast grocery & fresh-market storefront — aisle filters, compact product cards, a side basket and full checkout with WhatsApp ordering.',
-            'Clinic' => $isArLp
-                ? 'موقع عيادة أو مستشفى — أطباء وأقسام وحجز مواعيد مع تأكيد عبر واتساب. أضف أطبائك من لوحة التحكم.'
-                : 'A clinic & hospital site — doctors, departments and appointment booking with WhatsApp confirmation. Manage your doctors from the panel.',
-            'Booking' => $isArLp
-                ? 'موقع حجوزات للفنادق والقاعات والمواعيد — عرض الخدمات ونموذج حجز مع تأكيد عبر واتساب.'
-                : 'A booking site for hotels, venues & appointments — service listings and a booking form with WhatsApp confirmation.',
-            'Pharmacy' => $isArLp
-                ? 'متجر صيدلية ودواء نظيف — تصنيفات، بطاقات منتجات مدمجة، فلاتر، سلة جانبية ودفع كامل مع الطلب عبر واتساب.'
-                : 'A clean pharmacy & drugstore storefront — category tiles, compact product cards, filters, a side basket and full checkout with WhatsApp ordering.',
-            'Appointment' => $isArLp
-                ? 'موقع صالون وتجميل — خدمات ومختصون وحجز مواعيد مع تأكيد عبر واتساب. للشعر والبشرة والأظافر والسبا.'
-                : 'A salon & beauty site — services, specialists and appointment booking with WhatsApp confirmation. For hair, skin, nails & spa.',
-            'Classic' => $isArLp
-                ? 'تصميم كلاسيكي مرن يناسب أي متجر — بسيط وسريع وسهل التخصيص بألوانك وشعارك.'
-                : 'A clean, flexible layout that suits any store — simple, fast and easy to brand with your own colours & logo.',
+            'Restaurant' => trans('landing.a_warm_appetite_first_storefront_for_restaurants_caf_s_clo'),
+            'Retail' => trans('landing.a_polished_storefront_for_fashion_shoes_bags_accessories_f'),
+            'Grocery' => trans('landing.a_fast_grocery_fresh_market_storefront_aisle_filters_compa'),
+            'Clinic' => trans('landing.a_clinic_hospital_site_doctors_departments_and_appointment'),
+            'Booking' => trans('landing.a_booking_site_for_hotels_venues_appointments_service_list'),
+            'Pharmacy' => trans('landing.a_clean_pharmacy_drugstore_storefront_category_tiles_compa'),
+            'Appointment' => trans('landing.a_salon_beauty_site_services_specialists_and_appointment_b'),
+            'Classic' => trans('landing.a_clean_flexible_layout_that_suits_any_store_simple_fast_a'),
         ];
     @endphp
     @if ($galleryThemes->count() > 0)
     <section class="ocl-sec" id="templates-gallery">
         <div class="wrap">
             <div class="center">
-                <span class="eyebrow">{{ $isArLp ? 'القوالب' : 'Our themes' }}</span>
-                <h2 class="sec-title">{{ $isArLp ? 'قوالب جاهزة لمتجرك' : 'Ready-made themes for your store' }}</h2>
-                <p class="sec-sub">{{ $isArLp ? 'اختر قالباً احترافياً، خصّصه بألوانك، وأطلق متجرك خلال دقائق.' : 'Pick a professional theme, brand it with your colours, and launch in minutes.' }}</p>
+                <span class="eyebrow">{{ trans('landing.our_themes') }}</span>
+                <h2 class="sec-title">{{ trans('landing.ready_made_themes_for_your_store') }}</h2>
+                <p class="sec-sub">{{ trans('landing.pick_a_professional_theme_brand_it_with_your_colours_and_l') }}</p>
             </div>
             <div class="ocl-themes">
                 @foreach ($galleryThemes as $theme)
                     @php
-                        $blurb = $themeBlurbs[$theme->name] ?? ($isArLp
-                            ? 'قالب عصري متجاوب مع الجوال يمكنك تخصيصه بألوانك وشعارك.'
-                            : 'A modern, mobile-ready storefront theme you can brand with your own colours & logo.');
-                        $themeNamesAr = [
-                            'Classic' => 'كلاسيكي', 'Restaurant' => 'مطاعم', 'Retail' => 'تجزئة', 'Grocery' => 'بقالة',
-                            'Pharmacy' => 'صيدلية', 'Booking' => 'حجوزات', 'Clinic' => 'عيادة', 'Appointment' => 'مواعيد وصالونات',
+                        $blurb = $themeBlurbs[$theme->name] ?? (trans('landing.a_modern_mobile_ready_storefront_theme_you_can_brand_with_'));
+                        $themeNameKeys = [
+                            'Classic' => 'theme_name_classic',
+                            'Restaurant' => 'theme_name_restaurant',
+                            'Retail' => 'theme_name_retail',
+                            'Grocery' => 'theme_name_grocery',
+                            'Pharmacy' => 'theme_name_pharmacy',
+                            'Booking' => 'theme_name_booking',
+                            'Clinic' => 'theme_name_clinic',
+                            'Appointment' => 'theme_name_appointment',
                         ];
-                        $themeDisplay = $isArLp && isset($themeNamesAr[$theme->name]) ? $themeNamesAr[$theme->name] : $theme->name;
+                        $themeDisplay = isset($themeNameKeys[$theme->name]) ? trans('landing.' . $themeNameKeys[$theme->name]) : $theme->name;
                     @endphp
                     <div class="ocl-theme">
                         <div class="ocl-theme__img">

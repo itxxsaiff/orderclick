@@ -271,6 +271,22 @@ class helper
         }
     }
 
+    /**
+     * Translated label for a store category. Categories are admin-entered rows, so the name in
+     * the database is the English one; when a translation key exists for it (landing.cat_*) the
+     * current language wins, otherwise the stored name is shown unchanged.
+     */
+    public static function category_label($name)
+    {
+        $name = trim((string) $name);
+        if ($name === '') {
+            return $name;
+        }
+        $key = 'landing.cat_' . trim(preg_replace('/_+/', '_', preg_replace('/[^a-z0-9]+/u', '_', mb_strtolower($name))), '_');
+
+        return \Illuminate\Support\Facades\Lang::has($key) ? trans($key) : $name;
+    }
+
     public static function document_path($file)
     {
         $file = basename((string) $file);

@@ -47,7 +47,9 @@
            overflow:hidden simply cut the text off. Letting them shrink fixes the whole page. */
         .mk-hero__in > *, .mk-hsearch > *, .mk-hfld, .mk-htile, .mk-htile > * { min-width: 0; }
         .mk-hfld { overflow: hidden; }
-        .mk-hero h1, .mk-hero p.lead, .mk-htile b, .mk-htile span { overflow-wrap: anywhere; }
+        .mk-hero h1, .mk-hero p.lead, .mk-htile span { overflow-wrap: anywhere; }
+        /* Long compounds (German, Arabic) hyphenate instead of snapping mid-word. */
+        .mk-htile b { overflow-wrap: break-word; hyphens: auto; line-height: 1.25; }
         @media (max-width:430px){
             .mk .wrap { padding: 22px 16px; }
             .mk-hero__in { min-height: 0; padding: 64px 0 72px; gap: 24px; }
@@ -153,35 +155,35 @@
         <section class="mk-hero">
             <div class="wrap mk-hero__in">
                 <div>
-                    <h1>{{ $mkAr ? 'كل ما تحتاجه،' : 'Everything You Need,' }}<br><span class="hl">{{ $mkAr ? 'في مكان واحد' : 'In One Place' }}</span></h1>
-                    <p class="lead">{{ $mkAr ? 'اكتشف أفضل المتاجر والمطاعم والخدمات القريبة منك — اطلب أو احجز وأكمل عبر واتساب.' : 'Discover the best stores, restaurants and services near you — order or book and finish on WhatsApp.' }}</p>
+                    <h1>{{ trans('landing.everything_you_need') }}<br><span class="hl">{{ trans('landing.in_one_place') }}</span></h1>
+                    <p class="lead">{{ trans('landing.discover_the_best_stores_restaurants_and_services_near_you') }}</p>
 
                     <form method="get" action="{{ $base }}" id="mkForm">
                         <input type="hidden" name="filter" id="mkFilter" value="{{ $filter }}">
                         <input type="hidden" name="lat" id="mkLat" value="{{ request('lat') }}">
                         <input type="hidden" name="lng" id="mkLng" value="{{ request('lng') }}">
-                        <div class="mk-hsearch">
+                        <div class="mk-hsearch" id="find-store">
                             <div class="mk-hfld">
                                 <i class="fa-solid fa-magnifying-glass"></i>
-                                <input type="text" name="q" value="{{ $q }}" placeholder="{{ $mkAr ? 'ابحث عن متجر أو خدمة...' : 'Search stores, services...' }}">
+                                <input type="text" name="q" id="mkQuery" value="{{ $q }}" placeholder="{{ trans('landing.search_stores_services') }}">
                             </div>
                             <div class="mk-hfld">
                                 <i class="fa-solid fa-earth-americas"></i>
                                 <select name="country" id="mkCountry" onchange="document.getElementById('mkForm').submit()">
-                                    <option value="">{{ $mkAr ? 'كل الدول' : 'All Countries' }}</option>
+                                    <option value="">{{ trans('landing.all_countries') }}</option>
                                     @foreach ($countries as $co)
                                         <option value="{{ $co }}" {{ $country === $co ? 'selected' : '' }}>{{ $co }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <button type="submit" class="mk-hbtn"><i class="fa-solid fa-magnifying-glass"></i> {{ $mkAr ? 'بحث' : 'Search' }}</button>
+                            <button type="submit" class="mk-hbtn"><i class="fa-solid fa-magnifying-glass"></i> {{ trans('landing.search') }}</button>
                         </div>
                     </form>
 
                     <div class="mk-trust">
-                        <div><i class="fa-solid fa-store"></i> {{ $totalStores }}+ {{ $mkAr ? 'متجر' : 'stores' }}</div>
-                        <div><i class="fa-brands fa-whatsapp"></i> {{ $mkAr ? 'طلب عبر واتساب' : 'Order on WhatsApp' }}</div>
-                        <div><i class="fa-solid fa-bolt"></i> {{ $mkAr ? 'سريع وسهل' : 'Fast & easy' }}</div>
+                        <div><i class="fa-solid fa-store"></i> {{ $totalStores }}+ {{ trans('landing.stores') }}</div>
+                        <div><i class="fa-brands fa-whatsapp"></i> {{ trans('landing.order_on_whatsapp') }}</div>
+                        <div><i class="fa-solid fa-bolt"></i> {{ trans('landing.fast_easy') }}</div>
                     </div>
                 </div>
 
@@ -190,12 +192,12 @@
                     @foreach ($heroTiles as $ca)
                         <a href="{{ $base }}?store={{ urlencode($ca->name) }}" class="mk-htile">
                             <span class="ic"><i class="fa-solid {{ $mkIcon($ca->name) }}"></i></span>
-                            <div><b>{{ $ca->name }}</b><span>{{ $mkAr ? 'تصفّح المتاجر' : 'Browse stores' }}</span></div>
+                            <div><b>{{ helper::category_label($ca->name) }}</b><span>{{ trans('landing.browse_stores') }}</span></div>
                         </a>
                     @endforeach
                     <a href="#mk-all" class="mk-htile">
                         <span class="ic"><i class="fa-solid fa-ellipsis"></i></span>
-                        <div><b>{{ $mkAr ? 'المزيد' : 'More' }}</b><span>{{ $mkAr ? 'كل الفئات' : 'Explore all' }}</span></div>
+                        <div><b>{{ trans('landing.more') }}</b><span>{{ trans('landing.explore_all') }}</span></div>
                     </a>
                 </div>
             </div>
@@ -205,11 +207,11 @@
         <div class="wrap mk-feat">
             <div class="mk-feat__box">
                 @php $feats = [
-                    ['fa-shapes', $mkAr ? 'تشكيلة واسعة' : 'Wide Selection', $totalStores.'+ '.($mkAr?'متجر':'stores')],
-                    ['fa-truck-fast', $mkAr ? 'توصيل سريع' : 'Fast Delivery', $mkAr ? '٣٠–٦٠ دقيقة' : '30–60 min'],
-                    ['fa-lock', $mkAr ? 'دفع آمن' : 'Secure Payment', $mkAr ? '١٠٠٪ آمن' : '100% safe'],
-                    ['fa-tags', $mkAr ? 'أفضل الأسعار' : 'Best Prices', $mkAr ? 'كل يوم' : 'Everyday'],
-                    ['fa-headset', $mkAr ? 'دعم متواصل' : '24/7 Support', $mkAr ? 'نحن هنا لك' : "We're here for you"],
+                    ['fa-shapes', trans('landing.wide_selection'), $totalStores.'+ '.(trans('landing.stores'))],
+                    ['fa-truck-fast', trans('landing.fast_delivery'), trans('landing.30_60_min')],
+                    ['fa-lock', trans('landing.secure_payment'), trans('landing.100_safe')],
+                    ['fa-tags', trans('landing.best_prices'), trans('landing.everyday')],
+                    ['fa-headset', trans('landing.24_7_support'), trans('landing.we_re_here_for_you')],
                 ]; @endphp
                 @foreach ($feats as $f)
                     <div class="mk-feat__item">
@@ -224,12 +226,12 @@
             {{-- ===== filter pills ===== --}}
             <div class="mk-filters">
                 @php $pills = [
-                    '' => [$mkAr ? 'الكل' : 'All Stores', 'fa-store'],
-                    'near' => [$mkAr ? 'بالقرب مني' : 'Near Me', 'fa-location-crosshairs'],
-                    'open' => [$mkAr ? 'مفتوح الآن' : 'Open Now', 'fa-clock'],
-                    'top' => [$mkAr ? 'الأعلى تقييماً' : 'Top Rated', 'fa-star'],
-                    'featured' => [$mkAr ? 'مميّزة' : 'Featured', 'fa-award'],
-                    'new' => [$mkAr ? 'جديدة' : 'New Stores', 'fa-bolt'],
+                    '' => [trans('landing.all_stores'), 'fa-store'],
+                    'near' => [trans('landing.near_me'), 'fa-location-crosshairs'],
+                    'open' => [trans('landing.open_now'), 'fa-clock'],
+                    'top' => [trans('landing.top_rated'), 'fa-star'],
+                    'featured' => [trans('landing.featured'), 'fa-award'],
+                    'new' => [trans('landing.new_stores'), 'fa-bolt'],
                 ]; @endphp
                 @foreach ($pills as $key => $p)
                     <button type="button" class="mk-pill {{ $filter === $key ? 'active' : '' }}" data-filter="{{ $key }}">
@@ -242,27 +244,27 @@
             @if (!$hasFilter)
                 <div class="mk-offer">
                     <div>
-                        <h3>{{ $mkAr ? 'عروض حصرية لك!' : 'Exclusive Offers Just for You!' }}</h3>
-                        <p>{{ $mkAr ? 'استمتع بأفضل الخصومات من متاجرك المفضّلة.' : 'Enjoy amazing deals and discounts from your favourite stores.' }}</p>
+                        <h3>{{ trans('landing.exclusive_offers_just_for_you') }}</h3>
+                        <p>{{ trans('landing.enjoy_amazing_deals_and_discounts_from_your_favourite_stor') }}</p>
                     </div>
                     <span class="code">WELCOME</span>
                 </div>
 
                 @if (count($featured) > 0)
                     <div class="mk-sec">
-                        <div class="mk-sec__head"><h2><i class="fa-solid fa-award" style="color:var(--a)"></i> {{ $mkAr ? 'متاجر مميّزة' : 'Featured Stores' }}</h2></div>
+                        <div class="mk-sec__head"><h2><i class="fa-solid fa-award" style="color:var(--a)"></i> {{ trans('landing.featured_stores') }}</h2></div>
                         <div class="mk-scroll">@foreach ($featured as $store)@include('landing.partials.store_card')@endforeach</div>
                     </div>
                 @endif
                 @if (count($popular) > 0)
                     <div class="mk-sec">
-                        <div class="mk-sec__head"><h2><i class="fa-solid fa-fire" style="color:#f97316"></i> {{ $mkAr ? 'الأكثر رواجاً' : 'Popular Stores' }}</h2></div>
+                        <div class="mk-sec__head"><h2><i class="fa-solid fa-fire" style="color:#f97316"></i> {{ trans('landing.popular_stores') }}</h2></div>
                         <div class="mk-scroll">@foreach ($popular as $store)@include('landing.partials.store_card')@endforeach</div>
                     </div>
                 @endif
                 @if (count($latest) > 0)
                     <div class="mk-sec">
-                        <div class="mk-sec__head"><h2><i class="fa-solid fa-bolt" style="color:#3b82f6"></i> {{ $mkAr ? 'أحدث المتاجر' : 'Latest Stores' }}</h2></div>
+                        <div class="mk-sec__head"><h2><i class="fa-solid fa-bolt" style="color:#3b82f6"></i> {{ trans('landing.latest_stores') }}</h2></div>
                         <div class="mk-scroll">@foreach ($latest as $store)@include('landing.partials.store_card')@endforeach</div>
                     </div>
                 @endif
@@ -271,16 +273,16 @@
             {{-- ===== all stores grid ===== --}}
             <div class="mk-sec" id="mk-all">
                 <div class="mk-sec__head">
-                    <h2>{{ $hasFilter ? ($mkAr ? 'النتائج' : 'Results') : ($mkAr ? 'كل المتاجر' : 'All Stores') }}</h2>
-                    <span class="cnt">{{ count($stores) }} {{ $mkAr ? 'متجر' : 'stores' }}</span>
+                    <h2>{{ $hasFilter ? (trans('landing.results')) : (trans('landing.all_stores')) }}</h2>
+                    <span class="cnt">{{ count($stores) }} {{ trans('landing.stores') }}</span>
                 </div>
                 @if (count($stores) > 0)
                     <div class="mk-grid">@foreach ($stores as $store)@include('landing.partials.store_card')@endforeach</div>
                 @else
                     <div class="mk-empty">
                         <i class="fa-solid fa-store-slash"></i>
-                        <h3 style="margin:14px 0 6px;">{{ $mkAr ? 'لا توجد متاجر مطابقة' : 'No stores match your search' }}</h3>
-                        <p>{{ $mkAr ? 'جرّب تغيير الدولة أو الفئة أو الفلتر.' : 'Try changing the country, category or filter.' }}</p>
+                        <h3 style="margin:14px 0 6px;">{{ trans('landing.no_stores_match_your_search') }}</h3>
+                        <p>{{ trans('landing.try_changing_the_country_category_or_filter') }}</p>
                     </div>
                 @endif
             </div>
@@ -310,4 +312,15 @@
             });
         })();
     </script>
+
+    {{-- "Find Store" in the menu links here, so drop the cursor straight in the search box. --}}
+    <script>
+        if (location.hash === '#find-store') {
+            window.addEventListener('load', function () {
+                var q = document.getElementById('mkQuery');
+                if (q) { q.focus({ preventScroll: true }); }
+            });
+        }
+    </script>
+
 @endsection

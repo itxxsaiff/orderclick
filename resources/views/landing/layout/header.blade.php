@@ -59,17 +59,17 @@
     </div>
     <div class="ocl-mnav__body">
         <nav class="ocl-mnav__links">
-            <a href="{{ URL::to('/#categories') }}" data-bs-dismiss="offcanvas"><span class="ic"><i class="fa-solid fa-grip"></i></span>{{ trans('landing.categories') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
-            <a href="{{ URL::to('/#how') }}" data-bs-dismiss="offcanvas"><span class="ic"><i class="fa-solid fa-wand-magic-sparkles"></i></span>{{ trans('landing.how_it_works') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
+            <a href="{{ URL::to('/#categories') }}"><span class="ic"><i class="fa-solid fa-grip"></i></span>{{ trans('landing.categories') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
+            <a href="{{ URL::to('/#how') }}"><span class="ic"><i class="fa-solid fa-wand-magic-sparkles"></i></span>{{ trans('landing.how_it_works') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
             @if ($ocSubOn)
-                <a href="{{ URL::to('/#pricing') }}" data-bs-dismiss="offcanvas"><span class="ic"><i class="fa-solid fa-tag"></i></span>{{ trans('landing.pricing_plan') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
+                <a href="{{ URL::to('/#pricing') }}"><span class="ic"><i class="fa-solid fa-tag"></i></span>{{ trans('landing.pricing_plan') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
             @endif
             <a href="{{ URL::to('marketplace') }}"><span class="ic"><i class="fa-solid fa-store"></i></span>{{ trans('landing.marketplace') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
             @if ($ocBlogOn)
                 <a href="{{ URL::to('blog_list') }}"><span class="ic"><i class="fa-solid fa-newspaper"></i></span>{{ trans('landing.blogs') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
             @endif
-            <a href="{{ URL::to('/#contact') }}" data-bs-dismiss="offcanvas"><span class="ic"><i class="fa-solid fa-headset"></i></span>{{ trans('landing.contact_us') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
-            <a href="#" data-bs-dismiss="offcanvas" data-bs-toggle="modal" data-bs-target="#searchModal"><span class="ic"><i class="fa-solid fa-magnifying-glass"></i></span>{{ trans('landing.search_store') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
+            <a href="{{ URL::to('/#contact') }}"><span class="ic"><i class="fa-solid fa-headset"></i></span>{{ trans('landing.contact_us') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
+            <a href="{{ URL::to('marketplace#find-store') }}"><span class="ic"><i class="fa-solid fa-magnifying-glass"></i></span>{{ trans('landing.search_store') }}<i class="fa-solid fa-chevron-{{ $ocIsAr ? 'left' : 'right' }} arw"></i></a>
         </nav>
 
         @if ($ocLangOn)
@@ -91,5 +91,49 @@
         <a href="{{ $ocRegisterUrl }}" class="ocl-btn ocl-btn--primary">{{ trans('landing.get_started') }}</a>
     </div>
 </div>
+
+{{-- Mobile menu actions. Bootstrap's own data-bs-dismiss on an <a> calls preventDefault()
+     and picks its target from the href hash, so in-page links did nothing at all.
+     We close the drawer ourselves, then scroll (or open the search modal) once it is hidden.
+     Bootstrap's bundle loads below this markup, so everything is resolved at click time. --}}
+<script>
+    document.addEventListener('click', function (e) {
+        var menu = document.getElementById('oclMobileMenu');
+        if (!menu || !window.bootstrap) return;
+
+        var link = e.target.closest ? e.target.closest('a') : null;
+        if (!link || !menu.contains(link)) return;
+
+        var modal = link.getAttribute('data-oc-modal');
+        var hash = '';
+        if (!modal) {
+            try {
+                var u = new URL(link.href, location.href);
+                if (u.hash && u.pathname === location.pathname && u.search === location.search) {
+                    hash = u.hash;
+                }
+            } catch (err) {}
+        }
+        // Links to another page navigate normally; the drawer goes with the old page.
+        if (!modal && !hash) return;
+
+        e.preventDefault();
+        var target = document.querySelector(modal || hash);
+        var run = function () {
+            menu.removeEventListener('hidden.bs.offcanvas', run);
+            if (!target) return;
+            if (modal) {
+                bootstrap.Modal.getOrCreateInstance(target).show();
+                return;
+            }
+            var nav = document.querySelector('.ocl-nav');
+            var top = target.getBoundingClientRect().top + window.pageYOffset - (nav ? nav.offsetHeight : 0);
+            window.scrollTo({ top: top > 0 ? top : 0, behavior: 'smooth' });
+            if (history.replaceState) history.replaceState(null, '', hash);
+        };
+        menu.addEventListener('hidden.bs.offcanvas', run);
+        bootstrap.Offcanvas.getOrCreateInstance(menu).hide();
+    });
+</script>
 
 @include('cookie-consent::index')

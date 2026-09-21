@@ -12,8 +12,8 @@
             <div class="ocw__pick ocw-sys {{ ($draft['system'] ?? '') === $s['key'] ? 'sel' : '' }}" data-key="{{ $s['key'] }}">
                 <span class="tick"><i class="fa-solid fa-check"></i></span>
                 <div style="font-size:26px;line-height:1;">{{ $s['icon'] }}</div>
-                <h4 style="margin-top:10px;">{{ $ar ? $s['name_ar'] : $s['name'] }}</h4>
-                <p>{{ $ar ? $s['desc_ar'] : $s['desc'] }}</p>
+                <h4 style="margin-top:10px;">{{ $s['name'] }}</h4>
+                <p>{{ $s['desc'] }}</p>
             </div>
         @endforeach
     </div>

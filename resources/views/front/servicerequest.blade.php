@@ -23,7 +23,7 @@
         <div class="container">
             <div class="ocb-card">
                 <h1>{{ trans('labels.request_a_service') }}</h1>
-                <p class="ocb-sub">{{ $isAr ? 'أخبرنا بما تحتاجه وسنتواصل معك.' : 'Tell us what you need and we\'ll get back to you.' }}</p>
+                <p class="ocb-sub">{{ trans('landing.tell_us_what_you_need_and_we_ll_get_back_to_you') }}</p>
 
                 <form action="{{ URL::to(@$storeinfo->slug . '/save-service') }}" method="POST">
                     @csrf

@@ -147,9 +147,14 @@ class LanguageController extends Controller
             if (empty($incoming)) {
                 continue;
             }
+            // English is the master key list: a key that exists in en/ may be imported even when
+            // this language file has never had it (new strings added by an update), while keys
+            // that exist nowhere are still ignored so a stray file cannot pollute the language.
             $current = self::readGroup($code, $file);
-            $merged = array_merge($current, array_intersect_key($incoming, $current));
-            $applied += count(array_intersect_key($incoming, $current));
+            $known   = self::readGroup('en', $file) + $current;
+            $valid   = array_intersect_key($incoming, $known);
+            $merged  = array_merge($current, $valid);
+            $applied += count($valid);
             self::writeGroup($code, $file, $merged);
         }
 

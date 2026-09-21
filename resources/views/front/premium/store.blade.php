@@ -4,15 +4,15 @@
     $cfg = array_merge([
         'bg' => '#fdf7ee', 'imgset' => 'food', 'variant' => 'food', 'popular' => true,
         'heroImg' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=75',
-        'h1a' => 'We serve the', 'h1hl' => $isAr ? 'أشهى الأطباق' : 'taste you love', 'emoji' => '😋',
-        'lead' => $isAr ? 'طازج ويُحضّر عند الطلب — تصفّح واطلب في ثوانٍ عبر واتساب.' : 'Fresh and made to order — browse and order in seconds on WhatsApp.',
-        'cta' => $isAr ? 'تصفّح' : 'Explore', 'addLabel' => $isAr ? 'أضف' : 'Add', 'itemsLabel' => $isAr ? 'صنف' : 'items',
-        'popEyebrow' => $isAr ? 'الأكثر طلباً' : 'Popular picks', 'popTitle' => $isAr ? 'يحبها الجميع' : 'Loved by everyone',
-        'menuEyebrow' => $isAr ? 'قائمتنا' : 'Our menu', 'menuTitle' => $isAr ? 'تصفّح الكل' : 'Browse everything', 'menuSub' => $isAr ? 'اختر ما يناسبك وأضفه إلى السلة.' : 'Pick what you like and add it to your cart.',
-        'f1' => ['fa-bolt', $isAr ? 'توصيل سريع' : 'Fast delivery', $isAr ? '30–60 دقيقة' : '30–60 min'],
-        'f2' => ['fa-lock', $isAr ? 'طلب آمن' : 'Secure order', $isAr ? 'دفع موثوق' : 'Trusted payments'],
-        'f3' => ['fa-brands fa-whatsapp', $isAr ? 'عبر واتساب' : 'On WhatsApp', $isAr ? 'بضغطة واحدة' : 'One tap away'],
-        'f4' => ['fa-medal', $isAr ? 'جودة ممتازة' : 'Great quality', $isAr ? 'طازج دائماً' : 'Always fresh'],
+        'h1a' => 'We serve the', 'h1hl' => trans('landing.taste_you_love'), 'emoji' => '😋',
+        'lead' => trans('landing.fresh_and_made_to_order_browse_and_order_in_seconds_on_wha'),
+        'cta' => trans('landing.explore'), 'addLabel' => trans('landing.add'), 'itemsLabel' => trans('landing.items'),
+        'popEyebrow' => trans('landing.popular_picks'), 'popTitle' => trans('landing.loved_by_everyone'),
+        'menuEyebrow' => trans('landing.our_menu'), 'menuTitle' => trans('landing.browse_everything'), 'menuSub' => trans('landing.pick_what_you_like_and_add_it_to_your_cart'),
+        'f1' => ['fa-bolt', trans('landing.fast_delivery'), trans('landing.30_60_min')],
+        'f2' => ['fa-lock', trans('landing.secure_order'), trans('landing.trusted_payments')],
+        'f3' => ['fa-brands fa-whatsapp', trans('landing.on_whatsapp'), trans('landing.one_tap_away')],
+        'f4' => ['fa-medal', trans('landing.great_quality'), trans('landing.always_fresh')],
     ], $cfg ?? []);
 
     $app     = \App\Models\Settings::where('vendor_id', $storeinfo->id)->first();
@@ -154,7 +154,7 @@
                     <p class="lead">{{ $rtDesc ?: $cfg['lead'] }}</p>
                     <div class="cta">
                         <a href="#rt-menu" class="rt-btn rt-btn--p"><i class="fa-solid {{ $cfg['variant'] === 'retail' ? 'fa-bag-shopping' : ($cfg['variant'] === 'grocery' ? 'fa-basket-shopping' : 'fa-utensils') }}"></i> {{ $cfg['cta'] }}</a>
-                        @if ($rtWa)<a href="https://wa.me/{{ $rtWa }}" target="_blank" rel="noopener" class="rt-btn rt-btn--wa"><i class="fa-brands fa-whatsapp"></i> {{ $isAr ? 'اطلب عبر واتساب' : 'Order on WhatsApp' }}</a>@endif
+                        @if ($rtWa)<a href="https://wa.me/{{ $rtWa }}" target="_blank" rel="noopener" class="rt-btn rt-btn--wa"><i class="fa-brands fa-whatsapp"></i> {{ trans('landing.order_on_whatsapp') }}</a>@endif
                     </div>
                     <div class="chips">
                         @foreach (array_slice($rtCats, 0, 4) as $c)<a href="#rt-cat-{{ $c->id }}">{{ $c->name }}</a>@endforeach
@@ -230,7 +230,7 @@
                                     <div class="rt-stars">{!! $rtStars(@$item->avg_ratting) !!}</div>
                                     <p class="desc">{{ !empty($item->description) ? \Illuminate\Support\Str::limit(strip_tags($item->description), 66) : $cfg['menuSub'] }}</p>
                                     <div class="rt-dish__foot">
-                                        <span class="rt-price">{{ $hasVar ? ($isAr ? 'من ' : 'From ') : '' }}{{ helper::currency_formate($price, @$storeinfo->id) }}@if ($off > 0)<del>{{ helper::currency_formate($orig, @$storeinfo->id) }}</del>@endif</span>
+                                        <span class="rt-price">{{ $hasVar ? (trans('landing.from')) : '' }}{{ helper::currency_formate($price, @$storeinfo->id) }}@if ($off > 0)<del>{{ helper::currency_formate($orig, @$storeinfo->id) }}</del>@endif</span>
                                         <button type="button" class="rt-add" onclick="showitems('{{ $item->id }}','{{ $iname }}','{{ $item->item_price }}')"><span class="addcartbtn-{{ $item->id }}"><i class="fa-solid fa-cart-plus"></i> {{ $cfg['addLabel'] }}</span><span class="load showload-{{ $item->id }}" style="display:none"></span></button>
                                     </div>
                                 </div>

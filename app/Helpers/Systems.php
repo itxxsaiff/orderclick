@@ -37,26 +37,20 @@ class Systems
         return [
             self::ORDERS => [
                 'key'   => self::ORDERS,
-                'name'  => 'Orders & Stores',
-                'name_ar' => 'الطلبات والمتاجر',
-                'desc'  => 'Restaurants, groceries, pharmacies and retail shops selling products.',
-                'desc_ar' => 'المطاعم والبقالات والصيدليات ومتاجر التجزئة.',
+                'name'  => trans('labels.system_orders_stores'),
+                'desc'  => trans('labels.system_orders_stores_desc'),
                 'icon'  => '🛍️',
             ],
             self::BOOKING => [
                 'key'   => self::BOOKING,
-                'name'  => 'Booking',
-                'name_ar' => 'الحجوزات',
-                'desc'  => 'Clinics, salons, gyms, hotels and anything booked by appointment.',
-                'desc_ar' => 'العيادات والصالونات والنوادي والفنادق والمواعيد.',
+                'name'  => trans('labels.system_booking'),
+                'desc'  => trans('labels.system_booking_desc'),
                 'icon'  => '📅',
             ],
             self::SERVICE => [
                 'key'   => self::SERVICE,
-                'name'  => 'Service Marketplace',
-                'name_ar' => 'سوق الخدمات',
-                'desc'  => 'Freelancers, professional providers, home services, drivers and delivery.',
-                'desc_ar' => 'المستقلون ومزودو الخدمات والخدمات المنزلية والسائقون والتوصيل.',
+                'name'  => trans('labels.system_service_marketplace'),
+                'desc'  => trans('labels.system_service_marketplace_desc'),
                 'icon'  => '🧰',
             ],
         ];
@@ -85,16 +79,16 @@ class Systems
      */
     public const ENTITY_LABELS = [
         'orders' => [
-            'primary'   => ['one' => ['en' => 'Product', 'ar' => 'منتج'], 'many' => ['en' => 'Products', 'ar' => 'منتجات']],
-            'secondary' => ['one' => ['en' => 'Order', 'ar' => 'طلب'], 'many' => ['en' => 'Orders', 'ar' => 'طلبات']],
+            'primary'   => ['one' => 'entity_product', 'many' => 'entity_products'],
+            'secondary' => ['one' => 'entity_order', 'many' => 'entity_orders'],
         ],
         'booking' => [
-            'primary'   => ['one' => ['en' => 'Service', 'ar' => 'خدمة'], 'many' => ['en' => 'Services', 'ar' => 'خدمات']],
-            'secondary' => ['one' => ['en' => 'Booking', 'ar' => 'حجز'], 'many' => ['en' => 'Bookings', 'ar' => 'حجوزات']],
+            'primary'   => ['one' => 'entity_service', 'many' => 'entity_services'],
+            'secondary' => ['one' => 'entity_booking', 'many' => 'entity_bookings'],
         ],
         'service' => [
-            'primary'   => ['one' => ['en' => 'Service Listing', 'ar' => 'عرض خدمة'], 'many' => ['en' => 'Service Listings', 'ar' => 'عروض الخدمات']],
-            'secondary' => ['one' => ['en' => 'Service Request', 'ar' => 'طلب خدمة'], 'many' => ['en' => 'Service Requests', 'ar' => 'طلبات الخدمة']],
+            'primary'   => ['one' => 'entity_service_listing', 'many' => 'entity_service_listings'],
+            'secondary' => ['one' => 'entity_service_request', 'many' => 'entity_service_requests'],
         ],
     ];
 
@@ -104,14 +98,14 @@ class Systems
         $set = self::ENTITY_LABELS[self::normalise($system)][$which] ?? self::ENTITY_LABELS['orders'][$which];
         $form = ((int) $count === 1) ? 'one' : 'many';   // -1 = unlimited reads as plural
 
-        return $set[$form][app()->getLocale() === 'ar' ? 'ar' : 'en'];
+        return trans('labels.' . $set[$form]);
     }
 
     public static function label(?string $system): string
     {
         $s = self::all()[self::normalise($system)];
 
-        return app()->getLocale() === 'ar' ? $s['name_ar'] : $s['name'];
+        return $s['name'];
     }
 
     /**
@@ -189,27 +183,27 @@ class Systems
     {
         return [
             self::PENDING_PAYMENT => [
-                'label' => 'Awaiting Payment', 'label_ar' => 'بانتظار الدفع',
+                'label' => trans('labels.status_awaiting_payment'),
                 'colour' => 'amber', 'class' => 'bg-warning', 'hex' => '#d98a0b',
             ],
             self::PAID_SETUP_INCOMPLETE => [
-                'label' => 'Paid – Setup Incomplete', 'label_ar' => 'مدفوع – الإعداد غير مكتمل',
+                'label' => trans('labels.status_paid_setup_incomplete'),
                 'colour' => 'amber', 'class' => 'bg-warning', 'hex' => '#d98a0b',
             ],
             self::PROVISIONALLY_ACTIVE => [
-                'label' => 'Provisionally Active – Verification Pending', 'label_ar' => 'نشط مبدئياً – بانتظار التوثيق',
+                'label' => trans('labels.status_provisionally_active'),
                 'colour' => 'amber', 'class' => 'bg-warning', 'hex' => '#d98a0b',
             ],
             self::CORRECTION_REQUIRED => [
-                'label' => 'Correction Required', 'label_ar' => 'مطلوب تصحيح',
+                'label' => trans('labels.status_correction_required'),
                 'colour' => 'amber', 'class' => 'bg-warning', 'hex' => '#d98a0b',
             ],
             self::VERIFIED_ACTIVE => [
-                'label' => 'Verified & Active', 'label_ar' => 'موثّق ونشط',
+                'label' => trans('labels.status_verified_active'),
                 'colour' => 'green', 'class' => 'bg-success', 'hex' => '#1f9d55',
             ],
             self::RESTRICTED => [
-                'label' => 'Restricted', 'label_ar' => 'مقيّد',
+                'label' => trans('labels.status_restricted'),
                 'colour' => 'red', 'class' => 'bg-danger', 'hex' => '#d64545',
             ],
         ];
@@ -220,7 +214,7 @@ class Systems
         $all = self::statuses();
         $meta = $all[$key] ?? $all[self::PENDING_PAYMENT];
         $meta['key'] = $key ?: self::PENDING_PAYMENT;
-        $meta['text'] = app()->getLocale() === 'ar' ? $meta['label_ar'] : $meta['label'];
+        $meta['text'] = $meta['label'];
 
         return $meta;
     }

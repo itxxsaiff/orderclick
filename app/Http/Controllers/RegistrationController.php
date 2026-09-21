@@ -34,9 +34,9 @@ class RegistrationController extends Controller
      * so a merchant is never asked for paperwork before they have an account.
      */
     public const STEPS = [
-        1 => ['key' => 'system', 'label' => 'System & Activity', 'label_ar' => 'النظام والنشاط'],
-        2 => ['key' => 'plan',   'label' => 'Plan & Payment',    'label_ar' => 'الباقة والدفع'],
-        3 => ['key' => 'setup',  'label' => 'Dashboard Setup',   'label_ar' => 'إعداد لوحة التحكم'],
+        1 => ['key' => 'system'],
+        2 => ['key' => 'plan'],
+        3 => ['key' => 'setup'],
     ];
 
     private function draft(): array
