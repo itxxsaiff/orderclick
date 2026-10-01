@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Config;
+use Illuminate\Support\Facades\URL;
 use Lunaweb\RecaptchaV3\Facades\RecaptchaV3;
 
 class VendorController extends Controller
@@ -615,25 +616,90 @@ class VendorController extends Controller
         Helper::language(1);
         return view('admin.auth.forgotpassword');
     }
+    /** Accounts that sign in on the admin login page: super admin, vendors and their staff. */
+    private function resettableUser(?string $email)
+    {
+        return User::where('email', trim((string) $email))->whereIn('type', [1, 2, 4])
+            ->where('is_deleted', 2)->where('is_available', 1)->first();
+    }
+
+    /**
+     * Email a password-reset link. Tokens come from Laravel's password broker (hashed in
+     * password_reset_tokens, 60 min expiry, 60 s resend throttle — config/auth.php).
+     * The reply is the same whether or not the email has an account, so the form cannot be
+     * used to discover which emails are registered.
+     */
     public function send_password(Request $request)
     {
-
-        $checkuser = User::where('email', $request->email)->where('is_available', 1)->whereIn('type', [1, 2])->first();
-        if (!empty($checkuser)) {
-            $password = substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 1, 6);
-            $emaildata = helper::emailconfigration(helper::appdata('')->id);
-            Config::set('mail', $emaildata);
-            $pass = Helper::send_pass($request->email, $checkuser->name, $password, '1');
-            if ($pass == 1) {
-                $checkuser->password = Hash::make($password);
-                $checkuser->save();
-                return redirect('admin')->with('success', trans('messages.success'));
-            } else {
-                return redirect('admin/forgot_password')->with('error', trans('messages.wrong'));
-            }
-        } else {
-            return redirect()->back()->with('error', trans('messages.invalid_user'));
+        $validator = Validator::make($request->all(), ['email' => 'required|email']);
+        if ($validator->fails()) {
+            return redirect('admin/forgot_password')->withErrors($validator)->withInput();
         }
+
+        $user = $this->resettableUser($request->email);
+        if ($user) {
+            $tokens = \Illuminate\Support\Facades\Password::broker()->getRepository();
+            if ($tokens->recentlyCreatedToken($user)) {
+                return redirect('admin/forgot_password')->withInput()->with('error', trans('messages.reset_link_throttled'));
+            }
+            $token = $tokens->create($user);
+            $sent = helper::send_account_email('resetpassword', $user->email, trans('labels.reset_email_subject'), [
+                'name'    => $user->name,
+                'url'     => URL::to('admin/reset-password/' . $token) . '?email=' . urlencode($user->email),
+                'minutes' => config('auth.passwords.users.expire', 60),
+            ]);
+            if (!$sent) {
+                $tokens->delete($user);
+
+                return redirect('admin/forgot_password')->withInput()->with('error', trans('messages.email_send_failed'));
+            }
+        }
+
+        return redirect('admin/forgot_password')->with('reset_link_sent', trim($request->email));
+    }
+
+    /** The page the emailed link opens: email pre-filled, new password + confirmation. */
+    public function reset_password_form(Request $request, $token)
+    {
+        Helper::language(1);
+        $email = (string) $request->query('email');
+        $user = $this->resettableUser($email);
+        $valid = $user && \Illuminate\Support\Facades\Password::broker()->getRepository()->exists($user, $token);
+
+        return view('admin.auth.resetpassword', compact('token', 'email', 'valid'));
+    }
+
+    public function reset_password(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'token'    => 'required',
+            'email'    => 'required|email',
+            'password' => 'required|min:6|confirmed',
+        ], [
+            'password.min'       => trans('messages.password_min'),
+            'password.confirmed' => trans('messages.new_confirm_password_inccorect'),
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
+
+        $user = $this->resettableUser($request->email);
+        $tokens = \Illuminate\Support\Facades\Password::broker()->getRepository();
+        if (!$user || !$tokens->exists($user, $request->token)) {
+            return redirect('admin/forgot_password')->with('error', trans('messages.reset_link_invalid'));
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+        $tokens->delete($user); // one-time link
+
+        helper::send_account_email('passwordchanged', $user->email, trans('labels.changed_email_subject'), [
+            'name'     => $user->name,
+            'when'     => now()->format('Y-m-d H:i'),
+            'loginUrl' => URL::to('admin'),
+        ]);
+
+        return redirect('admin')->with('success', trans('messages.password_reset_done'));
     }
     public function change_password(Request $request)
     {
@@ -652,9 +718,12 @@ class VendorController extends Controller
                     $changepassword->password = Hash::make($request->new_password);
                     $changepassword->update();
 
-                    $emaildata = helper::emailconfigration(helper::appdata("")->id);
-                    Config::set('mail', $emaildata);
-                    helper::send_pass($changepassword->email, $changepassword->name, $request->new_password, helper::appdata("")->logo);
+                    // Notify the owner — never email the password itself.
+                    helper::send_account_email('passwordchanged', $changepassword->email, trans('labels.changed_email_subject'), [
+                        'name'     => $changepassword->name,
+                        'when'     => now()->format('Y-m-d H:i'),
+                        'loginUrl' => URL::to('admin'),
+                    ]);
 
 
                     return redirect()->back()->with('success', trans('messages.success'));

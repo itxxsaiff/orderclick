@@ -946,9 +946,7 @@ class PlanPricingController extends Controller
             if (Subscriptions::isManual($request->payment_type)) {
                 helper::bank_transfer_request(Auth::user()->email, Auth::user()->name, $plan->name, helper::get_plan_exp_date($plan->duration, $plan->days), helper::currency_formate($plan->price, ""), helper::getpayment($request->payment_type, 1)->payment_name, @$payment_id);
 
-                return redirect('admin/plan')->with('success', app()->getLocale() === 'ar'
-                    ? 'تم استلام إيصال الدفع. الدفعة قيد المراجعة بانتظار موافقة الإدارة.'
-                    : 'Payment receipt received. Your payment is pending Admin approval.');
+                return redirect('admin/plan')->with('success', trans('messages.payment_receipt_pending_approval'));
             } else {
 
                 helper::send_subscription_email(Auth::user()->email, Auth::user()->name, $plan->name, helper::get_plan_exp_date($plan->duration, $plan->days), helper::currency_formate($plan->price, ""), helper::getpayment($request->payment_type, 1)->payment_name, @$payment_id);

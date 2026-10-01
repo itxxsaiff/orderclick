@@ -74,7 +74,7 @@
                     <div>
                         <span class="text-muted small d-block">{{ trans('labels.selected_system') }}</span>
                         <span class="fw-semibold">{{ $ocSys['icon'] }}
-                            {{ app()->getLocale() === 'ar' ? $ocSys['name_ar'] : $ocSys['name'] }}</span>
+                            {{ $ocSys['name'] }}</span>
                     </div>
                     @if (!empty($currentPlan))
                         <div>

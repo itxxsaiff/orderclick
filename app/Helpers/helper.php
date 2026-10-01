@@ -1334,6 +1334,36 @@ class helper
         }
     }
 
+    /**
+     * Branded account email (HTML + plain-text parts) sent through the platform SMTP.
+     * $view is a template in resources/views/email with a matching "{view}_text" version.
+     */
+    public static function send_account_email(string $view, string $to, string $subject, array $data): bool
+    {
+        $settings = Settings::where('vendor_id', 1)->first();
+        $brand = $settings->website_title ?: 'Order Click';
+        $data += [
+            'brand'   => $brand,
+            'logo'    => !empty($settings->logo) ? helper::image_path($settings->logo) : null,
+            'subject' => $subject,
+        ];
+
+        try {
+            Config::set('mail', helper::emailconfigration(1));
+            Mail::send(['html' => 'email.' . $view, 'text' => 'email.' . $view . '_text'], $data, function ($message) use ($to, $subject, $settings, $brand) {
+                $message->to($to)->subject($subject);
+                if (!empty($settings->mail_fromaddress)) {
+                    $message->replyTo($settings->mail_fromaddress, $brand);
+                }
+            });
+
+            return true;
+        } catch (\Throwable $th) {
+            \Illuminate\Support\Facades\Log::error('Account email "' . $view . '" to ' . $to . ' failed: ' . $th->getMessage());
+
+            return false;
+        }
+    }
     public static function send_pass($email, $name, $password, $id)
     {
         $var = ["{user}", "{password}"];
@@ -1347,6 +1377,8 @@ class helper
             });
             return 1;
         } catch (\Throwable $th) {
+            // Usually a wrong SMTP host/login in Settings > Email Settings — log it so it can be fixed.
+            \Illuminate\Support\Facades\Log::error('Forgot-password email failed: ' . $th->getMessage());
             return 0;
         }
     }
@@ -1549,27 +1581,24 @@ class helper
         return "https://wa.me/" . $number . "?text=" . rawurlencode(implode("\n", $L));
     }
 
-    public static function emailconfigration($vendor_id)
+    /**
+     * Mail config for Config::set('mail', ...). Every email goes through the PLATFORM account
+     * (vendor 1, Admin > Settings > Email Settings): vendors have no SMTP screen, and their own
+     * rows only hold a copy made at registration. $vendor_id is kept so existing callers work.
+     */
+    public static function emailconfigration($vendor_id = null)
     {
-        if ($vendor_id == "" && $vendor_id == null) {
-            $vendor_id = 1;
-        } else {
-            $vendor_id = $vendor_id;
-        }
-        $mailsettings = Settings::where('vendor_id', $vendor_id)->first();
+        $mailsettings = Settings::where('vendor_id', 1)->first();
 
-        if ($mailsettings) {
-            $emaildata = [
-                'driver' => $mailsettings->mail_driver,
-                'host' => $mailsettings->mail_host,
-                'port' => $mailsettings->mail_port,
-                'encryption' => $mailsettings->mail_encryption,
-                'username' => $mailsettings->mail_username,
-                'password' => $mailsettings->mail_password,
-                'from'     => ['address' => $mailsettings->mail_fromaddress, 'name' => $mailsettings->mail_fromname]
-            ];
-        }
-        return $emaildata;
+        return [
+            'driver' => $mailsettings->mail_driver ?: 'smtp',
+            'host' => $mailsettings->mail_host,
+            'port' => $mailsettings->mail_port,
+            'encryption' => $mailsettings->mail_encryption,
+            'username' => $mailsettings->mail_username,
+            'password' => $mailsettings->mail_password,
+            'from'     => ['address' => $mailsettings->mail_fromaddress, 'name' => $mailsettings->mail_fromname]
+        ];
     }
 
     public static function getcouponcodecount($offer_code, $vendor_id)

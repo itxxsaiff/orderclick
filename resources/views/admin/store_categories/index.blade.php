@@ -28,7 +28,7 @@
         $ocQ = request()->query();
         $ocTabUrl = fn($k) => URL::to('admin/store_categories') . '?' . http_build_query(array_merge($ocQ, ['tab' => $k]));
         $ocTabs = ['all' => trans('labels.all')] + collect(\App\Helpers\Systems::all())
-            ->mapWithKeys(fn($x) => [$x['key'] => app()->getLocale() === 'ar' ? $x['name_ar'] : $x['name']])->all();
+            ->mapWithKeys(fn($x) => [$x['key'] => $x['name']])->all();
     @endphp
     <div class="col-12 mb-3">
         <div class="card border-0 box-shadow">

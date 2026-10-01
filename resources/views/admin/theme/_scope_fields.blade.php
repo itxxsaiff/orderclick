@@ -12,7 +12,7 @@
     <select class="form-select" name="system" id="ocThemeSystem" required>
         @foreach (\App\Helpers\Systems::all() as $ocS)
             <option value="{{ $ocS['key'] }}" {{ $ocSystem === $ocS['key'] ? 'selected' : '' }}>
-                {{ app()->getLocale() === 'ar' ? $ocS['name_ar'] : $ocS['name'] }}</option>
+                {{ $ocS['name'] }}</option>
         @endforeach
     </select>
 </div>

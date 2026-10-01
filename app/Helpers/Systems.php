@@ -285,6 +285,7 @@ class Systems
         }
 
         User::where('id', $vendorId)->update($update);
+        Vendor360::syncStatus($vendorId); // a renewal on a live store re-activates its subscription badge
     }
 
     /**
@@ -327,6 +328,7 @@ class Systems
                 'subscription_end_date'   => $expiry ?: null,
             ]);
         });
+        Vendor360::syncStatus($vendorId);
 
         return true;
     }

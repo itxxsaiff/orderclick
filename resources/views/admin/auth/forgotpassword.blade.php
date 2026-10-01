@@ -1,50 +1,46 @@
 @extends('admin.layout.auth_default')
 @section('content')
 
-    <body class="bg-white bg-changer">
-        <div class="wrapper">
-            <section>
-                <div class="row justify-content-center align-items-center g-0 h-100vh">
-                    <div class="col-lg-4 col-12 bg-white bg-changer">
-                        <div class="row g-0 vh-100 d-flex justify-content-center align-items-center">
-                            <div class="p-4">
-                                <div class="overflow-hidden border-0 w-100 bg-transparent">
-                                    <div class="p-3">
-                                        <h4 class="fw-bold text-dark color-changer fs-1 pb-0 mb-0">{{ trans('labels.forgot_password') }}
-                                        </h4>
-                                        <div class="d-flex align-items-center pt-3 pb-0">
-                                            <p class="fs-7 text-center fw-500 text-muted">
-                                                {{ trans('labels.remember_password') }}</p>
-                                            <a href="{{ URL::to('/admin') }}"
-                                                class="text-secondary fw-semibold px-2">{{ trans('labels.login') }}</a>
-                                        </div>
-                                        <form class="my-3" method="POST" action="{{ URL::to('admin/send_password') }}">
-                                            @csrf
-                                            <div class="form-group">
-                                                <label for="email" class="form-label">{{ trans('labels.email') }} <span
-                                                        class="text-danger"> * </span></label>
-                                                <input type="text" class="form-control extra-padding" name="email"
-                                                    value="" id="email" placeholder="{{ trans('labels.email') }}"
-                                                    required>
-                                                @error('email')
-                                                    <span class="text-danger">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                            <button class="btn btn-primary w-100 my-3"
-                                                @if (env('Environment') == 'sendbox') type="button" onclick="myFunction()" @else type="submit" @endif>{{ trans('labels.submit') }}</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+    @include('admin.auth._auth_styles')
+
+    <div class="ocl-auth">
+        <div class="ocl-auth__card">
+            @if (session('reset_link_sent'))
+                {{-- Same message whether or not the email has an account. --}}
+                <div class="ocl-auth__icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
+                <h1 class="ocl-auth__title">{{ trans('labels.check_your_email') }}</h1>
+                <p class="ocl-auth__sub">
+                    {{ trans('labels.reset_link_sent_to') }} <strong>{{ session('reset_link_sent') }}</strong>.
+                    {{ trans('labels.reset_link_sent_hint') }}
+                </p>
+                <a class="ocl-submit d-flex align-items-center justify-content-center text-decoration-none"
+                    href="{{ URL::to('/admin') }}">{{ trans('labels.back_to_login') }}</a>
+                <a class="ocl-auth__back" href="{{ URL::to('admin/forgot_password') }}">
+                    {{ trans('labels.reset_use_another_email') }}
+                </a>
+            @else
+                <div class="ocl-auth__icon"><i class="fa-solid fa-key"></i></div>
+                <h1 class="ocl-auth__title">{{ trans('labels.forgot_password') }}</h1>
+                <p class="ocl-auth__sub">{{ trans('labels.forgot_password_hint') }}</p>
+
+                <form method="POST" action="{{ URL::to('admin/send_password') }}">
+                    @csrf
+                    <div class="ocl-fld">
+                        <label for="email">{{ trans('labels.email') }} <span class="req">*</span></label>
+                        <input type="email" class="ocl-inp" name="email" id="email" value="{{ old('email') }}"
+                            placeholder="{{ trans('labels.email') }}" required autofocus>
+                        @error('email')<span class="ocl-err">{{ $message }}</span>@enderror
                     </div>
-                    <div class="col-lg-8 col-12 d-none d-lg-block">
-                        <div class="vh-100 d-flex justify-content-center align-items-center m-auto">
-                            <img src="{{ helper::image_path(helper::appdata('')->auth_page_image) }}" alt=""
-                                class="formimg">
-                        </div>
-                    </div>
-                </div>
-            </section>
+                    <button class="ocl-submit"
+                        @if (env('Environment') == 'sendbox') type="button" onclick="myFunction()" @else type="submit" @endif>
+                        {{ trans('labels.send_reset_link') }}
+                    </button>
+                </form>
+
+                <a class="ocl-auth__back" href="{{ URL::to('/admin') }}">
+                    <i class="fa-solid fa-arrow-left"></i> {{ trans('labels.remember_password') }} {{ trans('labels.login') }}
+                </a>
+            @endif
         </div>
-    @endsection
+    </div>
+@endsection

@@ -90,12 +90,51 @@ class Vendor360
 
     public static function subscriptionStatus($vendor): array
     {
-        return self::badge(self::SUBSCRIPTION_STATUSES, $vendor->subscription_status ?? null, 'expired');
+        $key = $vendor->subscription_status ?? null;
+        // An 'active' subscription lapses on its end date without any event to update the column.
+        if ($key === 'active' && !empty($vendor->subscription_end_date) && $vendor->subscription_end_date < date('Y-m-d')) {
+            $key = 'expired';
+        }
+
+        return self::badge(self::SUBSCRIPTION_STATUSES, $key, 'expired');
     }
 
     public static function pageStatus($vendor): array
     {
         return self::badge(self::PAGE_STATUSES, $vendor->public_page_status ?? null, 'draft');
+    }
+
+    /**
+     * Bring the stored Subscription and Public Page axes in line with the account after a
+     * payment is approved or the website is activated (called from Systems::markPaid and
+     * Systems::activateWebsite). Admin-only states are respected: a 'cancelled' subscription
+     * and an 'unpublished' page are never overwritten.
+     */
+    public static function syncStatus($vendorId): void
+    {
+        $vendor = User::find($vendorId);
+        if (empty($vendor) || (int) $vendor->type !== 2 || !Systems::isLive($vendor)) {
+            return; // nothing is running yet — paid accounts in setup keep their defaults
+        }
+
+        $transaction = Transaction::where('vendor_id', $vendorId)
+            ->whereNull('transaction_type')
+            ->where('status', 2)
+            ->orderByDesc('id')
+            ->first();
+
+        $update = [];
+        if ($transaction && ($vendor->subscription_status ?? '') !== 'cancelled') {
+            $running = empty($transaction->expire_date) || $transaction->expire_date >= date('Y-m-d');
+            $update['subscription_status']   = $running ? 'active' : 'expired';
+            $update['subscription_end_date'] = $transaction->expire_date ?: null;
+        }
+        if (in_array($vendor->public_page_status ?? 'draft', ['draft', 'pending_approval'], true)) {
+            $update['public_page_status'] = 'published';
+        }
+        if ($update) {
+            User::where('id', $vendorId)->update($update);
+        }
     }
 
     // ---------------------------------------------------------------------------------------
@@ -202,7 +241,7 @@ class Vendor360
         if (($vendor->verification_status ?? '') === 'pending_review') {
             return ['text' => 'Documents to review', 'class' => 'bg-warning', 'key' => 'pending_verification'];
         }
-        if (($vendor->subscription_status ?? '') === 'expired' && Systems::hasPaid($vendor)) {
+        if (self::subscriptionStatus($vendor)['key'] === 'expired' && Systems::isLive($vendor)) {
             return ['text' => 'Subscription expired', 'class' => 'bg-danger', 'key' => 'expired'];
         }
         if (!empty($summary['expiry']) && strtotime($summary['expiry']) <= strtotime('+14 days')) {

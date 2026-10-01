@@ -867,4 +867,71 @@ class SettingsController extends Controller
             return redirect()->back()->with('success', trans('messages.success'));
         }
     }
+
+    /**
+     * Platform SMTP (Settings row of vendor 1). Every email on the platform — password resets,
+     * subscriptions, and every store's order emails — is sent through this one account.
+     * A blank password means "keep the saved one", like the payment gateway secrets.
+     */
+    public function email_settings_update(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'mail_host'        => 'required|string|max:255',
+            'mail_port'        => 'required|integer|between:1,65535',
+            'mail_encryption'  => 'nullable|in:tls,ssl',
+            'mail_username'    => 'required|string|max:255',
+            'mail_fromaddress' => 'required|email|max:255',
+            'mail_fromname'    => 'required|string|max:255',
+        ]);
+        if ($validator->fails()) {
+            return redirect('admin/settings#email_settings')->withErrors($validator)->withInput();
+        }
+        if (env('Environment') == 'sendbox') {
+            return redirect()->back()->with('error', trans('messages.not_available'));
+        }
+
+        $settings = Settings::where('vendor_id', 1)->first();
+        $settings->mail_driver      = 'smtp';
+        $settings->mail_host        = trim($request->mail_host);
+        $settings->mail_port        = (int) $request->mail_port;
+        $settings->mail_encryption  = $request->mail_encryption ?: null;
+        $settings->mail_username    = trim($request->mail_username);
+        $settings->mail_fromaddress = trim($request->mail_fromaddress);
+        $settings->mail_fromname    = trim($request->mail_fromname);
+        if (trim((string) $request->mail_password) !== '') {
+            // Gmail shows App Passwords in groups of four ("abcd efgh ijkl mnop") — the spaces are not part of it.
+            $settings->mail_password = str_replace(' ', '', trim($request->mail_password));
+        }
+        $settings->save();
+
+        return redirect('admin/settings#email_settings')->with('success', trans('messages.success'));
+    }
+
+    /** Send a test email with the saved SMTP settings and report the real error if it fails. */
+    public function email_settings_test(Request $request)
+    {
+        $validator = Validator::make($request->all(), ['test_email' => 'required|email']);
+        if ($validator->fails()) {
+            return redirect('admin/settings#email_settings')->withErrors($validator)->withInput();
+        }
+
+        try {
+            \Illuminate\Support\Facades\Config::set('mail', helper::emailconfigration(1));
+            \Illuminate\Support\Facades\Mail::send('email.testemail', [
+                'title'       => trans('labels.send_test_email'),
+                'vendor_name' => Auth::user()->name,
+                'msg'         => trans('messages.test_email_body'),
+            ], function ($message) use ($request) {
+                $message->to($request->test_email)->subject(trans('labels.send_test_email'));
+            });
+        } catch (\Throwable $th) {
+            \Illuminate\Support\Facades\Log::error('SMTP test email failed: ' . $th->getMessage());
+
+            return redirect('admin/settings#email_settings')->withInput()
+                ->with('error', trans('messages.test_email_failed') . ' ' . \Illuminate\Support\Str::limit(preg_replace('/\s+/', ' ', $th->getMessage()), 220));
+        }
+
+        return redirect('admin/settings#email_settings')->withInput()
+            ->with('success', trans('messages.test_email_sent', ['email' => $request->test_email]));
+    }
 }

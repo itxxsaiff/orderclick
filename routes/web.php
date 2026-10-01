@@ -65,7 +65,9 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
     Route::post('register_vendor', [VendorController::class, 'register_vendor']);
     Route::get('register/check', [VendorController::class, 'check_availability']);
     Route::get('forgot_password', [VendorController::class, 'forgot_password'])->middleware('guest');
-    Route::post('send_password', [VendorController::class, 'send_password']);
+    Route::post('send_password', [VendorController::class, 'send_password'])->middleware('throttle:6,1');
+    Route::get('reset-password/{token}', [VendorController::class, 'reset_password_form'])->middleware('guest');
+    Route::post('reset-password', [VendorController::class, 'reset_password'])->middleware('throttle:10,1');
     Route::post('/getarea', [VendorController::class, 'getarea']);
 
 
@@ -226,6 +228,9 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
 
             Route::middleware('adminmiddleware')->group(
                 function () {
+                    // Platform SMTP — one mail account for every email the platform sends.
+                    Route::post('settings/email-update', [SettingsController::class, 'email_settings_update']);
+                    Route::post('settings/email-test', [SettingsController::class, 'email_settings_test']);
                     Route::get('transaction-{id}-{status}', [TransactionController::class, 'status']);
                     // PLAN
                     Route::group(

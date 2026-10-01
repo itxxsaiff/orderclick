@@ -37,7 +37,7 @@ class HomeController extends Controller
         $blogs = Blog::where('vendor_id', '1')->orderBy('reorder_id')->get();
         $works = Works::where('vendor_id', '1')->orderBy('reorder_id')->get();
         $themes = Theme::where('vendor_id', '1')->orderBy('reorder_id')->get();
-        $userdata = User::select('users.id', 'name', 'slug', 'settings.description', 'website_title', 'cover_image')->where('available_on_landing', 1)->join('settings', 'users.id', '=', 'settings.vendor_id')->get();
+        $userdata = User::select('users.id', 'name', 'slug', 'settings.description', 'website_title', 'cover_image')->where('available_on_landing', 1)->whereIn('users.id', self::liveStoreIds())->join('settings', 'users.id', '=', 'settings.vendor_id')->get();
 
         return view('landing.index', compact('planlist', 'features', 'testimonials', 'blogs', 'works', 'themes', 'userdata'));
     }
@@ -133,7 +133,7 @@ class HomeController extends Controller
 
         $cities = City::where('is_deleted', 2)->where('is_available', 1)->orderBy('reorder_id')->get();
         $banners = Promotionalbanner::with('vendor_info')->orderBy('reorder_id')->get();
-        $stores = User::where('type', 2)->where('available_on_landing', 1);
+        $stores = User::where('type', 2)->where('available_on_landing', 1)->whereIn('id', self::liveStoreIds());
         if ($request->country == "" && $request->city == "" && $request->stores == "") {
             $stores = $stores;
         }
@@ -168,9 +168,92 @@ class HomeController extends Controller
      * branch location has passed admin review (or it is an online/remote provider).
      * Shared with the sitemap so both always list the same stores.
      */
+    /**
+     * Why this store's public page would show "Store not available" — null when it opens. Same
+     * rules as FrontMiddleware: account active, website activated, and a subscription that is
+     * paid / approved / not expired (helper::checkplan).
+     */
+    public static function storefrontBlocker($vendor): ?string
+    {
+        if ((int) $vendor->is_deleted !== 2 || (int) $vendor->is_available !== 1 || !empty($vendor->archived_at)) {
+            return trans('labels.mp_account_inactive');
+        }
+        if (\App\Helpers\Systems::hasPaid($vendor) && !\App\Helpers\Systems::isLive($vendor)) {
+            return trans('labels.mp_website_not_activated');
+        }
+
+        $timezone = date_default_timezone_get(); // checkplan switches to the vendor's timezone
+        try {
+            $plan = helper::checkplan($vendor->id, '3')->getData();
+        } catch (\Throwable $th) {
+            $plan = null;
+        } finally {
+            date_default_timezone_set($timezone);
+        }
+        if ($plan === null) {
+            return trans('labels.mp_no_active_plan');
+        }
+        if ((int) ($plan->status ?? 1) === 2) {
+            $message = trim(strip_tags((string) ($plan->message ?? ''))) ?: trans('labels.mp_no_active_plan');
+
+            return trim($message . ' ' . (!empty($plan->plan_date) ? helper::date_format($plan->plan_date, 1) : ''));
+        }
+
+        return null;
+    }
+
+    /**
+     * Why this store is not listed in the Marketplace — null when it is. The storefront must open,
+     * the account must be live, and the main branch must pass the location review (Admin >
+     * Locations), exactly what marketplaceVisibleIds() queries.
+     */
+    public static function marketplaceBlocker($vendor): ?string
+    {
+        if ($reason = self::storefrontBlocker($vendor)) {
+            return $reason;
+        }
+        if (!in_array($vendor->account_status, ['provisionally_active', 'correction_required', 'verified_active'], true)) {
+            return trans('labels.mp_website_not_activated');
+        }
+        $branch = \App\Models\VendorBranch::where('vendor_id', $vendor->id)->where('is_primary', 1)->first();
+        if (!$branch) {
+            return trans('labels.mp_no_branch');
+        }
+        if ((int) $branch->is_available !== 1) {
+            return trans('labels.mp_branch_inactive');
+        }
+        if ((int) $branch->is_remote !== 1 && (empty($branch->latitude) || empty($branch->longitude))) {
+            return trans('labels.mp_branch_no_gps');
+        }
+        if ($branch->review_status === 'rejected') {
+            return trans('labels.mp_branch_rejected');
+        }
+        if ($branch->review_status !== 'verified') {
+            return trans('labels.mp_branch_pending');
+        }
+
+        return null;
+    }
+
+    /**
+     * Vendor ids whose public storefront actually opens. Every public store listing filters by
+     * this, so a visitor never clicks through to "Store not available".
+     */
+    public static function liveStoreIds()
+    {
+        static $ids = null; // once per request — checkplan costs a few queries per vendor
+        if ($ids === null) {
+            $ids = User::where('type', 2)->where('is_deleted', 2)->where('is_available', 1)->whereNull('archived_at')->get()
+                ->filter(fn($vendor) => self::storefrontBlocker($vendor) === null)
+                ->pluck('id')->values();
+        }
+
+        return $ids;
+    }
     public static function marketplaceVisibleIds()
     {
         return \App\Models\VendorBranch::where('is_primary', 1)
+            ->whereIn('vendor_id', self::liveStoreIds())
             ->where('is_available', 1)
             ->where('review_status', 'verified')
             ->where(function ($q) {

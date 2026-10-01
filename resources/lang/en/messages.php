@@ -282,4 +282,12 @@ return array (
   'kb_answer_example' => 'Yes, we deliver within our service areas. Delivery usually takes 30-45 minutes.',
   'arabic_optional_note' => 'Optional. Leave empty to show the English text on the Arabic site.',
   'wa_cannot_send_to_self' => 'This is your own WhatsApp Business number. WhatsApp cannot send a message from a number to itself — enter a different mobile, such as your personal phone.',
+  'payment_receipt_pending_approval' => 'Payment receipt received. Your payment is pending Admin approval.',
+  'email_send_failed' => 'We could not send the email right now. Please try again later or contact support.',
+  'test_email_body' => 'Your Order Click email settings are working. This is a test email.',
+  'test_email_sent' => 'Test email sent to :email. Check the inbox (and spam folder).',
+  'test_email_failed' => 'Test email failed:',
+  'reset_link_throttled' => 'A reset link was just sent. Please wait a minute before asking for another.',
+  'reset_link_invalid' => 'This password reset link is invalid or has expired. Please request a new one.',
+  'password_reset_done' => 'Your password has been updated. Log in with your new password.',
 );

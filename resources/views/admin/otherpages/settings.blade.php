@@ -64,6 +64,16 @@
                             </li>
                             @if (Auth::user()->type == 1 || (Auth::user()->type == 4 && Auth::user()->vendor_id == 1))
                                 <li>
+                                    <a data_attribute="email_settings"
+                                        class="list-group-item basicinfo p-2 px-3 list-item-secondary d-flex align-items-baseline color-changer w-100"
+                                        aria-current="true">
+                                        <i class="fa-solid fa-envelope"></i>
+                                        <p class="px-2">{{ trans('labels.email_settings') }}</p>
+                                    </a>
+                                </li>
+                            @endif
+                            @if (Auth::user()->type == 1 || (Auth::user()->type == 4 && Auth::user()->vendor_id == 1))
+                                <li>
                                     <a data_attribute="landing_page"
                                         class="list-group-item basicinfo p-2 px-3 list-item-secondary d-flex align-items-baseline color-changer w-100"
                                         aria-current="true">
@@ -1769,6 +1779,9 @@
                         </div>
                     </div>
                 </div>
+                @if (Auth::user()->type == 1 || (Auth::user()->type == 4 && Auth::user()->vendor_id == 1))
+                    @include('admin.otherpages._email_settings')
+                @endif
                 @if (Auth::user()->type == 1 || (Auth::user()->type == 4 && Auth::user()->vendor_id == 1))
                     <div id="landing_page" class="hidechild">
                         <div class="col-12">

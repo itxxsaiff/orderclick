@@ -55,7 +55,7 @@ $vendor_id = Auth::user()->id;
         <div class="d-flex flex-wrap gap-2">
             @php
                 $ocTabs = ['all' => trans('labels.all_vendors')] + collect(\App\Helpers\Systems::all())
-                    ->mapWithKeys(fn($s) => [$s['key'] => app()->getLocale() === 'ar' ? $s['name_ar'] : $s['name']])->all();
+                    ->mapWithKeys(fn($s) => [$s['key'] => $s['name']])->all();
             @endphp
             @foreach ($ocTabs as $key => $label)
                 <a href="{{ $ocTabUrl($key) }}"
@@ -369,6 +369,13 @@ $vendor_id = Auth::user()->id;
                                 <i class="fa-solid fa-bell mx-1"></i>{{ $alert['text'] }}
                             </span>
                         </div>
+
+                        {{-- Marketplace listing, from the same checks the Marketplace page applies. --}}
+                        @php $mpReason = \App\Http\Controllers\landing\HomeController::marketplaceBlocker($user); @endphp
+                        <p class="fs-7 mt-2 mb-0 fw-500" style="color: {{ $mpReason ? '#b26a00' : '#1f9d55' }}">
+                            <i class="fa-solid fa-store"></i> {{ trans('labels.marketplace') }}:
+                            {{ $mpReason ? trans('labels.mp_hidden') . ' — ' . $mpReason : trans('labels.mp_listed') }}
+                        </p>
 
                         <div class="d-flex flex-wrap justify-content-center mt-3 gap-2">
                             <a class="btn btn-sm btn-info btn-size {{ Auth::user()->type == 4 ? (helper::check_access('role_vendors', Auth::user()->role_id, $vendor_id, 'edit') == 1 ? '' : 'd-none') : '' }}"

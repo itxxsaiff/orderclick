@@ -37,7 +37,7 @@
             <div class="d-flex flex-wrap gap-2">
                 @php
                     $tabs = ['all' => trans('labels.all')] + collect(\App\Helpers\Systems::all())
-                        ->mapWithKeys(fn($s) => [$s['key'] => $ar ? $s['name_ar'] : $s['name']])->all();
+                        ->mapWithKeys(fn($s) => [$s['key'] => $s['name']])->all();
                 @endphp
                 @foreach ($tabs as $key => $label)
                     <a href="{{ $tabUrl($key) }}"

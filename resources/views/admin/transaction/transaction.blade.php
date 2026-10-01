@@ -42,7 +42,7 @@
                                 <option value="">{{ trans('labels.all') }}</option>
                                 @foreach (\App\Helpers\Systems::all() as $ocSys)
                                     <option value="{{ $ocSys['key'] }}" {{ request('system') === $ocSys['key'] ? 'selected' : '' }}>
-                                        {{ app()->getLocale() === 'ar' ? $ocSys['name_ar'] : $ocSys['name'] }}</option>
+                                        {{ $ocSys['name'] }}</option>
                                 @endforeach
                             </select>
                         </div>

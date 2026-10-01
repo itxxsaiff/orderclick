@@ -163,8 +163,8 @@
                                 <div class="oc-type" data-systemkey="{{ $sys['key'] }}">
                                     <span class="tick">&#10003;</span>
                                     <div class="emo">{{ $sys['icon'] }}</div>
-                                    <div class="nm">{{ $oc_ar_sys ? $sys['name_ar'] : $sys['name'] }}</div>
-                                    <div class="ds">{{ $oc_ar_sys ? $sys['desc_ar'] : $sys['desc'] }}</div>
+                                    <div class="nm">{{ $sys['name'] }}</div>
+                                    <div class="ds">{{ $sys['desc'] }}</div>
                                 </div>
                             @endforeach
                         </div>
