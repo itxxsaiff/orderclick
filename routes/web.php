@@ -256,7 +256,7 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
                             Route::get('status-{slug}/{status}', [VendorController::class, 'status']);
                             Route::get('login-{id}', [VendorController::class, 'vendor_login']);
                             Route::post('/store/page/is_allow', [VendorController::class, 'is_allow']);
-                            Route::get('delete-{id}', [VendorController::class, 'deletevendor']);
+                            Route::post('delete-{id}', [VendorController::class, 'deletevendor']);
                             // Vendor 360 — archive instead of delete, plus the unified vendor record.
                             Route::get('archive-{id}', [VendorController::class, 'archive']);
                             Route::get('restore-{id}', [VendorController::class, 'restore']);

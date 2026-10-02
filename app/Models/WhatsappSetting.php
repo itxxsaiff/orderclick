@@ -39,6 +39,15 @@ class WhatsappSetting extends Model
         return $row;
     }
 
+    /**
+     * Whether the WhatsApp Cloud tools are switched on (config('services.whatsapp_cloud.tools')).
+     * Off for every account, super admin included, until WHATSAPP_TOOLS=true is set.
+     */
+    public static function toolsEnabledFor($vendorId = null): bool
+    {
+        return (bool) config('services.whatsapp_cloud.tools');
+    }
+
     /** Which business owns the number Meta just delivered a message to. */
     public static function byPhoneNumberId(?string $phoneNumberId): ?self
     {

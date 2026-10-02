@@ -1569,4 +1569,7 @@ return array (
   'changed_email_title' => 'Your password was changed',
   'changed_email_body' => 'The password for your :brand account was changed on :date. You can now log in with your new password.',
   'changed_email_warning' => 'If you didn\'t make this change, reset your password right away and contact support.',
+  'delete_permanently' => 'Delete permanently',
+  'delete_vendor_title' => 'Delete this vendor?',
+  'delete_vendor_text' => ':name and all of its data — products, orders, bookings, branches, documents, subscriptions, staff and customers — will be permanently deleted. This cannot be undone.',
 );

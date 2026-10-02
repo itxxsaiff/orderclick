@@ -416,6 +416,12 @@ $vendor_id = Auth::user()->id;
                                     <i class="fa-regular fa-box-archive"></i>
                                 </a>
                             @endif
+                            {{-- Permanent delete: every row of this vendor is removed. --}}
+                            <a href="javascript:void(0)" tooltip="{{ trans('labels.delete_permanently') }}"
+                                @if (env('Environment')=='sendbox' ) onclick="myFunction()" @else onclick="ocDeleteVendor('{{ URL::to('admin/users/delete-' . $user->id) }}', @js($user->trade_name ?: $user->name))" @endif
+                                class="btn btn-sm btn-outline-danger btn-size {{ Auth::user()->type == 4 ? (helper::check_access('role_vendors', Auth::user()->role_id, $vendor_id, 'delete') == 1 ? '' : 'd-none') : '' }}">
+                                <i class="fa-regular fa-trash"></i>
+                            </a>
                             <a class="btn btn-sm btn-secondary btn-size" tooltip="{{ trans('labels.vendor_record') }}"
                                 href="{{ URL::to('admin/users/record-' . $user->id) }}">
                                 <i class="fa-regular fa-id-card"></i>
@@ -436,4 +442,29 @@ $vendor_id = Auth::user()->id;
         </div>
     </div>
 </div>
+    <form id="ocDeleteVendorForm" method="POST" class="d-none">@csrf</form>
+@endsection
+@section('scripts')
+    <script>
+        // Second, explicit confirmation: this cannot be undone.
+        function ocDeleteVendor(url, name) {
+            Swal.fire({
+                title: @js(trans('labels.delete_vendor_title')),
+                html: @js(trans('labels.delete_vendor_text')).replace(':name', '<b>' + $('<div>').text(name).html() + '</b>'),
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: @js(trans('labels.delete_permanently')),
+                cancelButtonText: no,
+                confirmButtonColor: '#d64545',
+                reverseButtons: true,
+                focusCancel: true
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    var form = document.getElementById('ocDeleteVendorForm');
+                    form.action = url;
+                    form.submit();
+                }
+            });
+        }
+    </script>
 @endsection

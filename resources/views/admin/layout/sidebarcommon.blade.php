@@ -45,7 +45,9 @@
             </a>
         </li>
     @endif
-    {{-- WhatsApp Cloud API: connection, inbox and the shared AI knowledge base. --}}
+    {{-- WhatsApp Cloud API: connection, inbox and the shared AI knowledge base.
+         Hidden for everyone unless WHATSAPP_TOOLS=true (config/services.php). --}}
+    @if (\App\Models\WhatsappSetting::toolsEnabledFor($vendor_id))
     <li class="nav-item mb-2 fs-7 dropdown multimenu">
         <a class="nav-link collapsed d-flex align-items-center justify-content-between dropdown-toggle mb-1 {{ request()->is('admin/whatsapp*') ? 'active' : '' }}"
             href="#ocwa" data-bs-toggle="collapse" role="button" aria-expanded="false" aria-controls="ocwa">
@@ -83,6 +85,7 @@
             </li>
         </ul>
     </li>
+    @endif
 
     {{-- V2: vendor Locations & Branches — GPS/map driven. --}}
     @if (Auth::user()->type == 2 || (Auth::user()->type == 4 && Auth::user()->vendor_id != 1))

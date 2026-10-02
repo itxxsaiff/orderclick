@@ -137,6 +137,51 @@ class Vendor360
         }
     }
 
+    /**
+     * Permanently delete one vendor and everything they own: every row with their vendor_id in
+     * any table, their orders' and products' child rows, their staff and customers, and those
+     * accounts' tokens. Only a vendor (type 2) can be purged — never the platform (id 1).
+     * Returns the number of rows removed, or null when the account is not a vendor.
+     */
+    public static function purge($vendorId): ?int
+    {
+        $vendor = User::where('id', $vendorId)->where('type', 2)->first();
+        if (empty($vendor) || (int) $vendor->id === 1) {
+            return null;
+        }
+        $id = (int) $vendor->id;
+
+        $tables = collect(DB::select("SELECT DISTINCT c.TABLE_NAME t FROM information_schema.COLUMNS c
+                JOIN information_schema.TABLES tb ON tb.TABLE_SCHEMA = c.TABLE_SCHEMA AND tb.TABLE_NAME = c.TABLE_NAME
+                WHERE c.TABLE_SCHEMA = ? AND c.COLUMN_NAME = 'vendor_id' AND tb.TABLE_TYPE = 'BASE TABLE'", [DB::getDatabaseName()]))
+            ->pluck('t')->reject(fn($t) => $t === 'users');
+
+        return DB::transaction(function () use ($id, $tables) {
+            $orderIds = DB::table('orders')->where('vendor_id', $id)->pluck('id');
+            $itemIds  = DB::table('items')->where('vendor_id', $id)->pluck('id');
+            $users    = DB::table('users')->where('id', $id)->orWhere('vendor_id', $id)->get(['id', 'email']);
+
+            $removed = 0;
+            foreach ($tables as $table) {
+                $removed += DB::table($table)->where('vendor_id', $id)->delete();
+            }
+            $removed += DB::table('order_details')->whereIn('order_id', $orderIds)->delete();
+            foreach (['variants', 'extras'] as $table) {
+                $removed += DB::table($table)->whereIn('item_id', $itemIds)->delete();
+            }
+            $removed += DB::table('personal_access_tokens')->where('tokenable_type', 'like', '%User')
+                ->whereIn('tokenable_id', $users->pluck('id'))->delete();
+            foreach (['password_reset_tokens', 'password_resets'] as $table) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($table)) {
+                    $removed += DB::table($table)->whereIn('email', $users->pluck('email')->filter())->delete();
+                }
+            }
+            $removed += DB::table('users')->whereIn('id', $users->pluck('id'))->delete();
+
+            return $removed;
+        });
+    }
+
     // ---------------------------------------------------------------------------------------
     // Card + record summary
     // ---------------------------------------------------------------------------------------

@@ -290,4 +290,5 @@ return array (
   'reset_link_throttled' => 'A reset link was just sent. Please wait a minute before asking for another.',
   'reset_link_invalid' => 'This password reset link is invalid or has expired. Please request a new one.',
   'password_reset_done' => 'Your password has been updated. Log in with your new password.',
+  'vendor_deleted' => 'Vendor ":name" and all of its data were permanently deleted.',
 );

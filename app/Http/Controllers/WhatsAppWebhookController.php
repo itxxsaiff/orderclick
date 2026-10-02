@@ -62,6 +62,10 @@ class WhatsAppWebhookController extends Controller
                         Log::warning('WhatsApp webhook: unknown phone_number_id', ['id' => $phoneNumberId]);
                         continue;
                     }
+                    // Tools switched off: no bot replies nobody could see or take over.
+                    if (!WhatsappSetting::toolsEnabledFor($settings->vendor_id)) {
+                        continue;
+                    }
 
                     // Reject forged payloads when an app secret is configured.
                     $cloud = WhatsAppCloud::for($settings);

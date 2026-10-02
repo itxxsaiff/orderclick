@@ -755,15 +755,18 @@ class VendorController extends Controller
             return response()->json(['status' => 0, 'message' => trans('messages.wrong')], 200);
         }
     }
+    /** Permanently delete a vendor and all of their data (admin only, POST + confirmation). */
     public function deletevendor(Request $request)
     {
-        $user = User::where('id', $request->id)->first();
-        $user->is_deleted = 1;
-        $user->slug = '';
-        $user->update();
-        $emaildata = helper::emailconfigration(helper::appdata("")->id);
-        Config::set('mail', $emaildata);
-        helper::send_mail_delete_account($user);
-        return redirect('admin/users')->with('success', trans('messages.success'));
+        if (env('Environment') == 'sendbox') {
+            return redirect('admin/users')->with('error', trans('messages.not_available'));
+        }
+        $name = optional(User::find($request->id))->name;
+        $removed = Vendor360::purge($request->id);
+        if ($removed === null) {
+            return redirect('admin/users')->with('error', trans('messages.wrong'));
+        }
+
+        return redirect('admin/users')->with('success', trans('messages.vendor_deleted', ['name' => $name]));
     }
 }

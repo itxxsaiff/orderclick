@@ -32,6 +32,12 @@ return [
     ],
 
     // V2 — OpenAI AI Content Assistant (modular; add more AI features on top of this)
+    // WhatsApp Cloud tools (inbox, AI knowledge base, integration) for EVERY account, super admin
+    // included. Hidden at the client's request; WHATSAPP_TOOLS=true in .env brings them back.
+    'whatsapp_cloud' => [
+        'tools' => (bool) env('WHATSAPP_TOOLS', false),
+    ],
+
     'openai' => [
         'key' => env('OPENAI_API_KEY'),
         'model' => env('OPENAI_MODEL', 'gpt-5-mini'),
