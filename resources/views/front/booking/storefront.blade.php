@@ -322,6 +322,7 @@
             });
         })();
     </script>
+    @include('front.partials.ai_assistant')
 </body>
 
 </html>

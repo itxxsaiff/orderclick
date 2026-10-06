@@ -15,7 +15,7 @@
             <button type="button" data-action="improve"><i class="fa-solid fa-wand-magic-sparkles"></i> {{ trans('labels.improve') }}</button>
             <button type="button" data-action="grammar"><i class="fa-solid fa-spell-check"></i> {{ trans('labels.fix_grammar') }}</button>
             <button type="button" data-action="professional"><i class="fa-solid fa-briefcase"></i> {{ trans('labels.make_professional') }}</button>
-            <button type="button" data-action="seo"><i class="fa-solid fa-magnifying-glass-chart"></i> {{ trans('labels.seo_friendly') }}</button>
+            <button type="button" data-action="seo"><i class="fa-solid fa-magnifying-glass"></i> {{ trans('labels.seo_friendly') }}</button>
             <div class="oc-ai-sep"></div>
             <button type="button" data-action="translate" data-lang="English"><i class="fa-solid fa-language"></i> {{ trans('labels.translate_english') }}</button>
             <button type="button" data-action="translate" data-lang="Arabic"><i class="fa-solid fa-language"></i> {{ trans('labels.translate_arabic') }}</button>
@@ -32,10 +32,11 @@
             .oc-ai-btn:hover { border-color: #6b46e5; box-shadow: 0 6px 14px -8px rgba(107,70,229,.6); }
             .oc-ai-caret { font-size: 9px; opacity: .7; }
             .oc-ai-load { color: #6b46e5; font-size: 14px; }
-            .oc-ai-menu { position: absolute; top: 36px; z-index: 1080; min-width: 210px; background: #fff; border: 1px solid #ece7fb;
+            /* Opened on <body> and placed next to the button (ocAiPlace), so a card's overflow:hidden
+               can never cut it off at the edge. */
+            .oc-ai-menu { position: fixed; top: 0; left: 0; z-index: 2000; min-width: 210px; background: #fff; border: 1px solid #ece7fb;
                 border-radius: 12px; box-shadow: 0 20px 44px -22px rgba(40,20,90,.4); padding: 6px; display: none; }
             .oc-ai-menu.show { display: block; }
-            html[dir="rtl"] .oc-ai-menu { right: 0; } html:not([dir="rtl"]) .oc-ai-menu { left: 0; }
             .oc-ai-menu button { display: flex; align-items: center; gap: 9px; width: 100%; background: transparent; border: 0; text-align: start;
                 padding: 9px 11px; border-radius: 8px; font-size: 13px; color: #2c2440; cursor: pointer; }
             .oc-ai-menu button:hover { background: #f4f0ff; color: #6b46e5; }
@@ -45,19 +46,59 @@
         <script>
             var ocAiUrl = "{{ URL::to('admin/ai/assist') }}";
             var ocAiToken = "{{ csrf_token() }}";
+            function ocAiCloseAll() {
+                document.querySelectorAll('.oc-ai-menu.show').forEach(function (m) { m.classList.remove('show'); });
+            }
+            // The menu belongs to its widget even after it has been moved to <body>.
+            function ocAiMenuOf(wrap) {
+                if (!wrap._ocMenu) {
+                    wrap._ocMenu = wrap.querySelector('.oc-ai-menu');
+                    wrap._ocMenu._ocWrap = wrap;
+                }
+                return wrap._ocMenu;
+            }
+            // Line the menu up with the button's end edge, keep it on screen, flip above if needed.
+            function ocAiPlace(menu, btn) {
+                var r = btn.getBoundingClientRect();
+                var vw = document.documentElement.clientWidth, vh = window.innerHeight;
+                var w = menu.offsetWidth, h = menu.offsetHeight;
+                var left = document.documentElement.dir === 'rtl' ? r.left : r.right - w;
+                var top = r.bottom + 6;
+                if (top + h > vh - 8 && r.top - h - 6 > 8) top = r.top - h - 6;
+                menu.style.left = Math.max(8, Math.min(left, vw - w - 8)) + 'px';
+                menu.style.top = Math.max(8, top) + 'px';
+            }
             function ocAiToggle(e, btn) {
                 e.preventDefault();
-                document.querySelectorAll('.oc-ai-menu.show').forEach(function (m) { if (m !== btn.parentNode.querySelector('.oc-ai-menu')) m.classList.remove('show'); });
-                btn.parentNode.querySelector('.oc-ai-menu').classList.toggle('show');
+                var menu = ocAiMenuOf(btn.closest('.oc-ai'));
+                var open = !menu.classList.contains('show');
+                ocAiCloseAll();
+                if (open) {
+                    document.body.appendChild(menu);
+                    menu._ocBtn = btn;
+                    menu.classList.add('show');
+                    ocAiPlace(menu, btn);
+                }
             }
             document.addEventListener('click', function (e) {
-                if (!e.target.closest('.oc-ai')) document.querySelectorAll('.oc-ai-menu.show').forEach(function (m) { m.classList.remove('show'); });
+                if (!e.target.closest('.oc-ai') && !e.target.closest('.oc-ai-menu')) ocAiCloseAll();
             });
+            // Keep an open menu next to its button while the page scrolls; close it once the button is gone.
+            function ocAiFollow() {
+                document.querySelectorAll('.oc-ai-menu.show').forEach(function (m) {
+                    var r = m._ocBtn ? m._ocBtn.getBoundingClientRect() : null;
+                    if (!r || r.bottom < 0 || r.top > window.innerHeight) m.classList.remove('show');
+                    else ocAiPlace(m, m._ocBtn);
+                });
+            }
+            window.addEventListener('scroll', ocAiFollow, true);
+            window.addEventListener('resize', ocAiFollow);
             document.addEventListener('click', function (e) {
                 var opt = e.target.closest('.oc-ai-menu button');
                 if (!opt) return;
-                var wrap = opt.closest('.oc-ai');
-                var field = wrap.querySelector('.oc-ai-menu');
+                var field = opt.closest('.oc-ai-menu');
+                var wrap = field._ocWrap || opt.closest('.oc-ai');
+                if (!wrap) return;
                 var target = document.querySelector(wrap.getAttribute('data-target'));
                 if (!target) return;
                 var action = opt.getAttribute('data-action');

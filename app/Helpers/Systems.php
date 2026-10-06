@@ -364,11 +364,6 @@ class Systems
         }
 
         $settings->business_type = $activity->business_type ?: $settings->business_type;
-        // Only seed the template if the merchant has none — the design they picked during
-        // registration (or later in Brand & Design) is never overwritten.
-        if (empty($settings->template) && $activity->template) {
-            $settings->template = $activity->template;
-        }
         $settings->save();
     }
 

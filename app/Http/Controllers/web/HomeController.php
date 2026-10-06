@@ -84,7 +84,7 @@ class HomeController extends Controller
             $doctors = \App\Models\Doctor::where('vendor_id', $vdata)->where('is_available', 1)
                 ->orderBy('reorder_id')->orderByDesc('id')->get();
             $storereview = \App\Models\Testimonials::where('vendor_id', $vdata)->where('status', 1)->get();
-            return $this->themedView($vdata, 'index', 'front.booking.storefront', compact('storeinfo', 'vdata', 'services', 'storeSettings', 'categories', 'timings', 'doctors', 'storereview'));
+            return $this->themedView($vdata, 'booking_index', 'front.booking.storefront', compact('storeinfo', 'vdata', 'services', 'storeSettings', 'categories', 'timings', 'doctors', 'storereview'));
         }
 
         $getcategory = Category::where('vendor_id', $vdata)->where('is_available', '=', '1')->where('is_deleted', '2')->orderBy('reorder_id')->get();
@@ -111,12 +111,6 @@ class HomeController extends Controller
             $topdealsproducts = Item::with(['variation', 'extras', 'item_image', 'multi_image'])->where('items.top_deals', '1')->where('vendor_id', $vdata)->where('is_available', '1')->orderBy('reorder_id')->get();
         }
         $paymentlist = Payment::where('vendor_id', $vdata)->where('is_available', 1)->where('is_activate', '1')->get();
-        $settingdata = Settings::where('vendor_id', $vdata)->select('template')->first();
-        if (empty($settingdata) || empty($settingdata->template)) {
-            $settingdata = (object) [
-                'template' => optional(helper::appdata($vdata))->template ?: 1,
-            ];
-        }
 
         $bannerimage = Banner::where('vendor_id', $vdata)->orderBy('reorder_id')->get();
         $cartitems = Cart::select('id', 'item_id', 'item_name', 'item_image', 'item_price', 'extras_id', 'extras_name', 'extras_price', 'qty', 'price', 'tax', 'variants_id', 'variants_name')
@@ -145,23 +139,8 @@ class HomeController extends Controller
         if ($request->is($request->vendor . '/pwa')) {
             return view('front.themepwa', compact('getcategory', 'paymentlist', 'getitem', 'vdata', 'storeinfo', 'bannerimage', 'cartdata', 'whowearedata', 'blogs', 'storereview', 'topdealsproducts', 'topdeals'));
         } else {
-            // V2: honour the merchant's chosen template (register picker); fall back to a
-            // premium theme by business type; then to the basic default.
-            $chosen = (int) ($settingdata->template ?? 0);
-            $premiumByType = ['food' => 3, 'grocery' => 5, 'retail' => 6, 'pharmacy' => 7];
-            $bt = optional($storeSettings)->business_type;
-            if ($chosen && \Illuminate\Support\Facades\View::exists('front.template-' . $chosen . '.index')) {
-                $template = $chosen;
-            } elseif (isset($premiumByType[$bt]) && \Illuminate\Support\Facades\View::exists('front.template-' . $premiumByType[$bt] . '.index')) {
-                $template = $premiumByType[$bt];
-            } else {
-                $template = 1;
-            }
-            $templateView = 'front.template-' . $template . '.index';
-            if (!\Illuminate\Support\Facades\View::exists($templateView)) {
-                $templateView = 'front.template-1.index';
-            }
-            return view($templateView, compact('getcategory', 'paymentlist', 'getitem', 'vdata', 'storeinfo', 'bannerimage', 'cartdata', 'whowearedata', 'blogs', 'storereview', 'topdealsproducts', 'topdeals'));
+            // Every store renders through the AI design engine; its look is the store's design plan.
+            return view('front.template-20.index', compact('getcategory', 'paymentlist', 'getitem', 'vdata', 'storeinfo', 'bannerimage', 'cartdata', 'whowearedata', 'blogs', 'storereview', 'topdealsproducts', 'topdeals'));
         }
     }
 
@@ -303,23 +282,21 @@ class HomeController extends Controller
      * Render the restaurant/café custom theme page (template-3/4) when the store uses it,
      * otherwise fall back to the classic view. Keeps every storefront page on one design.
      */
+    /**
+     * Every store renders through the AI design engine (template-20) — its look comes from the
+     * store's design plan, not from a chosen template. Pages the engine does not have yet fall
+     * back to the classic view.
+     */
     private function themedView($vdata, string $page, string $classic, array $data)
     {
-        $tpl = (int) optional(Settings::where('vendor_id', $vdata)->first())->template;
-        $folder = $tpl == 4 ? 3 : $tpl; // café(4) shares restaurant(3); grocery(5) retail(6) pharmacy(7) booking(8) clinic(9) have their own
-        $view = in_array($tpl, [3, 4, 5, 6, 7, 8, 9, 10]) && \Illuminate\Support\Facades\View::exists("front.template-$folder.$page")
-            ? "front.template-$folder.$page"
-            : $classic;
+        $view = \Illuminate\Support\Facades\View::exists("front.template-20.$page") ? "front.template-20.$page" : $classic;
         return view($view, $data);
     }
 
-    /** Which custom-theme folder (3 restaurant / 5 grocery / 6 retail / 7 pharmacy / 8 booking / 9 clinic) a store uses. */
+    /** The engine's view folder number (used for partials such as the cart drawer). */
     private function themeFolder($vdata)
     {
-        $tpl = (int) optional(Settings::where('vendor_id', $vdata)->first())->template;
-        if (in_array($tpl, [3, 4])) return 3;
-        if (in_array($tpl, [5, 6, 7, 8, 9, 10])) return $tpl;
-        return null;
+        return 20;
     }
 
     /** Live cart drawer contents for the premium (template-3) theme. */

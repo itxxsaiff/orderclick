@@ -39,17 +39,20 @@ class FrontMiddleware
                     return response(view('errors.maintenance'));
                 }
                 // V2: a paid store stays private until the merchant activates their website.
-                // The owner (and their staff) can still preview it while it is in setup.
+                // The owner (and their staff) can still preview it while it is in setup — that is
+                // when they design it — so the plan check below does not lock them out.
+                $ownerInSetup = false;
                 if (!\App\Helpers\Systems::isLive($user) && \App\Helpers\Systems::hasPaid($user)) {
                     $viewer = \Illuminate\Support\Facades\Auth::user();
                     $isOwner = $viewer && (($viewer->id == $user->id) || ($viewer->vendor_id == $user->id));
                     if (!$isOwner) {
                         return response(view('errors.notactivated', ['storeinfo' => $user]));
                     }
+                    $ownerInSetup = true;
                 }
                 $checkplan = helper::checkplan($user->id, '3');
                 $v = json_decode(json_encode($checkplan));
-                if (@$v->original->status == 2) {
+                if (@$v->original->status == 2 && !$ownerInSetup) {
                     return response(view('errors.accountdeleted'));
                 }
                 if ($user->is_available == 2) {

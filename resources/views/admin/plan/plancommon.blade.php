@@ -70,22 +70,6 @@
                         {{ \App\Helpers\Systems::entityLabel($plandata->system, 'secondary', $plandata->appointment_limit) }}
                     </span>
                 </li>
-                @php
-                    $themes = [];
-                    if ($plandata->themes_id != '' && $plandata->themes_id != null) {
-                        $themes = explode(',', $plandata->themes_id);
-                } @endphp
-                <li class="mb-2 d-flex color-changer"> <i class="fa-regular fa-circle-check text-secondary "></i>
-                    <span class="mx-2">{{ count($themes) }}
-                        {{ count($themes) > 1 ? trans('labels.themes') : trans('labels.theme') }}
-                        @if (Auth::user()->type == 2 || (Auth::user()->type == 4 && Auth::user()->vendor_id != 1))
-                            <a onclick="themeinfo('{{ $plandata->id }}','{{ $plandata->themes_id }}','{{ $plandata->name }}')"
-                                tooltip="{{ trans('labels.info') }}" class="cursor-pointer color-changer">
-                                <i class="fa-regular fa-circle-info"></i>
-                            </a>
-                        @endif
-                    </span>
-                </li>
                 @if (App\Models\SystemAddons::where('unique_identifier', 'coupon')->first() != null &&
                         App\Models\SystemAddons::where('unique_identifier', 'coupon')->first()->activated == 1)
                     @if ($plandata->coupons == 1)

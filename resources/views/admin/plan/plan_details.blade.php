@@ -239,30 +239,6 @@
 
                             </li>
 
-                            @php
-
-                                $themes = [];
-
-                                if ($plan->themes_id != '' && $plan->themes_id != null) {
-                                    $themes = explode(',', $plan->themes_id);
-                                }
-                            @endphp
-
-                            <li class="mb-2 d-flex color-changer"> <i class="fa-regular fa-circle-check text-secondary "></i>
-
-                                <span class="mx-2 fs-7">{{ count($themes) }}
-
-                                    {{ count($themes) > 1 ? trans('labels.themes') : trans('labels.theme') }}
-
-                                    @if (Auth::user()->type == 2 || (Auth::user()->type == 4 && Auth::user()->vendor_id != 1))
-                                        <a onclick="themeinfo('{{ $plan->id }}','{{ $plan->themes_id }}','{{ $plan->plan_name }}')"
-                                            tooltip="{{ trans('labels.info') }}" class="cursor-pointer color-changer"> <i
-                                                class="fa-regular fa-circle-info"></i> </a>
-                                    @endif
-
-                                </span>
-
-                            </li>
 
                             @if (App\Models\SystemAddons::where('unique_identifier', 'coupon')->first() != null &&
                                     App\Models\SystemAddons::where('unique_identifier', 'coupon')->first()->activated == 1)
@@ -632,51 +608,6 @@
 
 @section('scripts')
     <script>
-        // function themeinfo(id, theme_id, plan_name) {
 
-        //     let string = theme_id;
-
-        //     let arr = string.split(',');
-
-        //     $('#themeinfoLabel').text(plan_name);
-
-        //     var html = "";
-
-        //     for (var i = 0; i < arr.length; i++) {
-
-        //         var imagepath = "{{ url(env('ASSETPATHURL') . 'admin-assets/images/theme/theme-') }}" + arr[i] + '.png';
-
-        //         html += '<div class="col-6 mb-3"><div class="theme-selection border cursor-pointer"><img src=' + imagepath +
-        //             ' alt="" class="w-100"></div></div>';
-
-        //     }
-
-        //     $('.theme_image').html(html);
-
-        //     $('#themeinfo').modal('show');
-
-        // }
-
-        function themeinfo(id, theme_id, plan_name) {
-
-            let string = theme_id;
-            let arr = string.split(',');
-            $('#themeinfoLabel').text(plan_name);
-            $.ajax({
-                headers: {
-                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-                },
-                url: "{{ URL::to('admin/themeimages') }}",
-                method: 'GET',
-                data: {
-                    theme_id: arr
-                },
-                dataType: 'json',
-                success: function(data) {
-                    $('#theme_modalbody').html(data.output);
-                    $('#themeinfo').modal('show');
-                }
-            })
-        }
     </script>
 @endsection

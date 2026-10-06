@@ -155,8 +155,7 @@ class SettingsController extends Controller
         $settingsdata = Settings::where('vendor_id', $vendor_id)->first();
         $settingsdata->primary_color = $request->primary_color;
         $settingsdata->secondary_color = $request->secondary_color;
-        $settingsdata->template = !empty($request->template) ? $request->template : 1;
-        $settingsdata->template_type = !empty($request->template_type) ? $request->template_type : 1;
+        // No template picking any more: the store's look comes from the AI store designer.
         if ($request->hasfile('logo')) {
             $validator = Validator::make($request->all(), [
                 'logo' => 'image|max:' . helper::imagesize() . '|' . helper::imageext(),

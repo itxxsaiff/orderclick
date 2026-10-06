@@ -231,13 +231,10 @@ class RegistrationController extends Controller
             'setup_step'           => 1,
         ], fn($v) => $v !== null));
 
-        // Start the merchant on the design that fits their activity; they can change it later.
+        // The business type drives the store's default look until the merchant runs the AI designer.
         $settings = Settings::where('vendor_id', $vendorId)->first();
         if ($settings && $activity) {
             $settings->business_type = $activity->business_type ?: $settings->business_type;
-            if (!empty($activity->template)) {
-                $settings->template = $activity->template;
-            }
             $settings->save();
         }
     }

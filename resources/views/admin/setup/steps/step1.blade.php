@@ -65,6 +65,8 @@
                     <span class="input-group-text bg-light">{{ URL::to('/') }}/</span>
                     <input type="text" class="form-control" name="slug" id="ocSetupSlug"
                         value="{{ old('slug', $vendor->slug) }}" placeholder="my-store">
+                    <input type="hidden" name="slug_custom" id="ocSetupSlugCustom"
+                        value="{{ old('slug_custom', \App\Helpers\Onboarding::slugIsCustom($vendor) ? 1 : 0) }}">
                 </div>
                 <small class="text-muted">{{ trans('messages.slug_from_business_name') }}</small>
             </div>
@@ -91,18 +93,25 @@
 </div>
 
 <script>
-    // The public link follows the BUSINESS name until the merchant edits it by hand.
+    // Until the store is live, the public link follows the BUSINESS name — unless the merchant
+    // types a link of their own, which is remembered (slug_custom) and then never overwritten.
     (function () {
         var biz = document.querySelector('input[name="business_name"]');
         var slug = document.getElementById('ocSetupSlug');
-        if (!biz || !slug) return;
-        var touched = slug.value !== '';
-        slug.addEventListener('input', function () { touched = true; });
-        biz.addEventListener('input', function () {
+        var custom = document.getElementById('ocSetupSlugCustom');
+        if (!biz || !slug || !custom) return;
+        var touched = custom.value === '1' || @json(\App\Helpers\Systems::isLive($vendor));
+        function fromName(v) {
+            return v.toLowerCase().trim().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        }
+        function sync() {
             if (touched) return;
-            slug.value = this.value.toLowerCase().trim()
-                .replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-');
-        });
+            var s = fromName(biz.value);
+            if (s !== '') slug.value = s; // non-Latin names: the server builds the link on save
+        }
+        slug.addEventListener('input', function () { touched = true; custom.value = '1'; });
+        biz.addEventListener('input', sync);
+        sync();
     })();
 
     // Specialization follows the chosen business type.

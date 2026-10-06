@@ -331,4 +331,9 @@ return array (
   'cat_rentals' => 'التأجير',
   'cat_restaurants_caf_s' => 'المطاعم والمقاهي',
   'cat_retail_shops' => 'التجزئة والمتاجر',
+  'ai_store_designer' => 'مصمم المتجر بالذكاء الاصطناعي',
+  'your_store_designed_by_ai' => 'متجرك، بتصميم الذكاء الاصطناعي',
+  'ai_store_designer_text' => 'أخبرنا بأسلوبك وسيصمم الذكاء الاصطناعي متجرك بالكامل حول منتجاتك خلال دقيقة تقريبًا. عاينه وعدّل ما تريد ثم انشره.',
+  'unique_design_for_your_business' => 'تصميم فريد لنشاطك',
+  'products_prices_stay_live' => 'منتجاتك وأسعارك محدّثة دائمًا',
 );

@@ -186,29 +186,6 @@
         })
     </script>
     <script>
-        function themeinfo(id, theme_id, plan_name) {
-
-            let string = theme_id;
-            let arr = string.split(',');
-            $('#themeinfoLabel').text(plan_name);
-            $.ajax({
-                headers: {
-                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
-                },
-                url: "{{ URL::to('admin/themeimages') }}",
-                method: 'GET',
-                data: {
-                    theme_id: arr
-                },
-                dataType: 'json',
-                success: function(data) {
-                    $('#theme_modalbody').html(data.output);
-                    $('#themeinfo').modal('show');
-                }
-            })
-        }
-    </script>
-    <script>
         // Filter the plan cards by system (Orders & Stores / Booking / Service Marketplace).
         (function () {
             var btns = document.querySelectorAll('.oc-planfilter-btn');

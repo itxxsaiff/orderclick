@@ -3,15 +3,8 @@
 namespace App\Services;
 
 use App\Helpers\Systems;
-use App\Models\Activity;
-use App\Models\Category;
-use App\Models\Item;
 use App\Models\PricingPlan;
-use App\Models\QuestionAnswer;
 use App\Models\Settings;
-use App\Models\Timing;
-use App\Models\User;
-use App\Models\VendorBranch;
 use App\Models\WhatsappChatMessage;
 use App\Models\WhatsappConversation;
 
@@ -106,84 +99,10 @@ TXT;
         return $lines ?: '(no earlier messages)';
     }
 
-    /**
-     * Everything a merchant's customer might ask: identity, hours, branches, delivery, payment,
-     * catalogue and the merchant's own Q&A.
-     */
+    /** Everything a merchant's customer might ask — shared with the store-page assistant. */
     private function businessContext($vendorId): string
     {
-        $vendor   = User::find($vendorId);
-        $settings = Settings::where('vendor_id', $vendorId)->first();
-        $system   = Systems::normalise(optional($vendor)->system);
-        $activity = optional($vendor)->activity_id ? Activity::find($vendor->activity_id) : null;
-
-        $out = [];
-        $out[] = 'Business name: ' . (optional($settings)->website_title ?: optional($vendor)->name);
-        $out[] = 'Type of business: ' . Systems::label($system) . ($activity ? ' — ' . $activity->name : '');
-        if (optional($settings)->description) $out[] = 'About: ' . strip_tags($settings->description);
-
-        // Contact + location, from the branch records.
-        $branches = VendorBranch::where('vendor_id', $vendorId)->where('is_available', 1)->orderBy('reorder_id')->get();
-        foreach ($branches as $b) {
-            $line = 'Branch: ' . $b->name;
-            if ($b->address) $line .= ' — ' . $b->address;
-            if ($b->city) $line .= ', ' . $b->city;
-            if ($b->phone) $line .= ' (phone ' . $b->phone . ')';
-            if ($b->coverage_km) $line .= ' — serves about ' . rtrim(rtrim(number_format($b->coverage_km, 1), '0'), '.') . ' km around it';
-            $out[] = $line;
-        }
-        if ($branches->isEmpty() && optional($settings)->address) {
-            $out[] = 'Address: ' . $settings->address;
-        }
-        if (optional($settings)->contact) $out[] = 'Phone: ' . $settings->contact;
-        if (optional($settings)->email)   $out[] = 'Email: ' . $settings->email;
-
-        // Opening hours.
-        $timings = Timing::where('vendor_id', $vendorId)->get();
-        if ($timings->isNotEmpty()) {
-            $hours = $timings->map(function ($t) {
-                if ((int) $t->is_always_close === 1) {
-                    return $t->day . ': closed';
-                }
-                $line = $t->day . ': ' . $t->open_time . ' - ' . $t->close_time;
-                if ($t->break_start && $t->break_end) {
-                    $line .= ' (break ' . $t->break_start . ' - ' . $t->break_end . ')';
-                }
-                return $line;
-            })->implode('; ');
-            $out[] = 'Opening hours: ' . $hours;
-        }
-
-        // Fulfilment + payment, phrased per system.
-        if ($system === Systems::ORDERS) {
-            $ful = optional($branches->first())->fulfilment;
-            if (!empty($ful)) {
-                $out[] = 'Order options: ' . implode(', ', array_map(fn($f) => str_replace('_', ' ', $f), (array) $ful));
-            }
-            if (optional($settings)->min_order_amount) $out[] = 'Minimum order: ' . $settings->min_order_amount;
-        }
-        $payments = \App\Models\Payment::where('vendor_id', $vendorId)->where('is_available', 1)->pluck('payment_name')->implode(', ');
-        if ($payments) $out[] = 'Payment methods: ' . $payments;
-
-        // What they sell / offer — capped so the prompt stays small.
-        $items = Item::where('vendor_id', $vendorId)->where('is_available', 1)
-            ->orderBy('reorder_id')->limit(60)->get(['item_name', 'item_price']);
-        if ($items->isNotEmpty()) {
-            $label = $system === Systems::ORDERS ? 'Products' : 'Services';
-            $out[] = $label . ' (name — price): ' . $items->map(
-                fn($i) => $i->item_name . ' — ' . $i->item_price
-            )->implode('; ');
-        }
-        $cats = Category::where('vendor_id', $vendorId)->where('is_deleted', 2)->pluck('name')->implode(', ');
-        if ($cats) $out[] = 'Categories: ' . $cats;
-
-        // The merchant's own knowledge base — highest authority, so it goes last and is labelled.
-        $out[] = $this->knowledgeBase($vendorId);
-
-        $slug = optional($vendor)->slug;
-        if ($slug) $out[] = 'Online store / booking link: ' . url('/' . $slug);
-
-        return implode("\n", array_filter($out));
+        return StoreKnowledge::context($vendorId);
     }
 
     /** What the Order Click platform number itself should be able to answer. */
@@ -222,19 +141,9 @@ TXT;
         return implode("\n", array_filter($out));
     }
 
-    /** Merchant-authored Q&A — the same records the website assistant uses. */
+    /** Merchant-authored Q&A — the same records the store-page assistant uses. */
     private function knowledgeBase($vendorId): string
     {
-        $qa = QuestionAnswer::where('vendor_id', $vendorId)
-            ->where('is_available', 1)
-            ->whereNotNull('answer')->where('answer', '!=', '')
-            ->orderBy('reorder_id')->limit(60)->get();
-
-        if ($qa->isEmpty()) {
-            return '';
-        }
-
-        return "Business Q&A (use these answers first, they are written by the business):\n"
-            . $qa->map(fn($q) => '- Q: ' . $q->question . ' A: ' . $q->answer)->implode("\n");
+        return StoreKnowledge::knowledgeBase($vendorId);
     }
 }

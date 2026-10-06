@@ -411,22 +411,6 @@
             </div>
         </div>
 
-        <!--theme image Modal -->
-        <div class="modal fade" id="themeinfob" tabindex="-1" aria-labelledby="themeinfoLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content">
-                    <div class="modal-header justify-content-between">
-                        <h5 class="modal-title color-changer" id="themeinfoLabel"></h5>
-                        <button type="button" class="bg-transparent border-0 m-0" data-bs-dismiss="modal"
-                            aria-label="Close">
-                            <i class="fa-regular fa-xmark color-changer fs-4"></i>
-                        </button>
-                    </div>
-                    <div class="modal-body" id="theme_modalbody">
-                    </div>
-                </div>
-            </div>
-        </div>
     </main>
     <script src="{{ url(env('ASSETSPATHURL') . 'admin-assets/js/jquery/jquery.min.js') }}"></script><!-- jQuery JS -->
     <script src="{{ url(env('ASSETSPATHURL') . 'admin-assets/js/jquery/jquery_ui.js') }}"></script><!-- jQuery JS -->

@@ -1,8 +1,7 @@
 @extends('admin.layout.default')
 @section('content')
     @php
-        $ar = app()->getLocale() === 'ar';
-        $steps = \App\Helpers\Onboarding::STEPS;
+        $steps = \App\Helpers\Onboarding::steps();
         $vendorId = $vendor->id;
         $doc = fn($type) => ($uploaded[$type] ?? collect())->first();
         $docsFor = fn($n) => collect($documents)->filter(fn($d) => $d['step'] === $n);
@@ -48,7 +47,7 @@
         <div class="row justify-content-between align-items-center mb-3">
             <div class="col-12">
                 <h5 class="pages-title color-changer fs-2">
-                    {{ $ar ? 'إعداد حسابك' : 'Set up your ' . \App\Helpers\Systems::label($system) . ' business' }}
+                    {{ trans('labels.setup_your_business', ['system' => \App\Helpers\Systems::label($system)]) }}
                 </h5>
                 <p class="fs-7 text-muted mb-1">{{ trans('messages.setup_wizard_subtitle') }}</p>
                 @include('admin.layout.breadcrumb')

@@ -20,7 +20,6 @@ use App\Models\Subscriber;
 use App\Models\Terms;
 use App\Models\Testimonials;
 use App\Models\StoreCategory;
-use App\Models\Theme;
 use App\Models\Timing;
 use App\Models\User;
 use App\Models\Works;
@@ -36,10 +35,9 @@ class HomeController extends Controller
         $testimonials = Testimonials::where('vendor_id', '1')->orderBy('reorder_id')->get();
         $blogs = Blog::where('vendor_id', '1')->orderBy('reorder_id')->get();
         $works = Works::where('vendor_id', '1')->orderBy('reorder_id')->get();
-        $themes = Theme::where('vendor_id', '1')->orderBy('reorder_id')->get();
         $userdata = User::select('users.id', 'name', 'slug', 'settings.description', 'website_title', 'cover_image')->where('available_on_landing', 1)->whereIn('users.id', self::liveStoreIds())->join('settings', 'users.id', '=', 'settings.vendor_id')->get();
 
-        return view('landing.index', compact('planlist', 'features', 'testimonials', 'blogs', 'works', 'themes', 'userdata'));
+        return view('landing.index', compact('planlist', 'features', 'testimonials', 'blogs', 'works', 'userdata'));
     }
 
     public function emailsubscribe(Request $request)

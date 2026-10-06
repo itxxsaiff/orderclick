@@ -127,12 +127,16 @@ class SetupController extends Controller
 
         // The public link is derived from the BUSINESS name (registration only had a provisional
         // one). It can still be edited by hand, and is never changed once the site is live.
+        // A link that is taken or reserved gets the next free variant instead of being dropped.
         if (!Systems::isLive($vendor)) {
-            $wanted = \Illuminate\Support\Str::slug($request->slug ?: $request->business_name, '-');
-            if ($wanted !== '' && $wanted !== $vendor->slug
-                && !User::where('slug', $wanted)->where('id', '!=', $vendor->id)->where('is_deleted', 2)->exists()) {
+            // The link follows the business name unless the merchant typed a link of their own
+            // (slug_custom, set by the page when the link field is edited).
+            $custom = $request->input('slug_custom') == '1' && trim((string) $request->slug) !== '';
+            $base = \Illuminate\Support\Str::slug((string) ($custom ? $request->slug : ($request->business_name ?: $request->slug)), '-');
+            $wanted = $base !== '' && $base !== $vendor->slug ? Onboarding::availableSlug($base, $vendor->id) : $vendor->slug;
+            if ($wanted !== $vendor->slug) {
                 $update['slug'] = $wanted;
-                VendorAuditLog::record($vendor->id, 'store_link', $vendor->slug, $wanted, null, 'vendor');
+                VendorAuditLog::record($vendor->id, $custom ? 'store_link_custom' : 'store_link', $vendor->slug, $wanted, null, 'vendor');
             }
         }
         if ($request->filled('email'))         $update['email'] = $request->email;

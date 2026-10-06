@@ -172,10 +172,8 @@
         var sysInput = document.getElementById('planSystem');
 
         function applySystem(sys) {
-            // A plan row with an empty or unrecognised system used to fall through every lookup:
-            // titles read "undefined", and ocFilterPlanThemes() matched no theme card, so it
-            // disabled and unchecked all of them. Disabled inputs are not posted, which made the
-            // plan save with no themes (and, before the controller guard, crash on implode).
+            // A plan row with an empty or unrecognised system would fall through every lookup
+            // (titles read "undefined"), so default it to Orders & Stores.
             if (['orders', 'booking', 'service'].indexOf(sys) === -1) { sys = 'orders'; }
             if (sysInput) sysInput.value = sys;
             document.querySelectorAll('.oc-systab').forEach(function (b) { b.classList.toggle('active', b.dataset.system === sys); });
@@ -199,7 +197,6 @@
                 g.querySelectorAll('input').forEach(function (i) { i.disabled = !on; });
             });
             // system-filtered themes (checkboxes rendered in add/edit with data-theme-system)
-            if (window.ocFilterPlanThemes) window.ocFilterPlanThemes(sys);
         }
 
         document.querySelectorAll('.oc-systab').forEach(function (b) {

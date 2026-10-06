@@ -20,12 +20,13 @@ class WhatsAppController extends Controller
 {
     public function __construct()
     {
-        // Hidden tools stay closed even to someone typing the URL.
+        // Hidden tools stay closed even to someone typing the URL. The Knowledge Base stays open:
+        // it also feeds the AI assistant on the store page.
         $this->middleware(function ($request, $next) {
             abort_unless(WhatsappSetting::toolsEnabledFor($this->vendorId()), 404);
 
             return $next($request);
-        });
+        })->except(['knowledge', 'knowledge_save', 'knowledge_delete', 'knowledge_status']);
     }
 
     private function vendorId()

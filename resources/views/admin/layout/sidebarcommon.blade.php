@@ -46,7 +46,7 @@
         </li>
     @endif
     {{-- WhatsApp Cloud API: connection, inbox and the shared AI knowledge base.
-         Hidden for everyone unless WHATSAPP_TOOLS=true (config/services.php). --}}
+         Super admin always; merchants only when WHATSAPP_TOOLS=true (config/services.php). --}}
     @if (\App\Models\WhatsappSetting::toolsEnabledFor($vendor_id))
     <li class="nav-item mb-2 fs-7 dropdown multimenu">
         <a class="nav-link collapsed d-flex align-items-center justify-content-between dropdown-toggle mb-1 {{ request()->is('admin/whatsapp*') ? 'active' : '' }}"
@@ -302,6 +302,18 @@
         @endif
         {{-- AI store builder: no longer forced on the merchant after login, so it needs a
              permanent home in the menu. --}}
+        {{-- AI store designer: the store's whole look comes from here (no template picking). --}}
+        @if (Auth::user()->type != 1 && $vendor_id != 1)
+            <li class="nav-item mb-2 fs-7">
+                <a class="nav-link d-flex align-items-center {{ request()->is('admin/design*') ? 'active' : '' }}"
+                    aria-current="page" href="{{ URL::to('admin/design') }}">
+                    <span class="{{ request()->is('admin/design*') ? 'sidebariconbox' : 'sidebariconbox1' }}">
+                        <i class="fa-solid fa-palette"></i>
+                    </span>
+                    <span class="mx-2">{{ trans('labels.design_menu') }}</span>
+                </a>
+            </li>
+        @endif
         @if (Auth::user()->type != 1 && $vendor_id != 1 && \App\Services\AiAssistant::enabled())
             <li class="nav-item mb-2 fs-7">
                 <a class="nav-link d-flex align-items-center {{ request()->is('admin/store-setup*') ? 'active' : '' }}"
@@ -310,6 +322,16 @@
                         <i class="fa-solid fa-wand-magic-sparkles"></i>
                     </span>
                     <span class="mx-2">{{ trans('labels.ai_assistant') }}</span>
+                </a>
+            </li>
+            {{-- What the AI assistant on the merchant's store page answers from. --}}
+            <li class="nav-item mb-2 fs-7">
+                <a class="nav-link d-flex align-items-center {{ request()->is('admin/whatsapp/knowledge*') ? 'active' : '' }}"
+                    aria-current="page" href="{{ URL::to('admin/whatsapp/knowledge') }}">
+                    <span class="{{ request()->is('admin/whatsapp/knowledge*') ? 'sidebariconbox' : 'sidebariconbox1' }}">
+                        <i class="fa-solid fa-book-open"></i>
+                    </span>
+                    <span class="mx-2">{{ trans('labels.ai_knowledge_base') }}</span>
                 </a>
             </li>
         @endif
@@ -1040,7 +1062,8 @@
             </a>
         </li>
         <li
-            class="nav-item mb-2 fs-7 {{ helper::check_menu($role_id, 'role_theme_images') == 1 ? 'd-block' : 'd-none' }}">
+            {{-- Template Images retired: stores are designed by the AI designer, nothing picks a template any more. --}}
+            class="nav-item mb-2 fs-7 d-none">
             <a class="nav-link d-flex align-items-center {{ request()->is('admin/themes*') ? 'active' : '' }}"
                 aria-current="page" href="{{ URL::to('/admin/themes') }}">
                 <span class="{{ request()->is('admin/themes') ? 'sidebariconbox' : 'sidebariconbox1' }}">

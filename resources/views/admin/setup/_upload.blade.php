@@ -31,7 +31,7 @@
             </a>
             <div class="d-flex align-items-center gap-1">
                 <span class="badge {{ $file->status === 'approved' ? 'bg-success' : ($file->status === 'changes_required' ? 'bg-warning' : 'bg-secondary') }}">
-                    {{ ucwords(str_replace('_', ' ', $file->status)) }}
+                    {{ \Illuminate\Support\Facades\Lang::has('labels.doc_status_' . $file->status) ? trans('labels.doc_status_' . $file->status) : ucwords(str_replace('_', ' ', $file->status)) }}
                 </span>
                 <a href="{{ URL::to('admin/setup/document/delete-' . $file->id) }}" class="text-danger"
                     tooltip="{{ trans('labels.delete') }}"><i class="fa-regular fa-trash"></i></a>

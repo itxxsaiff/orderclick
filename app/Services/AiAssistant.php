@@ -165,23 +165,28 @@ class AiAssistant
      * OpenAI call with multimodal input (text + image/file content items).
      * Mirrors run() but sends an input message array instead of a plain string.
      */
-    public function runMultimodal(string $instructions, array $content, int $maxTokens = 2000): array
+    public function runMultimodal(string $instructions, array $content, int $maxTokens = 2000, ?string $model = null): array
     {
         $key = config('services.openai.key');
         if (empty($key)) {
             return ['success' => false, 'error' => 'AI is not configured yet.'];
         }
+        $model = $model ?: config('services.openai.model');
+        $payload = [
+            'model' => $model,
+            'instructions' => $instructions,
+            'input' => [['role' => 'user', 'content' => $content]],
+            'max_output_tokens' => $maxTokens,
+        ];
+        // Only reasoning models (gpt-5*, o*) accept this; others reject the parameter.
+        if (preg_match('/^(gpt-5|o\d)/', $model)) {
+            $payload['reasoning'] = ['effort' => 'minimal'];
+        }
         try {
             $response = Http::withToken($key)
-                ->timeout(90)
+                ->timeout(150)
                 ->acceptJson()
-                ->post(config('services.openai.endpoint'), [
-                    'model' => config('services.openai.model'),
-                    'instructions' => $instructions,
-                    'input' => [['role' => 'user', 'content' => $content]],
-                    'reasoning' => ['effort' => 'minimal'],
-                    'max_output_tokens' => $maxTokens,
-                ]);
+                ->post(config('services.openai.endpoint'), $payload);
 
             if (!$response->successful()) {
                 $msg = $response->json('error.message') ?? ('AI request failed (' . $response->status() . ').');
@@ -198,7 +203,7 @@ class AiAssistant
     }
 
     /** Extract a JSON object from a model response (tolerates code fences / stray prose). */
-    private function parseJson(string $text)
+    public function parseJson(string $text)
     {
         $text = trim($text);
         $text = preg_replace('/```(json)?/i', '', $text);

@@ -57,5 +57,6 @@
     <script src="{{ url($tCss . 'js/main.js') }}"></script>
     <script src="{{ url(env('ASSETSPATHURL') . 'web-assets/templates/restaurant/js/oc-cart.js') }}"></script>
     @yield('scripts')
+    @include('front.partials.ai_assistant')
 </body>
 </html>

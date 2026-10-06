@@ -34,8 +34,8 @@ class AppServiceProvider extends ServiceProvider
         // once and cascade it to the layout, partials and section content. Needed because
         // Blade captures @section content before the layout's own @php runs.
         $tplPages = [];
-        foreach (['3', '4', '5', '6', '7', '8', '9', '10'] as $tpl) {
-            foreach (['index', 'category', 'cart', 'checkout', 'contact', 'about', 'faq', 'terms', 'privacy', 'refund', 'productdetail', 'success', 'trackorder', 'listing', 'bookingsuccess'] as $page) {
+        foreach (['3', '4', '5', '6', '7', '8', '9', '10', '20'] as $tpl) {
+            foreach (['index', 'booking_index', 'category', 'cart', 'checkout', 'contact', 'about', 'faq', 'terms', 'privacy', 'refund', 'productdetail', 'success', 'trackorder', 'listing', 'bookingsuccess'] as $page) {
                 $tplPages[] = "front.template-$tpl.$page";
             }
         }
@@ -58,7 +58,7 @@ class AppServiceProvider extends ServiceProvider
             // active nav state keyed by page suffix (works for any template-N)
             $pageKey = \Illuminate\Support\Str::afterLast($view->getName(), '.');
             $activeMap = [
-                'category' => 'menu', 'productdetail' => 'menu',
+                'category' => 'menu', 'productdetail' => 'menu', 'listing' => 'book', 'bookingsuccess' => 'book',
                 'cart' => 'cart', 'checkout' => 'cart',
                 'contact' => 'contact', 'about' => 'about', 'faq' => 'faqs',
             ];
@@ -76,6 +76,35 @@ class AppServiceProvider extends ServiceProvider
                 $tplFolder = 'salon';
             } elseif (\Illuminate\Support\Str::contains($view->getName(), 'template-9')) {
                 $tplFolder = 'clinic';
+            }
+            // AI design engine (template-20): the store's design plan, its flow and navigation.
+            if (\Illuminate\Support\Str::contains($view->getName(), 'template-20')) {
+                $design = \App\Services\StoreDesign::for($vid, \App\Services\StoreDesign::previewing($vid));
+                $flow = $design['flow'];
+                $slug = $storeinfo->slug ?? '';
+                $shopLabel = in_array(optional($app)->business_type, ['food', 'cafe'], true) ? trans('labels.eng_nav_menu') : trans('labels.eng_nav_shop');
+                $main = [
+                    'orders'  => ['key' => 'menu', 'label' => $shopLabel, 'url' => url($slug . '/categories')],
+                    'booking' => ['key' => 'book', 'label' => trans('labels.eng_nav_book'), 'url' => url($slug . '/booking')],
+                    'service' => ['key' => 'service', 'label' => trans('labels.eng_nav_services'), 'url' => url($slug . '/service')],
+                ][$flow];
+                $view->with([
+                    'tDesign' => $design,
+                    'tFlow'   => $flow,
+                    'tNav'    => [
+                        ['key' => 'home', 'label' => __('Home'), 'url' => url($slug)],
+                        $main,
+                        ['key' => 'about', 'label' => __('About us'), 'url' => url($slug . '/aboutus')],
+                        ['key' => 'contact', 'label' => __('Contact'), 'url' => url($slug . '/contact')],
+                        ['key' => 'faqs', 'label' => __('FAQs'), 'url' => url($slug . '/faqshow')],
+                    ],
+                    'tCta'    => [
+                        'orders'  => ['label' => trans('labels.eng_cta_order'), 'url' => url($slug . '/categories')],
+                        'booking' => ['label' => trans('labels.eng_cta_book'), 'url' => url($slug . '/booking')],
+                        'service' => ['label' => trans('labels.eng_cta_request'), 'url' => url($slug . '/service')],
+                    ][$flow],
+                ]);
+                $tplFolder = 'restaurant';
             }
             $view->with([
                 'tApp'    => $app,

@@ -360,52 +360,6 @@
                             </select>
 
                         </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label class="form-label mt-2 mb-0">{{ trans('labels.themes') }}
-                                    <span class="text-danger"> * </span> </label>
-                                @if (env('Environment') == 'sendbox')
-                                    <span class="badge badge bg-danger ms-2">{{ trans('labels.addon') }}</span>
-                                @endif
-                                @php
-                                    // Dynamic storefront themes (from the theme table) — selectable per plan.
-                                    $planThemes = App\Models\Theme::orderBy('reorder_id')->get();
-                                @endphp
-
-                            </div>
-                        </div>
-
-
-
-                        <div class="col-md-12 selectimg">
-                            <div class="form-group">
-                                <div class="row g-3">
-                                    @foreach ($planThemes as $key => $t)
-                                        @php $slug = str_replace(['theme-', '.png'], '', $t->image); @endphp
-                                        <div class="col-12 col-md-4 col-lg-4 col-xl-3 oc-theme-card" data-theme-system="{{ $t->system ?? 'orders' }}">
-                                            <label for="template{{ $slug }}"
-                                                class="radio-card position-relative">
-                                                <input type="checkbox" name="themecheckbox[]"
-                                                    id="template{{ $slug }}" value="{{ $slug }}"
-                                                    data-theme-system="{{ $t->system ?? 'orders' }}"
-                                                    {{ $key == 0 && ($t->system ?? 'orders') === 'orders' ? 'checked' : '' }} class="d-none">
-                                                <div class="card-content-wrapper border rounded-2">
-                                                    <span class="check-icon position-absolute"></span>
-                                                    <div class="selecimg">
-                                                        <img src="{{ helper::image_path($t->image) }}" class="rounded">
-                                                    </div>
-                                                    <div class="text-center small fw-600 py-1">{{ $t->name }}</div>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    @endforeach
-                                    <div class="col-12 oc-no-theme text-muted small" style="display:none">
-                                        {{ trans('labels.no_themes_available_for_this_system_yet') }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @include('admin.plan._theme_filter_js')
                         <div class="form-group m-0 mt-2 d-flex gap-2 justify-content-end">
                             <a href="{{ URL::to('admin/plan') }}"
                                 class="btn btn-danger px-4 rounded-start-5 rounded-end-5">{{ trans('labels.cancel') }}</a>

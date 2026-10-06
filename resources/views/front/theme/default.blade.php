@@ -1741,6 +1741,8 @@
     <script></script>
     @yield('model')
     @yield('script')
+    {{-- Opposite side to the WhatsApp chat button so they never overlap. --}}
+    @include('front.partials.ai_assistant', ['ocaSide' => @whatsapp_helper::whatsapp_message_config($vdata)->whatsapp_chat_position == 1 ? 'right' : 'left'])
 </body>
 
 </html>

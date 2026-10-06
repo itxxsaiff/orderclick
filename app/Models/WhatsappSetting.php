@@ -40,12 +40,12 @@ class WhatsappSetting extends Model
     }
 
     /**
-     * Whether the WhatsApp Cloud tools are switched on (config('services.whatsapp_cloud.tools')).
-     * Off for every account, super admin included, until WHATSAPP_TOOLS=true is set.
+     * Whether this account may use the WhatsApp Cloud tools. The platform (super admin and its
+     * staff, vendor_id 1) always can; merchants only when config('services.whatsapp_cloud.tools') is on.
      */
-    public static function toolsEnabledFor($vendorId = null): bool
+    public static function toolsEnabledFor($vendorId): bool
     {
-        return (bool) config('services.whatsapp_cloud.tools');
+        return (int) $vendorId === 1 || (bool) config('services.whatsapp_cloud.tools');
     }
 
     /** Which business owns the number Meta just delivered a message to. */

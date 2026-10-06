@@ -31,8 +31,8 @@ use App\Http\Controllers\admin\NotificationController;
 use App\Http\Controllers\admin\RecaptchaController;
 use App\Http\Controllers\web\HomeController;
 use App\Http\Controllers\web\FavoriteController;
+use App\Http\Controllers\web\StoreAssistantController;
 use App\Http\Controllers\admin\TaxController;
-use App\Http\Controllers\admin\ThemeController;
 use App\Http\Controllers\admin\WhoWeAreController;
 use App\Http\Controllers\admin\WorksController;
 use App\Http\Controllers\web\UserController as WebUserController;
@@ -151,7 +151,6 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
             });
             // PLANS
             Route::get('plan', [PlanPricingController::class, 'view_plan']);
-            Route::get('/themeimages', [PlanPricingController::class, 'themeimages']);
             // PAYMENT
             Route::group(
                 ['prefix' => 'payment'],
@@ -340,13 +339,9 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
                     );
 
                     // theme
-                    Route::get('/themes', [ThemeController::class, 'index']);
-                    Route::get('themes/add', [ThemeController::class, 'add']);
-                    Route::post('/themes/save', [ThemeController::class, 'save']);
-                    Route::get('/themes/edit-{id}', [ThemeController::class, 'edit']);
-                    Route::post('/themes/update-{id}', [ThemeController::class, 'update']);
-                    Route::get('/themes/delete-{id}', [ThemeController::class, 'delete']);
-                    Route::post('/themes/reorder_theme', [ThemeController::class, 'reorder_theme']);
+                    // Template Images retired with theme picking (stores use the AI designer). The theme
+                    // rows stay in the database; old links land on the dashboard.
+                    Route::any('/themes/{any?}', fn() => redirect('admin/dashboard'))->where('any', '.*');
 
                     // how works
                     Route::get('/how_works', [WorksController::class, 'index']);
@@ -384,6 +379,13 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
                     Route::get('/store-setup', [\App\Http\Controllers\admin\AiBuildController::class, 'setup']);
                     Route::post('/store-setup/extract', [\App\Http\Controllers\admin\AiBuildController::class, 'extract']);
                     Route::post('/store-setup/build', [\App\Http\Controllers\admin\AiBuildController::class, 'build']);
+                    // AI store designer: the store's look is an AI design plan rendered by the engine.
+                    Route::get('/design', [\App\Http\Controllers\admin\StoreDesignController::class, 'index']);
+                    Route::post('/design/generate', [\App\Http\Controllers\admin\StoreDesignController::class, 'generate'])->middleware('throttle:12,1');
+                    Route::post('/design/tweak', [\App\Http\Controllers\admin\StoreDesignController::class, 'tweak']);
+                    Route::post('/design/publish', [\App\Http\Controllers\admin\StoreDesignController::class, 'publish']);
+                    Route::post('/design/discard', [\App\Http\Controllers\admin\StoreDesignController::class, 'discard']);
+                    Route::post('/design/reset', [\App\Http\Controllers\admin\StoreDesignController::class, 'reset']);
                     // V2 Booking module (dashboard)
                     Route::get('/bookings', [BookingController::class, 'index']);
                     Route::post('/bookings/status', [BookingController::class, 'updatestatus']);
@@ -614,6 +616,8 @@ Route::group(['namespace' => "front", 'prefix' => $prefix, 'middleware' => 'Fron
     Route::get('/categories', [HomeController::class, 'categories'])->name('front.categories');
     Route::get('/product/{id}', [HomeController::class, 'show'])->name('front.home');
     // V2 Booking module (storefront)
+    // AI assistant inside the store page (answers from this store's data only).
+    Route::post('/assistant', [StoreAssistantController::class, 'chat'])->middleware('throttle:20,1');
     Route::get('/booking', [HomeController::class, 'bookingpage'])->name('front.booking');
     Route::post('/save-booking', [HomeController::class, 'savebooking'])->name('front.savebooking');
     Route::get('/booking-success/{booking_number}', [HomeController::class, 'bookingsuccess'])->name('front.bookingsuccess');

@@ -9,7 +9,7 @@
         @php $allDone = collect($progress)->except(6)->every(fn($s) => $s['done']); @endphp
 
         <div class="row g-3">
-            @foreach (\App\Helpers\Onboarding::STEPS as $n => $meta)
+            @foreach (\App\Helpers\Onboarding::steps() as $n => $meta)
                 @continue($n === 6)
                 <div class="col-12">
                     <div class="oc-collapsed d-flex align-items-start justify-content-between gap-3">

@@ -33,5 +33,6 @@
     <div class="toast-wrap"></div>
     <script src="{{ url($tCss . 'js/main.js') }}"></script>
     @yield('scripts')
+    @include('front.partials.ai_assistant')
 </body>
 </html>

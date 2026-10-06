@@ -388,12 +388,6 @@ class VendorController extends Controller
     // ------------------------------------------------------------------------
     // ----------------- registration & Auth pages ----------------------------
     // ------------------------------------------------------------------------
-    public function register()
-    {
-        Helper::language(1);
-        $cities = City::where('Is_deleted', 2)->where('is_available', 1)->orderBy('reorder_id')->get();
-        return view('admin.auth.register', compact('cities'));
-    }
 
     /**
      * Live availability check for the registration form. Called as the merchant types, so a
@@ -548,12 +542,6 @@ class VendorController extends Controller
             $vendorSettings = $adminSettings->replicate();
             $vendorSettings->vendor_id = $vendorId;
             $vendorSettings->custom_domain = null;
-            // V2 onboarding: honour the template the merchant picked, else fall back to the admin default.
-            // 1 classic · 2 booking · 3 restaurant · 4 café · 5 grocery · 6 retail
-            $allowedTemplates = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
-            $vendorSettings->template = in_array((string) $request->template, $allowedTemplates, true)
-                ? (int) $request->template
-                : (!empty($adminSettings->template) ? $adminSettings->template : 1);
             // V2 onboarding: remember the merchant's business type — but only one that actually
             // belongs to the System they chose, since the two are picked on different steps.
             $allowedTypes = Systems::businessTypes($request->system);

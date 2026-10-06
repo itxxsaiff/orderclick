@@ -307,15 +307,6 @@ $user = App\Models\User::where('id', $vendor_id)->where('is_available', 1)->wher
                             {{ \App\Helpers\Systems::entityLabel($plan->system, 'secondary', $plan->appointment_limit) }}
                         </span>
                     </li>
-                    @php
-                    $themes = [];
-                    if ($plan->themes_id != '' && $plan->themes_id != null) {
-                    $themes = explode(',', $plan->themes_id);
-                    } @endphp
-                    <li class="mb-3 d-flex color-changer"> <i class="fa-regular fa-circle-check text-secondary  "></i>
-                        <span class="mx-2 fs-7">{{ count($themes) }}
-                            {{ count($themes) > 1 ? trans('labels.themes') : trans('labels.theme') }}</span>
-                    </li>
                     @if ($plan->coupons == 1)
                     <li class="mb-3 d-flex color-changer"> <i class="fa-regular fa-circle-check text-secondary  "></i>
                         <span class="mx-2 fs-7">{{ trans('labels.coupons') }}</span>

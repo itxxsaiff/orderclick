@@ -73,12 +73,28 @@
                 </div>
                 <a href="{{ URL::to('admin/store-setup') }}" class="oc-ai__btn">
                     <i class="fa-solid fa-wand-magic-sparkles"></i>
-                    {{ !empty($ocStoreEmpty)
-                        ? ($ocAr ? 'ابدأ الإعداد بالذكاء الاصطناعي' : 'Build my store with AI')
-                        : ($ocAr ? 'فتح مساعد الذكاء الاصطناعي' : 'Open AI Assistant') }}
+                    {{ !empty($ocStoreEmpty) ? trans('labels.build_my_store_with_ai') : trans('labels.open_ai_assistant') }}
                 </a>
             </div>
         </div>
+
+        {{-- AI store designer: the store's look (no template picking). Prominent until a design is published. --}}
+        @php
+            $ocVid = Auth::user()->type == 4 ? Auth::user()->vendor_id : Auth::user()->id;
+            $ocDesigned = !empty(\App\Models\Settings::where('vendor_id', $ocVid)->value('ai_design'));
+        @endphp
+        <div class="oc-ai oc-ai--design {{ $ocDesigned ? 'oc-ai--compact' : '' }}">
+            <div class="oc-ai__spark"></div>
+            <div class="oc-ai__in">
+                <div>
+                    <span class="oc-ai__eyebrow"><i class="fa-solid fa-palette"></i> {{ trans('labels.design_menu') }}</span>
+                    <h3>{{ $ocDesigned ? trans('labels.design_banner_redesign') : trans('labels.design_banner_title') }}</h3>
+                    <p>{{ trans('labels.design_banner_text') }}</p>
+                </div>
+                <a href="{{ URL::to('admin/design') }}" class="oc-ai__btn"><i class="fa-solid fa-palette"></i> {{ trans('labels.design_generate') }}</a>
+            </div>
+        </div>
+        <style>.oc-ai--design { background: linear-gradient(120deg, #4c1d95, #7c3aed 55%, #db2777); } .oc-ai--design .oc-ai__btn { color: #5b21b6; }</style>
     @endif
     <div class="row mb-0 mb-md-4">
         <div class="col-12 col-md-12 col-lg-12 col-xl-6">

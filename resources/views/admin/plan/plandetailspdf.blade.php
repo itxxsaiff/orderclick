@@ -289,15 +289,6 @@
                                     {{ \App\Helpers\Systems::entityLabel($plan->system, 'secondary', $plan->appoinment_limit) }}
                                 </span>
                             </li>
-                            @php
-                                $themes = [];
-                                if ($plan->themes_id != '' && $plan->themes_id != null) {
-                                    $themes = explode('|', $plan->themes_id);
-                            } @endphp
-                            <li class="mb-2 d-flex"> <i class="fa-regular fa-circle-check text-secondary "></i>
-                                <span class="mx-2">{{ count($themes) }}
-                                    {{ count($themes) > 1 ? trans('labels.themes') : trans('labels.theme') }}</span>
-                            </li>
                             @if (App\Models\SystemAddons::where('unique_identifier', 'coupon')->first() != null &&
                                     App\Models\SystemAddons::where('unique_identifier', 'coupon')->first()->activated == 1)
                                 @if ($plan->coupons == 1)

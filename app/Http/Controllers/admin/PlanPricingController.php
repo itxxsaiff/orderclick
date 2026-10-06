@@ -132,13 +132,11 @@ class PlanPricingController extends Controller
 
     /**
      * Server-side checks for the system engine: Limited counts must be > 0, enabled add-ons need a
-     * price > 0, an enabled offer needs its value, and selected themes must belong to the plan's system.
+     * price > 0, and an enabled offer needs its value.
      * Returns an error message, or null when everything is valid.
      */
     private function validateSystemFields(Request $request): ?string
     {
-        $sys = in_array($request->system, ['orders', 'booking', 'service'], true) ? $request->system : 'orders';
-
         // Primary/secondary limits (existing fields) — Limited must be > 0.
         if ($request->service_limit_type == '1' && (float) $request->plan_max_business <= 0) {
             return 'The main limit is set to Limited — please enter a maximum greater than zero.';
@@ -173,14 +171,6 @@ class PlanPricingController extends Controller
             }
             if ($ot === 'pay_x_get_y' && ((int) ($request->offer['paid_months'] ?? 0) <= 0 || (int) ($request->offer['free_months'] ?? 0) <= 0)) {
                 return 'Please enter both paid and free months for the offer.';
-            }
-        }
-        // Themes must belong to the selected system.
-        $selected = array_filter((array) $request->themecheckbox);
-        if (!empty($selected)) {
-            $images = array_map(fn($s) => 'theme-' . $s . '.png', $selected);
-            if (\App\Models\Theme::whereIn('image', $images)->where('system', '!=', $sys)->exists()) {
-                return 'A selected theme belongs to a different system. Please choose themes for the selected system only.';
             }
         }
         return null;
@@ -297,7 +287,7 @@ class PlanPricingController extends Controller
 
         $saveplan = new PricingPlan();
         $saveplan->name = $request->plan_name;
-        $saveplan->themes_id = "0";
+        $saveplan->themes_id = ''; // stores are designed by the AI designer — plans carry no themes
         $saveplan->description = $request->plan_description;
         $saveplan->features = self::joinField($request->plan_features, "|");
         $saveplan->price = $request->plan_price;
@@ -335,7 +325,6 @@ class PlanPricingController extends Controller
         $saveplan->pwa = $pwa;
         $saveplan->tableqr = $tableqr;
         $saveplan->role_management = $employee;
-        $saveplan->themes_id = self::joinField($request->themecheckbox, ",");
         $saveplan->vendor_id = self::joinField($request->vendors, "|") ?: $request->vendors;
         $this->applySystemFields($saveplan, $request);
         $saveplan->save();
@@ -456,7 +445,7 @@ class PlanPricingController extends Controller
         } else {
             $editplan = PricingPlan::where('id', $id)->first();
             $editplan->name = $request->plan_name;
-            $editplan->themes_id = "0";
+            $editplan->themes_id = '';
             $editplan->description = $request->plan_description;
             $editplan->features = self::joinField($request->plan_features, "|");
             $editplan->price = $request->plan_price;
@@ -494,7 +483,6 @@ class PlanPricingController extends Controller
             $editplan->pwa = $pwa;
             $editplan->tableqr = $tableqr;
             $editplan->role_management = $employee;
-            $editplan->themes_id = self::joinField($request->themecheckbox, ",");
             $editplan->vendor_id = self::joinField($request->vendors, "|") ?: $request->vendors;
             $this->applySystemFields($editplan, $request);
             $editplan->update();
@@ -995,32 +983,5 @@ class PlanPricingController extends Controller
             }
         }
         return response()->json(['status' => 1, 'msg' => trans('messages.success')], 200);
-    }
-    public function themeimages(Request $request)
-    {
-
-        $newpath = [];
-        $output = '';
-        foreach ($request->theme_id as $theme_id) {
-            $image = 'theme-' . $theme_id;
-            if (file_exists(storage_path('app/public/admin-assets/images/theme/' . $image . '.png'))) {
-                $image = 'theme-' . $theme_id . '.png';
-                $path = url(env('ASSETSPATHURL') . 'admin-assets/images/theme/' . $image);
-            } elseif (file_exists(storage_path('app/public/admin-assets/images/theme/' . $image . '.jpeg'))) {
-                $image = 'theme-' . $theme_id . '.jpeg';
-                $path = url(env('ASSETSPATHURL') . 'admin-assets/images/theme/' . $image);
-            } elseif (file_exists(storage_path('app/public/admin-assets/images/theme/' . $image . '.jpg'))) {
-                $image = 'theme-' . $theme_id . '.jpg';
-                $path = url(env('ASSETSPATHURL') . 'admin-assets/images/theme/' . $image);
-            } elseif (file_exists(storage_path('app/public/admin-assets/images/theme/' . $image . '.webp'))) {
-                $image = 'theme-' . $theme_id . '.webp';
-                $path = url(env('ASSETSPATHURL') . 'admin-assets/images/theme/' . $image);
-            } else {
-                $path =  asset('storage/app/public/admin-assets/images/about/defaultimages/item-placeholder.png');
-            }
-            $newpath[] = $path;
-        }
-        $html = view('admin.theme.themeimages', compact('newpath'))->render();
-        return response()->json(['status' => 1, 'output' => $html], 200);
     }
 }

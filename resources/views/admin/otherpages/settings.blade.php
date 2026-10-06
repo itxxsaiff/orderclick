@@ -34,7 +34,7 @@
                                         class="list-group-item basicinfo p-2 px-3 list-item-secondary d-flex align-items-baseline color-changer"
                                         aria-current="true">
                                         <i class="fa-solid fa-screwdriver-wrench"></i>
-                                        <p class="px-2">{{ trans('labels.theme_settings') }}</p>
+                                        <p class="px-2">{{ trans('labels.logo_and_favicon') }}</p>
                                     </a>
                                 </li>
                             @endif
@@ -1405,7 +1405,7 @@
                                 <div
                                     class="card-header rounded-top-4 bg-secondary py-3 d-flex align-items-center text-white">
                                     <i class="fa-solid fa-screwdriver-wrench fs-5"></i>
-                                    <h5 class="px-2">{{ trans('labels.theme_settings') }}</h5>
+                                    <h5 class="px-2">{{ trans('labels.logo_and_favicon') }}</h5>
                                 </div>
                                 <div class="card-body">
                                     <form method="POST" action="{{ URL::to('admin/settings/updatetheme') }}"
@@ -1458,117 +1458,18 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            {{-- Super-admin uses the fixed Order Click theme — colours are locked. Vendors keep their pickers. --}}
+                                            {{-- Colours and layout come from the AI store designer; these are kept as they are
+                                                 so saving a new logo never changes them. --}}
+                                            <input type="hidden" name="primary_color" value="{{ @$settingdata->primary_color ?: '#1f9d55' }}">
+                                            <input type="hidden" name="secondary_color" value="{{ @$settingdata->secondary_color ?: '#137a40' }}">
                                             @if (Auth::user()->type != 1)
-                                            <div class="col-md-12">
-                                                <div class="row">
-                                                    <div class="form-group col-sm-6">
-                                                        <label
-                                                            class="form-label">{{ trans('labels.primary_color') }}</label>
-                                                        <input name="primary_color"
-                                                            class="form-control form-control-color w-100 border-0"
-                                                            type="color" value="{{ @$settingdata->primary_color }}">
-                                                    </div>
-                                                    <div class="form-group col-sm-6">
-                                                        <label
-                                                            class="form-label">{{ trans('labels.secondary_color') }}</label>
-                                                        <input name="secondary_color"
-                                                            class="form-control form-control-color w-100 border-0"
-                                                            type="color" value="{{ @$settingdata->secondary_color }}">
+                                                <div class="col-md-12">
+                                                    <div class="alert alert-success d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3">
+                                                        <span><i class="fa-solid fa-palette"></i> {{ trans('labels.design_settings_note') }}</span>
+                                                        <a href="{{ URL::to('admin/design') }}" class="btn btn-sm btn-success">{{ trans('labels.design_menu') }}</a>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            @else
-                                                <input type="hidden" name="primary_color" value="{{ @$settingdata->primary_color ?: '#1f9d55' }}">
-                                                <input type="hidden" name="secondary_color" value="{{ @$settingdata->secondary_color ?: '#137a40' }}">
                                             @endif
-                                            @php
-                                                // Design section: only templates that match the vendor's PURCHASED
-                                                // system and selected activity. Classification lives on the theme
-                                                // row (system + activity_ids + template), so there is no name map
-                                                // to keep in sync any more.
-                                                $ocVendor = \App\Models\User::find($vendor_id);
-                                                $pickerThemes = \App\Models\Theme::forVendor($ocVendor)
-                                                    ->filter(fn($t) => $t->hasPreview())
-                                                    ->values();
-                                            @endphp
-                                            <div class="col-md-12 selectimg">
-                                                <div class="form-group">
-                                                    <label class="form-label mt-4">{{ trans('labels.theme') }}
-                                                        <span class="text-danger"> * </span> </label>
-                                                    @if (env('Environment') == 'sendbox')
-                                                        <span
-                                                            class="badge badge bg-danger ms-2">{{ trans('labels.addon') }}</span>
-                                                    @endif
-                                                    <div class="row">
-                                                        @foreach ($pickerThemes as $theme)
-                                                            @php $tpl = $theme->template ?: 2; @endphp
-                                                            <div class="col-12 col-md-4 col-lg-4 col-xl-3">
-                                                                <label for="template{{ $tpl }}"
-                                                                    class="radio-card position-relative">
-                                                                    <input type="radio" name="template"
-                                                                        id="template{{ $tpl }}"
-                                                                        value="{{ $tpl }}"
-                                                                        {{ @$settingdata->template == $tpl ? 'checked' : '' }}>
-                                                                    <div class="card-content-wrapper border rounded-2">
-                                                                        <span class="check-icon position-absolute"></span>
-                                                                        <div class="selecimg">
-                                                                            <img
-                                                                                src="{{ helper::image_path($theme->image) }}">
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="text-center fw-600 color-changer mt-2 mb-1"
-                                                                        style="font-size:13.5px;">
-                                                                        {{ $theme->name }}
-                                                                    </div>
-                                                                </label>
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-12 selectimg">
-                                                <div class="form-group">
-                                                    <label class="form-label mt-4">{{ trans('labels.theme_type') }}
-                                                        <span class="text-danger"> * </span> </label>
-                                                    @if (env('Environment') == 'sendbox')
-                                                        <span
-                                                            class="badge badge bg-danger ms-2">{{ trans('labels.addon') }}</span>
-                                                    @endif
-                                                    <div class="row">
-                                                        <div class="col-12 col-md-6">
-                                                            <label for="template_type_1"
-                                                                class="radio-card position-relative">
-                                                                <input type="radio" name="template_type"
-                                                                    id="template_type_1" value="1"
-                                                                    {{ @$settingdata->template_type == 1 ? 'checked' : '' }}>
-                                                                <div class="card-content-wrapper border rounded-2">
-                                                                    <span class="check-icon position-absolute m-2"></span>
-                                                                    <div class="selecimg">
-                                                                        <img src="{{ helper::image_path('theme-grid.png') }}"
-                                                                            class="w-100 h-100">
-                                                                    </div>
-                                                                </div>
-                                                            </label>
-                                                        </div>
-                                                        <div class="col-12 col-md-6">
-                                                            <label for="template_type_2"
-                                                                class="radio-card position-relative">
-                                                                <input type="radio" name="template_type"
-                                                                    id="template_type_2" value="2"
-                                                                    {{ @$settingdata->template_type == 2 ? 'checked' : '' }}>
-                                                                <div class="card-content-wrapper border rounded-2">
-                                                                    <span class="check-icon position-absolute m-2"></span>
-                                                                    <div class="selecimg">
-                                                                        <img src="{{ helper::image_path('theme-list.png') }}"
-                                                                            class="w-100 h-100">
-                                                                    </div>
-                                                                </div>
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
                                             <div class="form-group m-0 d-flex gap-2 justify-content-end">
                                                 <button
                                                     class="btn btn-secondary px-4 rounded-start-5 rounded-end-5 {{ Auth::user()->type == 4 ? (helper::check_access('role_settings', Auth::user()->role_id, $vendor_id, 'edit') == 1 ? '' : 'd-none') : '' }}"

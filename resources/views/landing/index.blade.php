@@ -599,24 +599,17 @@
     <section class="ocl-sec" id="templates">
         <div class="wrap">
             <div class="ocl-tpl">
-                @php
-                    // Feature a single, good-looking preview here (the Restaurant theme, else the
-                    // first live theme). The full list lives in the "Our themes" gallery below.
-                    $themeDir = storage_path('app/public/admin-assets/images/theme/');
-                    $liveThemes = collect($themes)->filter(fn($t) => !empty($t->image) && file_exists($themeDir . $t->image));
-                    $featuredTheme = $liveThemes->firstWhere('name', 'Restaurant') ?: $liveThemes->first();
-                    $featuredImg = $featuredTheme->image ?? 'theme-restaurant.png';
-                @endphp
+                {{-- No template picking any more: every store is designed by the AI designer. --}}
                 <div class="ocl-tpl__img">
-                    <img src="{{ helper::image_path($featuredImg) }}" alt="Store template preview" loading="lazy">
+                    <img src="{{ url(env('ASSETSPATHURL') . 'admin-assets/images/theme/ai-design-preview.jpg') }}" alt="{{ trans('landing.your_store_designed_by_ai') }}" loading="lazy">
                 </div>
                 <div>
-                    <span class="eyebrow eyebrow--left">{{ trans('landing.ready_templates') }}</span>
-                    <h2 class="sec-title" style="text-align:start;">{{ trans('landing.beautiful_templates_that_convert') }}</h2>
-                    <p style="text-align:start;">{{ trans('landing.pick_a_template_customise_colours_and_layout') }}</p>
+                    <span class="eyebrow eyebrow--left">{{ trans('landing.ai_store_designer') }}</span>
+                    <h2 class="sec-title" style="text-align:start;">{{ trans('landing.your_store_designed_by_ai') }}</h2>
+                    <p style="text-align:start;">{{ trans('landing.ai_store_designer_text') }}</p>
                     <ul class="ocl-tpl__list">
-                        <li><i class="fa-solid fa-circle-check"></i> {{ trans('landing.grid_or_list_layout') }}</li>
-                        <li><i class="fa-solid fa-circle-check"></i> {{ trans('landing.your_own_colours_logo') }}</li>
+                        <li><i class="fa-solid fa-circle-check"></i> {{ trans('landing.unique_design_for_your_business') }}</li>
+                        <li><i class="fa-solid fa-circle-check"></i> {{ trans('landing.products_prices_stay_live') }}</li>
                         <li><i class="fa-solid fa-circle-check"></i> {{ trans('landing.fully_mobile_responsive') }}</li>
                     </ul>
                     <div style="margin-top:24px;">
@@ -688,62 +681,7 @@
     @endif
 
     {{-- ===================== THEMES GALLERY ===================== --}}
-    @php
-        $themeDir = storage_path('app/public/admin-assets/images/theme/');
-        // Only themes whose preview image actually exists on disk.
-        $galleryThemes = collect($themes)->filter(fn($t) => !empty($t->image) && file_exists($themeDir . $t->image));
-        $isArLp = app()->getLocale() === 'ar';
-        // Short blurb per theme (the theme table has no description column).
-        $themeBlurbs = [
-            'Restaurant' => trans('landing.a_warm_appetite_first_storefront_for_restaurants_caf_s_clo'),
-            'Retail' => trans('landing.a_polished_storefront_for_fashion_shoes_bags_accessories_f'),
-            'Grocery' => trans('landing.a_fast_grocery_fresh_market_storefront_aisle_filters_compa'),
-            'Clinic' => trans('landing.a_clinic_hospital_site_doctors_departments_and_appointment'),
-            'Booking' => trans('landing.a_booking_site_for_hotels_venues_appointments_service_list'),
-            'Pharmacy' => trans('landing.a_clean_pharmacy_drugstore_storefront_category_tiles_compa'),
-            'Appointment' => trans('landing.a_salon_beauty_site_services_specialists_and_appointment_b'),
-            'Classic' => trans('landing.a_clean_flexible_layout_that_suits_any_store_simple_fast_a'),
-        ];
-    @endphp
-    @if ($galleryThemes->count() > 0)
-    <section class="ocl-sec" id="templates-gallery">
-        <div class="wrap">
-            <div class="center">
-                <span class="eyebrow">{{ trans('landing.our_themes') }}</span>
-                <h2 class="sec-title">{{ trans('landing.ready_made_themes_for_your_store') }}</h2>
-                <p class="sec-sub">{{ trans('landing.pick_a_professional_theme_brand_it_with_your_colours_and_l') }}</p>
-            </div>
-            <div class="ocl-themes">
-                @foreach ($galleryThemes as $theme)
-                    @php
-                        $blurb = $themeBlurbs[$theme->name] ?? (trans('landing.a_modern_mobile_ready_storefront_theme_you_can_brand_with_'));
-                        $themeNameKeys = [
-                            'Classic' => 'theme_name_classic',
-                            'Restaurant' => 'theme_name_restaurant',
-                            'Retail' => 'theme_name_retail',
-                            'Grocery' => 'theme_name_grocery',
-                            'Pharmacy' => 'theme_name_pharmacy',
-                            'Booking' => 'theme_name_booking',
-                            'Clinic' => 'theme_name_clinic',
-                            'Appointment' => 'theme_name_appointment',
-                        ];
-                        $themeDisplay = isset($themeNameKeys[$theme->name]) ? trans('landing.' . $themeNameKeys[$theme->name]) : $theme->name;
-                    @endphp
-                    <div class="ocl-theme">
-                        <div class="ocl-theme__img">
-                            <img src="{{ helper::image_path($theme->image) }}" alt="{{ $theme->name }} theme preview" loading="lazy">
-                        </div>
-                        <div class="ocl-theme__body">
-                            <h4>{{ $themeDisplay }}</h4>
-                            <p>{{ $blurb }}</p>
-                            <a href="{{ $registerUrl }}" class="ocl-btn ocl-btn--ghost">{{ trans('landing.get_started') }} &rarr;</a>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
-    @endif
+    {{-- The fixed themes gallery was removed: stores are designed by the AI designer. --}}
 
     {{-- ===================== CONTACT ===================== --}}
     <section class="ocl-sec ocl-sec--alt" id="contact">

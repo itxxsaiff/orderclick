@@ -331,4 +331,9 @@ return array (
   'cat_rentals' => 'Rentals',
   'cat_restaurants_caf_s' => 'Restaurants & Cafés',
   'cat_retail_shops' => 'Retail & Shops',
+  'ai_store_designer' => 'AI store designer',
+  'your_store_designed_by_ai' => 'Your store, designed by AI',
+  'ai_store_designer_text' => 'Tell us your style and the AI designs your whole store around your products in about a minute. Preview it, adjust anything, then publish.',
+  'unique_design_for_your_business' => 'A unique design for your business',
+  'products_prices_stay_live' => 'Your products and prices stay live',
 );
