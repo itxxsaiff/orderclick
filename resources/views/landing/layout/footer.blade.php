@@ -10,6 +10,19 @@
             <div>
                 <img src="{{ helper::image_path(helper::appdata('')->logo) }}" alt="logo">
                 <p>{{ \Illuminate\Support\Str::limit(helper::appdata('')->meta_description ?: helper::appdata('')->website_title, 160) }}</p>
+                {{-- Social links: managed in Admin > Settings > Social Links. Only the icon class is
+                     taken from the stored icon markup, so nothing else from it reaches the page. --}}
+                @php $ocSocials = \App\Models\SocialLinks::where('vendor_id', 1)->whereNotNull('link')->where('link', '!=', '')->get(); @endphp
+                @if ($ocSocials->count())
+                    <div class="ocl-socials">
+                        @foreach ($ocSocials as $soc)
+                            @php preg_match('/class="([a-z0-9 \-]+)"/i', (string) $soc->icon, $ocIc); @endphp
+                            <a href="{{ $soc->link }}" target="_blank" rel="noopener" aria-label="{{ trim(str_replace(['fa-brands', 'fa-'], '', $ocIc[1] ?? 'link')) }}">
+                                <i class="{{ $ocIc[1] ?? 'fa-solid fa-link' }}"></i>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
             </div>
             <div>
                 <h5>{{ trans('landing.links') }}</h5>

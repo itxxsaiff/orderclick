@@ -163,7 +163,7 @@ class StoreCategoryController extends Controller
 
         if ($request->hasFile('category_image')) {
             if (!empty($editcategory->image) && file_exists(storage_path('app/public/admin-assets/images/category/' . $editcategory->image))) {
-                unlink(storage_path('app/public/admin-assets/images/category/' . $editcategory->image));
+                if (is_file(storage_path('app/public/admin-assets/images/category/' . $editcategory->image))) { unlink(storage_path('app/public/admin-assets/images/category/' . $editcategory->image)); }
             }
 
             $image = 'category-' . uniqid() . '.' . $request->category_image->getClientOriginalExtension();
@@ -195,7 +195,7 @@ class StoreCategoryController extends Controller
 
         if (!empty($checkcategory)) {
             if (!empty($checkcategory->image) && file_exists(storage_path('app/public/admin-assets/images/category/' . $checkcategory->image))) {
-                unlink(storage_path('app/public/admin-assets/images/category/' . $checkcategory->image));
+                if (is_file(storage_path('app/public/admin-assets/images/category/' . $checkcategory->image))) { unlink(storage_path('app/public/admin-assets/images/category/' . $checkcategory->image)); }
             }
 
             $checkcategory->is_deleted = 1;

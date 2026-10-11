@@ -92,7 +92,7 @@ class BlogController extends Controller
         $blog->description = $request->description;
         if ($request->has('image')) {
             if (file_exists(storage_path('app/public/admin-assets/images/blog/' . $blog->image))) {
-                unlink(storage_path('app/public/admin-assets/images/blog/' . $blog->image));
+                if (is_file(storage_path('app/public/admin-assets/images/blog/' . $blog->image))) { unlink(storage_path('app/public/admin-assets/images/blog/' . $blog->image)); }
             }
             $blogimage = 'blog-' . uniqid() . "." . $request->file('image')->getClientOriginalExtension();
             $request->file('image')->move(storage_path('app/public/admin-assets/images/blog/'), $blogimage);
@@ -105,7 +105,7 @@ class BlogController extends Controller
     {
         $blog = Blog::where('slug', $slug)->first();
         if (file_exists(storage_path('app/public/admin-assets/images/blog/' . $blog->image))) {
-            unlink(storage_path('app/public/admin-assets/images/blog/' . $blog->image));
+            if (is_file(storage_path('app/public/admin-assets/images/blog/' . $blog->image))) { unlink(storage_path('app/public/admin-assets/images/blog/' . $blog->image)); }
         }
         $blog->delete();
         return redirect()->back()->with('success', trans('messages.success'));

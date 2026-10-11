@@ -81,6 +81,10 @@
     .ocl-foot ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
     .ocl-foot ul a { color: #93a29a; font-size: 14px; }
     .ocl-foot ul a:hover { color: var(--a); }
+    .ocl-socials { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .ocl-socials a { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: rgba(255,255,255,.08);
+        color: #fff; font-size: 16px; transition: background .2s, transform .2s; }
+    .ocl-socials a:hover { background: var(--a); color: #fff; transform: translateY(-2px); }
     .ocl-foot .barbottom { border-top: 1px solid #22302751; margin-top: 40px; padding-top: 20px; text-align: center; color: #6f7d74; font-size: 13px; }
     @media (max-width: 800px) { .ocl-foot .top { grid-template-columns: 1fr 1fr; } }
 

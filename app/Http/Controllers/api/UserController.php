@@ -97,7 +97,7 @@ class UserController extends BaseController
         $edituser->mobile = $request->mobile;
         if ($request->has('profile')) {
             if ($edituser->image != "" && file_exists(storage_path('app/public/admin-assets/images/profile/' . $edituser->image))) {
-                unlink(storage_path('app/public/admin-assets/images/profile/' . $edituser->image));
+                if (is_file(storage_path('app/public/admin-assets/images/profile/' . $edituser->image))) { unlink(storage_path('app/public/admin-assets/images/profile/' . $edituser->image)); }
             }
             $edit_image = $request->file('profile');
             $profileImage = 'profile-' . uniqid() . "." . $edit_image->getClientOriginalExtension();

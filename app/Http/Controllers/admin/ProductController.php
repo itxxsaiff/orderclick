@@ -427,7 +427,7 @@ class ProductController extends Controller
 
             // Delete the currently-stored file (not a client-supplied filename).
             if ($itemimage->image != "" && file_exists(storage_path('app/public/item/' . $itemimage->image))) {
-                unlink(storage_path('app/public/item/' . $itemimage->image));
+                if (is_file(storage_path('app/public/item/' . $itemimage->image))) { unlink(storage_path('app/public/item/' . $itemimage->image)); }
             }
 
             $reimage = helper::store_upload($request->file('product_image'), 'item', 'item');
@@ -550,7 +550,7 @@ class ProductController extends Controller
             foreach ($itemimages as $itemimage) {
                 if ($itemimage->is_imported == 2) {
                     if ($itemimage->image != "" && $itemimage->image != null && file_exists(storage_path('app/public/item/' . $itemimage->image))) {
-                        unlink(storage_path('app/public/item/' . $itemimage->image));
+                        if (is_file(storage_path('app/public/item/' . $itemimage->image))) { unlink(storage_path('app/public/item/' . $itemimage->image)); }
                     }
                 }
                 $itemimage->delete();

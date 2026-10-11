@@ -30,7 +30,7 @@
                     <h6 class="mb-3 fw-600">{{ trans('labels.store_qr_code') }}</h6>
                     <img src="{{ $qr }}" width="220" height="220" class="rounded border p-2" alt="Store QR">
                     <p class="text-muted fs-7 mt-2 mb-3">{{ trans('labels.customers_scan_this_to_open_your_store') }}</p>
-                    <a href="{{ $qr }}" target="_blank" class="btn btn-secondary btn-sm">
+                    <a href="{{ $qr }}&download=true" target="_blank" class="btn btn-secondary btn-sm">
                         <i class="fa-solid fa-arrow-down-to-line me-1"></i>{{ trans('labels.download') }}
                     </a>
                 </div>

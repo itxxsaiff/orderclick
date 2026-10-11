@@ -523,6 +523,10 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
                 Route::get('/', [CurrencyController::class, 'index']);
                 Route::get('/currency/edit-{id}', [CurrencyController::class, 'edit']);
                 Route::post('/update-{id}', [CurrencyController::class, 'update']);
+                Route::get('/setdefault-{code}/{status}', [CurrencyController::class, 'setdefault']);
+                Route::get('/changestatus-{code}/{status}', [CurrencyController::class, 'changestatus']);
+                Route::get('/currencystatus-{code}/{status}', [CurrencyController::class, 'currencystatus']);
+                Route::get('/delete-{id}/{status}', [CurrencyController::class, 'delete']);
             });
         }
     );
@@ -616,6 +620,8 @@ Route::group(['namespace' => "front", 'prefix' => $prefix, 'middleware' => 'Fron
     Route::get('/categories', [HomeController::class, 'categories'])->name('front.categories');
     Route::get('/product/{id}', [HomeController::class, 'show'])->name('front.home');
     // V2 Booking module (storefront)
+    // Customer's delivery pin from the checkout map (kept in the session until the order is created).
+    Route::post('/checkout-location', [HomeController::class, 'checkoutLocation'])->middleware('throttle:30,1');
     // AI assistant inside the store page (answers from this store's data only).
     Route::post('/assistant', [StoreAssistantController::class, 'chat'])->middleware('throttle:20,1');
     Route::get('/booking', [HomeController::class, 'bookingpage'])->name('front.booking');
@@ -640,6 +646,8 @@ Route::group(['namespace' => "front", 'prefix' => $prefix, 'middleware' => 'Fron
     Route::get('/track-order/{ordernumber}', [HomeController::class, 'trackorder'])->name('front.trackorder');
     Route::get('/success', [HomeController::class, 'trackorder'])->name('front.trackorder');
     Route::get('/success/{order_number}', [HomeController::class, 'ordersuccess']);
+    // Public, signed invoice for one order (linked from the WhatsApp order message).
+    Route::get('/invoice/{order_number}/{sig}', [HomeController::class, 'orderInvoice']);
     Route::get('/privacypolicy', [HomeController::class, 'privacyshow']);
     Route::get('/refundprivacypolicy', [HomeController::class, 'refundprivacypolicy']);
     Route::get('/terms_condition', [HomeController::class, 'terms_condition']);

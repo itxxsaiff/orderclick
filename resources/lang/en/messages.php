@@ -295,4 +295,5 @@ return array (
   'design_generate_failed' => 'The AI could not create a design this time. Please try again.',
   'design_published' => 'Your new design is live.',
   'design_ai_missing' => 'AI is not configured on this server yet (OPENAI_API_KEY). You can still fine-tune the design by hand.',
+  'currency_default_cannot_disable' => 'The platform default currency cannot be disabled or deleted.',
 );

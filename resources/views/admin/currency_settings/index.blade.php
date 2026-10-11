@@ -6,6 +6,8 @@
         $vendor_id = Auth::user()->id;
     }
     $module = 'role_currency_settings';
+    // Read this store's own settings (appdata() can resolve to another store by host).
+    $ocStoreCur = \App\Models\Settings::where('vendor_id', $vendor_id)->first();
 @endphp
 @section('content')
     <div class="row justify-content-between align-items-center">
@@ -24,6 +26,10 @@
                 @endif
             </div>
         </div>
+    </div>
+    <div class="alert alert-info border-0 mt-3 mb-0 d-flex gap-2 align-items-start">
+        <i class="fa-regular fa-circle-info mt-1"></i>
+        <div>{{ trans('labels.currency_store_hint') }}</div>
     </div>
     <div class="col-12 mt-3 mb-7">
         <div class="card border-0 box-shadow">
@@ -84,7 +90,7 @@
                                             @endif
                                         @endif
                                         @if (Auth::user()->type == 2 || (Auth::user()->type == 4 && Auth::user()->vendor_id != 1))
-                                            @if (in_array($currency->code, explode('|', helper::appdata($vendor_id)->currencies)))
+                                            @if (in_array($currency->code, explode('|', (string) $ocStoreCur->currencies)))
                                                 <a @if (env('Environment') == 'sendbox') onclick="myFunction()" @else onclick="statusupdate('{{ URL::to('admin/currency-settings/currencystatus-' . $currency->code . '/2') }}')" @endif
                                                     class="btn btn-sm btn-success btn-size {{ Auth::user()->type == 4 ? (helper::check_access('role_currency_settings', Auth::user()->role_id, $vendor_id, 'edit') == 1 ? '' : 'd-none') : '' }}"
                                                     tooltip="{{ trans('labels.active') }}"><i class="fas fa-check"></i></a>
@@ -99,7 +105,7 @@
 
                                     </td>
                                     <td>
-                                        @if (helper::appdata($vendor_id)->default_currency == $currency->code)
+                                        @if ($ocStoreCur->default_currency == $currency->code)
                                             <a @if (env('Environment') == 'sendbox') onclick="myFunction()" @else onclick="statusupdate('{{ URL::to('admin/currency-settings/setdefault-' . $currency->code . '/2') }}')" @endif
                                                 class="btn btn-sm btn-success btn-size {{ Auth::user()->type == 4 ? (helper::check_access('role_currency_settings', Auth::user()->role_id, $vendor_id, 'edit') == 1 ? '' : 'd-none') : '' }}"
                                                 tooltip="{{ trans('labels.active') }}"><i class="fas fa-check"></i></a>

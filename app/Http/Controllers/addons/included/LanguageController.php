@@ -252,7 +252,7 @@ class LanguageController extends Controller
                 File::deleteDirectory($path);
             }
             if (file_exists(env('ASSETSPATHURL') . 'admin-assets/images/language/' . $language->image)) {
-                unlink(env('ASSETSPATHURL') . 'admin-assets/images/language/' . $language->image);
+                if (is_file(env('ASSETSPATHURL') . 'admin-assets/images/language/' . $language->image)) { unlink(env('ASSETSPATHURL') . 'admin-assets/images/language/' . $language->image); }
             }
             $language->delete();
             return redirect('admin/language-settings')->with('success', trans('messages.success'));
@@ -286,7 +286,7 @@ class LanguageController extends Controller
                     return redirect()->back()->with('error', trans('messages.image_size_message') . ' ' . helper::appdata('')->image_size . ' ' . 'MB');
                 }
                 if (file_exists(env('ASSETSPATHURL') . 'admin-assets/images/language/' . $language->image)) {
-                    unlink(env('ASSETSPATHURL') . 'admin-assets/images/language/' . $language->image);
+                    if (is_file(env('ASSETSPATHURL') . 'admin-assets/images/language/' . $language->image)) { unlink(env('ASSETSPATHURL') . 'admin-assets/images/language/' . $language->image); }
                 }
                 $flagimage = 'flag-' . uniqid() . "." . $request->file('image')->getClientOriginalExtension();
                 $request->file('image')->move(storage_path('app/public/admin-assets/images/language/'), $flagimage);

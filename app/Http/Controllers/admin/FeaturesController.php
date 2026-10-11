@@ -107,7 +107,7 @@ class FeaturesController extends Controller
         $this->applyScope($editfeature, $request);
         if ($request->hasFile('image')) {
             if ($editfeature->image && file_exists(storage_path('app/public/admin-assets/images/feature/' . $editfeature->image))) {
-                unlink(storage_path('app/public/admin-assets/images/feature/' . $editfeature->image));
+                if (is_file(storage_path('app/public/admin-assets/images/feature/' . $editfeature->image))) { unlink(storage_path('app/public/admin-assets/images/feature/' . $editfeature->image)); }
             }
             $editfeature->image = helper::store_upload($request->file('image'), 'admin-assets/images/feature', 'feature');
         }
@@ -118,7 +118,7 @@ class FeaturesController extends Controller
     {
         $feature = Features::where('id', $request->id)->first();
         if (file_exists(storage_path('app/public/admin-assets/images/feature/' . $feature->image))) {
-            unlink(storage_path('app/public/admin-assets/images/feature/' . $feature->image));
+            if (is_file(storage_path('app/public/admin-assets/images/feature/' . $feature->image))) { unlink(storage_path('app/public/admin-assets/images/feature/' . $feature->image)); }
         }
         $feature->delete();
         return redirect()->back()->with('success', trans('messages.success'));

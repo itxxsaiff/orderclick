@@ -209,7 +209,7 @@ class VendorController extends Controller
             }
 
             if ($edituser->image != "default.png" && file_exists(storage_path('app/public/admin-assets/images/profile/' . $edituser->image))) {
-                unlink(storage_path('app/public/admin-assets/images/profile/' . $edituser->image));
+                if (is_file(storage_path('app/public/admin-assets/images/profile/' . $edituser->image))) { unlink(storage_path('app/public/admin-assets/images/profile/' . $edituser->image)); }
             }
             $edit_image = $request->file('profile');
             $profileImage = 'profile-' . uniqid() . "." . $edit_image->getClientOriginalExtension();
@@ -273,7 +273,8 @@ class VendorController extends Controller
             $edituser->allow_without_subscription = isset($request->allow_store_subscription) ? 1 : 2;
             $edituser->available_on_landing = isset($request->show_landing_page) ? 1 : 2;
         }
-        if (helper::checkcustomdomain($edituser->id) == null) {
+        // Only forms that carry a store link may change it (Edit Profile has none and used to wipe it).
+        if (helper::checkcustomdomain($edituser->id) == null && trim((string) $request->slug) !== '') {
             $edituser->slug = $request->slug;
         }
         $edituser->update();

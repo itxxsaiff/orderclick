@@ -153,6 +153,7 @@ class SettingsController extends Controller
             $vendor_id = Auth::user()->id;
         }
         $settingsdata = Settings::where('vendor_id', $vendor_id)->first();
+        $ocOldImages = $settingsdata->only(['logo', 'darklogo', 'favicon', 'og_image']);
         $settingsdata->primary_color = $request->primary_color;
         $settingsdata->secondary_color = $request->secondary_color;
         // No template picking any more: the store's look comes from the AI store designer.
@@ -170,17 +171,17 @@ class SettingsController extends Controller
                 return $this->sendError("This operation was not performed due to demo mode");
             }
             if ($settingsdata->logo != "default-logo.png" && $settingsdata->logo != "" && file_exists(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo))) {
-                unlink(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo));
+                if (is_file(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo)) && !helper::settings_image_shared($settingsdata->logo, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo)); }
             }
             if (Auth::user()->type == 1 || (Auth::user()->type == 4 && Auth::user()->vendor_id == 1)) {
                 if ($settingsdata->logo != "default-logo.png" && $settingsdata->logo != "" && file_exists(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->logo))) {
-                    unlink(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->logo));
+                    if (is_file(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->logo)) && !helper::settings_image_shared($settingsdata->logo, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->logo)); }
                 }
                 $logo_name = 'logo-' . uniqid() . '.' . $request->logo->getClientOriginalExtension();
                 $request->file('logo')->move(storage_path('app/public/admin-assets/images/about/defaultimages/'), $logo_name);
             } else {
                 if ($settingsdata->logo != "default-logo.png" && $settingsdata->logo != "" && file_exists(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo))) {
-                    unlink(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo));
+                    if (is_file(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo)) && !helper::settings_image_shared($settingsdata->logo, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo)); }
                 }
                 $logo_name = 'logo-' . uniqid() . '.' . $request->logo->getClientOriginalExtension();
                 $request->file('logo')->move(storage_path('app/public/admin-assets/images/about/logo/'), $logo_name);
@@ -201,17 +202,17 @@ class SettingsController extends Controller
                 return $this->sendError("This operation was not performed due to demo mode");
             }
             if ($settingsdata->darklogo != "default-darklogo.png" && $settingsdata->darklogo != "" && file_exists(storage_path('app/public/admin-assets/images/about/darklogo/' . $settingsdata->darklogo))) {
-                unlink(storage_path('app/public/admin-assets/images/about/darklogo/' . $settingsdata->darklogo));
+                if (is_file(storage_path('app/public/admin-assets/images/about/darklogo/' . $settingsdata->darklogo)) && !helper::settings_image_shared($settingsdata->darklogo, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/darklogo/' . $settingsdata->darklogo)); }
             }
             if (Auth::user()->type == 1 || (Auth::user()->type == 4 && Auth::user()->vendor_id == 1)) {
                 if ($settingsdata->darklogo != "default-darklogo.png" && $settingsdata->darklogo != "" && file_exists(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->darklogo))) {
-                    unlink(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->darklogo));
+                    if (is_file(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->darklogo)) && !helper::settings_image_shared($settingsdata->darklogo, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->darklogo)); }
                 }
                 $darklogo_name = 'darklogo-' . uniqid() . '.' . $request->darklogo->getClientOriginalExtension();
                 $request->file('darklogo')->move(storage_path('app/public/admin-assets/images/about/defaultimages/'), $darklogo_name);
             } else {
                 if ($settingsdata->darklogo != "default-darklogo.png" && $settingsdata->darklogo != "" && file_exists(storage_path('app/public/admin-assets/images/about/darklogo/' . $settingsdata->darklogo))) {
-                    unlink(storage_path('app/public/admin-assets/images/about/darklogo/' . $settingsdata->darklogo));
+                    if (is_file(storage_path('app/public/admin-assets/images/about/darklogo/' . $settingsdata->darklogo)) && !helper::settings_image_shared($settingsdata->darklogo, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/darklogo/' . $settingsdata->darklogo)); }
                 }
                 $darklogo_name = 'darklogo-' . uniqid() . '.' . $request->darklogo->getClientOriginalExtension();
                 $request->file('darklogo')->move(storage_path('app/public/admin-assets/images/about/darklogo/'), $darklogo_name);
@@ -230,13 +231,13 @@ class SettingsController extends Controller
             }
             if (Auth::user()->type == 1 || (Auth::user()->type == 4 && Auth::user()->vendor_id == 1)) {
                 if ($settingsdata->favicon != "defaultlogo.png" && $settingsdata->favicon != "" && file_exists(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->favicon))) {
-                    unlink(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->favicon));
+                    if (is_file(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->favicon)) && !helper::settings_image_shared($settingsdata->favicon, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->favicon)); }
                 }
                 $favicon_name = 'favicon-' . uniqid() . '.' . $request->favicon->getClientOriginalExtension();
                 $request->favicon->move(storage_path('app/public/admin-assets/images/about/defaultimages/'), $favicon_name);
             } else {
                 if ($settingsdata->favicon != "defaultlogo.png" && $settingsdata->favicon != "" && file_exists(storage_path('app/public/admin-assets/images/about/favicon/' . $settingsdata->favicon))) {
-                    unlink(storage_path('app/public/admin-assets/images/about/favicon/' . $settingsdata->favicon));
+                    if (is_file(storage_path('app/public/admin-assets/images/about/favicon/' . $settingsdata->favicon)) && !helper::settings_image_shared($settingsdata->favicon, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/favicon/' . $settingsdata->favicon)); }
                 }
                 $favicon_name = 'favicon-' . uniqid() . '.' . $request->favicon->getClientOriginalExtension();
                 $request->favicon->move(storage_path('app/public/admin-assets/images/about/favicon/'), $favicon_name);
@@ -244,6 +245,7 @@ class SettingsController extends Controller
 
             $settingsdata->favicon = $favicon_name;
         }
+        helper::settings_image_follow_platform($settingsdata, $ocOldImages);
         $settingsdata->save();
         return redirect()->back()->with('success', trans('messages.success'));
     }
@@ -256,6 +258,7 @@ class SettingsController extends Controller
         }
 
         $settingsdata = Settings::where('vendor_id', $vendor_id)->first();
+        $ocOldImages = $settingsdata->only(['logo', 'darklogo', 'favicon', 'og_image']);
 
         $settingsdata->meta_title = $request->meta_title;
         $settingsdata->meta_description = $request->meta_description;
@@ -275,13 +278,13 @@ class SettingsController extends Controller
             if (Auth::user()->type == 1 || (Auth::user()->type == 4 && Auth::user()->vendor_id == 1)) {
 
                 if ($settingsdata->og_image != "" && file_exists(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->og_image))) {
-                    unlink(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->og_image));
+                    if (is_file(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->og_image)) && !helper::settings_image_shared($settingsdata->og_image, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/defaultimages/' . $settingsdata->og_image)); }
                 }
                 $image = 'og_image-' . uniqid() . '.' . $request->og_image->getClientOriginalExtension();
                 $request->og_image->move(storage_path('app/public/admin-assets/images/about/defaultimages/'), $image);
             } else {
                 if ($settingsdata->og_image != "" && file_exists(storage_path('app/public/admin-assets/images/about/og_image/' . $settingsdata->og_image))) {
-                    unlink(storage_path('app/public/admin-assets/images/about/og_image/' . $settingsdata->og_image));
+                    if (is_file(storage_path('app/public/admin-assets/images/about/og_image/' . $settingsdata->og_image)) && !helper::settings_image_shared($settingsdata->og_image, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/og_image/' . $settingsdata->og_image)); }
                 }
                 $image = 'og_image-' . uniqid() . '.' . $request->og_image->getClientOriginalExtension();
                 $request->og_image->move(storage_path('app/public/admin-assets/images/about/og_image/'), $image);
@@ -289,6 +292,7 @@ class SettingsController extends Controller
 
             $settingsdata->og_image = $image;
         }
+        helper::settings_image_follow_platform($settingsdata, $ocOldImages);
         $settingsdata->save();
         return redirect()->back()->with('success', trans('messages.success'));
     }
@@ -300,6 +304,7 @@ class SettingsController extends Controller
             $vendor_id = Auth::user()->id;
         }
         $settingsdata = Settings::where('vendor_id', $vendor_id)->first();
+        $ocOldImages = $settingsdata->only(['logo', 'darklogo', 'favicon', 'og_image']);
         $settingsdata->primary_color = $request->landing_primary_color;
         $settingsdata->secondary_color = $request->landing_secondary_color;
         $settingsdata->email = $request->landing_email;
@@ -320,7 +325,7 @@ class SettingsController extends Controller
                 return $this->sendError("This operation was not performed due to demo mode");
             }
             if ($settingsdata->logo != "default-logo.png" && $settingsdata->logo != "" && file_exists(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo))) {
-                unlink(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo));
+                if (is_file(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo)) && !helper::settings_image_shared($settingsdata->logo, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/logo/' . $settingsdata->logo)); }
             }
             $logo_name = 'logo-' . uniqid() . '.' . $request->logo->getClientOriginalExtension();
             $request->file('logo')->move(storage_path('app/public/admin-assets/images/about/logo/'), $logo_name);
@@ -340,13 +345,14 @@ class SettingsController extends Controller
                 return $this->sendError("This operation was not performed due to demo mode");
             }
             if ($settingsdata->favicon != "default-favicon.png" && $settingsdata->favicon != "" && file_exists(storage_path('app/public/admin-assets/images/about/favicon/' . $settingsdata->favicon))) {
-                unlink(storage_path('app/public/admin-assets/images/about/favicon/' . $settingsdata->favicon));
+                if (is_file(storage_path('app/public/admin-assets/images/about/favicon/' . $settingsdata->favicon)) && !helper::settings_image_shared($settingsdata->favicon, $vendor_id)) { unlink(storage_path('app/public/admin-assets/images/about/favicon/' . $settingsdata->favicon)); }
             }
             $favicon_name = 'favicon-' . uniqid() . '.' . $request->favicon->getClientOriginalExtension();
             $request->favicon->move(storage_path('app/public/admin-assets/images/about/favicon/'), $favicon_name);
             $settingsdata->favicon = $favicon_name;
         }
 
+        helper::settings_image_follow_platform($settingsdata, $ocOldImages);
         $settingsdata->save();
         return redirect()->back()->with('success', trans('messages.success'));
     }
@@ -392,7 +398,7 @@ class SettingsController extends Controller
         $settingsdata = Settings::where('vendor_id', $vendor_id)->first();
         if (!empty($settingsdata)) {
             if (!empty($settingsdata->viewallpage_banner) && file_exists(storage_path('app/public/admin-assets/images/about/viewallpage_banner/' . $settingsdata->viewallpage_banner))) {
-                unlink(storage_path('app/public/admin-assets/images/about/viewallpage_banner/' . $settingsdata->viewallpage_banner));
+                if (is_file(storage_path('app/public/admin-assets/images/about/viewallpage_banner/' . $settingsdata->viewallpage_banner))) { unlink(storage_path('app/public/admin-assets/images/about/viewallpage_banner/' . $settingsdata->viewallpage_banner)); }
             }
             $settingsdata->viewallpage_banner = "";
             $settingsdata->update();
@@ -431,7 +437,7 @@ class SettingsController extends Controller
             }
             if (!empty($appsection->image)) {
                 if (file_exists(storage_path('app/public/admin-assets/images/index/' .  $appsection->image))) {
-                    unlink(storage_path('app/public/admin-assets/images/index/' .  $appsection->image));
+                    if (is_file(storage_path('app/public/admin-assets/images/index/' .  $appsection->image))) { unlink(storage_path('app/public/admin-assets/images/index/' .  $appsection->image)); }
                 }
             }
             $image = 'appsection-' . uniqid() . "." . $request->file('image')->getClientOriginalExtension();

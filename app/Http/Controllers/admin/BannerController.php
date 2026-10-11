@@ -74,7 +74,7 @@ class BannerController extends Controller
         $banner = Banner::where('id', $id)->first();
         if ($request->has('image')) {
             if (file_exists(storage_path('app/public/admin-assets/images/banners/' . $banner->banner_image))) {
-                unlink(storage_path('app/public/admin-assets/images/banners/' . $banner->banner_image));
+                if (is_file(storage_path('app/public/admin-assets/images/banners/' . $banner->banner_image))) { unlink(storage_path('app/public/admin-assets/images/banners/' . $banner->banner_image)); }
             }
             $image = 'banner-' . uniqid() . "." . $request->file('image')->getClientOriginalExtension();
             $request->file('image')->move(storage_path('app/public/admin-assets/images/banners/'), $image);
@@ -87,7 +87,7 @@ class BannerController extends Controller
     {
         $banner = Banner::where('id', $id)->first();
         if (file_exists(storage_path('app/public/admin-assets/images/banners/' . $banner->banner_image))) {
-            unlink(storage_path('app/public/admin-assets/images/banners/' . $banner->banner_image));
+            if (is_file(storage_path('app/public/admin-assets/images/banners/' . $banner->banner_image))) { unlink(storage_path('app/public/admin-assets/images/banners/' . $banner->banner_image)); }
         }
         $banner->delete();
         return redirect()->back()->with('success', trans('messages.success'));
@@ -150,7 +150,7 @@ class BannerController extends Controller
         $banner = Promotionalbanner::where('id', $request->id)->first();
         if ($request->has('image')) {
             if (file_exists(storage_path('app/public/admin-assets/images/banners/' . $banner->image))) {
-                unlink(storage_path('app/public/admin-assets/images/banners/' . $banner->image));
+                if (is_file(storage_path('app/public/admin-assets/images/banners/' . $banner->image))) { unlink(storage_path('app/public/admin-assets/images/banners/' . $banner->image)); }
             }
             $image = 'promotion-' . uniqid() . "." . $request->file('image')->getClientOriginalExtension();
             $request->file('image')->move(storage_path('app/public/admin-assets/images/banners/'), $image);
@@ -164,7 +164,7 @@ class BannerController extends Controller
     {
         $banner = Promotionalbanner::where('id', $request->id)->first();
         if (file_exists(storage_path('app/public/admin-assets/images/banners/' . $banner->image))) {
-            unlink(storage_path('app/public/admin-assets/images/banners/' . $banner->image));
+            if (is_file(storage_path('app/public/admin-assets/images/banners/' . $banner->image))) { unlink(storage_path('app/public/admin-assets/images/banners/' . $banner->image)); }
         }
         $banner->delete();
         return redirect()->back()->with('success', trans('messages.success'));

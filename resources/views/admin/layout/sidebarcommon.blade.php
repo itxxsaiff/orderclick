@@ -1521,9 +1521,7 @@
                 </li>
             @endif
         @endif
-        @if (App\Models\SystemAddons::where('unique_identifier', 'currency_settigns')->first() != null &&
-                App\Models\SystemAddons::where('unique_identifier', 'currency_settigns')->first()->activated == 1)
-            @if (helper::listoflanguage()->count() > 1)
+        {{-- Every store picks its own currency, so this is always available to merchants. --}}
                 <li
                     class="nav-item mb-2 fs-7 {{ helper::check_menu($role_id, 'role_currency_settings') == 1 ? 'd-block' : 'd-none' }}">
                     <a class="nav-link d-flex align-items-center justify-content-between {{ request()->is('admin/currency-settings') ? 'active' : '' }}"
@@ -1540,8 +1538,6 @@
                         @endif
                     </a>
                 </li>
-            @endif
-        @endif
 
     @endif
 

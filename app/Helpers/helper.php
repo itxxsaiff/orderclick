@@ -297,6 +297,35 @@ class helper
         return asset('storage/app/public/admin-assets/documents/' . $file);
     }
 
+    /**
+     * New stores start with the platform's logo/favicon/og files (same file names), so a settings
+     * image may be shared. It must not be deleted while any other store still points to it.
+     */
+    public static function settings_image_shared($filename, $vendor_id): bool
+    {
+        if ($filename === null || $filename === '') {
+            return false;
+        }
+        return Settings::where('vendor_id', '!=', $vendor_id)
+            ->where(function ($q) use ($filename) {
+                $q->where('logo', $filename)->orWhere('darklogo', $filename)
+                    ->orWhere('favicon', $filename)->orWhere('og_image', $filename);
+            })->exists();
+    }
+
+    /** When the platform changes a default image, stores still on the old default follow it. */
+    public static function settings_image_follow_platform(Settings $platform, array $old): void
+    {
+        if ((int) $platform->vendor_id !== 1) {
+            return;
+        }
+        foreach ($old as $column => $oldName) {
+            if ($oldName !== null && $oldName !== '' && $platform->$column !== $oldName) {
+                Settings::where('vendor_id', '!=', 1)->where($column, $oldName)->update([$column => $platform->$column]);
+            }
+        }
+    }
+
     public static function image_path($image)
     {
         if ($image == "" && $image == null) {
@@ -830,7 +859,14 @@ class helper
                     $order->payment_status = 2;
                 }
 
+                // The customer's pin from the checkout map (delivery only), saved in the session.
+                $ocLoc = session('oc_checkout_location_' . $vendor);
+                if ($order_type == 1 && is_array($ocLoc) && isset($ocLoc['lat'], $ocLoc['lng'])) {
+                    $order->latitude = $ocLoc['lat'];
+                    $order->longitude = $ocLoc['lng'];
+                }
                 if ($order->save()) {
+                    session()->forget('oc_checkout_location_' . $vendor); // one pin per order
                     $order_id = DB::getPdo()->lastInsertId();
                     if ($payment_type_data == 16) {
                         $checkuser = User::where('is_available', 1)->where('id', @Auth::user()->id)->first();
@@ -1461,6 +1497,23 @@ class helper
      * message (no Business API / no keys). Returns null if there's no order or
      * no WhatsApp number configured for the store.
      */
+    /**
+     * Public invoice link for one order. Signed with the app key, so only someone who has the
+     * link (the customer, and the store via WhatsApp) can open it.
+     */
+    public static function order_invoice_url($order_number, $vdata): string
+    {
+        $slug = (string) \App\Models\User::where('id', $vdata)->value('slug');
+        $sig = substr(hash_hmac('sha256', $vdata . '|' . $order_number, (string) config('app.key')), 0, 20);
+
+        return \Illuminate\Support\Facades\URL::to($slug . '/invoice/' . $order_number . '/' . $sig);
+    }
+
+    public static function order_invoice_valid($order_number, $vdata, $sig): bool
+    {
+        return hash_equals(substr(hash_hmac('sha256', $vdata . '|' . $order_number, (string) config('app.key')), 0, 20), (string) $sig);
+    }
+
     public static function order_whatsapp_url($order_number, $vdata, $storeinfo = null)
     {
         $order = \App\Models\Order::where('order_number', $order_number)->where('vendor_id', $vdata)->first();
@@ -1478,44 +1531,50 @@ class helper
             return trim(strip_tags(self::currency_formate($amt, $vdata)));
         };
 
-        $storeName = @$settings->website_title ?: (@$storeinfo->name ?: '');
-        $payments = [1 => 'Cash on Delivery', 2 => 'RazorPay', 3 => 'Card (Stripe)', 6 => 'Bank Transfer', 16 => 'Wallet'];
-        $fulfil = [1 => 'Delivery', 2 => 'Pickup', 3 => 'Dine-in', 4 => 'POS'];
+        // Plain words, no emoji: wa.me turns emoji into "?" on WhatsApp Web / Desktop.
+        $storeName = \App\Services\StoreKnowledge::businessName($vdata);
+        $fulfil = [1 => trans('labels.wa_type_delivery'), 2 => trans('labels.wa_type_pickup'), 3 => trans('labels.wa_type_dinein'), 4 => 'POS'];
+        $payment = optional(self::getpayment($order->payment_type, $vdata))->payment_name;
 
         $L = [];
-        $L[] = "*New Order* #" . $order->order_number;
-        if ($storeName) $L[] = "🏪 " . $storeName;
-        $L[] = "🗓️ " . date('d M Y, h:i A', strtotime($order->created_at));
+        $L[] = "*" . trans('labels.wa_new_order') . "* #" . $order->order_number;
+        if ($storeName) $L[] = trans('labels.wa_store') . ": " . $storeName;
+        $L[] = trans('labels.wa_date') . ": " . date('d M Y, h:i A', strtotime($order->created_at));
         $L[] = "";
-        $L[] = "*Customer:* " . $order->customer_name;
-        if ($order->mobile) $L[] = "📱 " . $order->mobile;
-        if ($order->customer_email) $L[] = "✉️ " . $order->customer_email;
+        $L[] = "*" . trans('labels.wa_customer') . ":* " . $order->customer_name;
+        if ($order->mobile) $L[] = trans('labels.wa_phone') . ": " . $order->mobile;
+        if ($order->customer_email) $L[] = trans('labels.wa_email') . ": " . $order->customer_email;
         $L[] = "";
-        $L[] = "*Order items:*";
+        $L[] = "*" . trans('labels.wa_items') . ":*";
         foreach ($details as $d) {
-            $line = "• " . $d->item_name . " × " . $d->qty;
+            $line = "- " . $d->item_name . " x " . $d->qty;
             $ex = [];
             if (!empty($d->variants_name)) $ex[] = $d->variants_name;
             if (!empty($d->extras_name)) $ex[] = $d->extras_name;
             if (!empty($ex)) $line .= " (" . implode(', ', $ex) . ")";
-            $line .= " — " . $cur($d->price);
+            $line .= " = " . $cur($d->price);
             $L[] = $line;
         }
         $L[] = "";
-        $L[] = "Subtotal: " . $cur($order->sub_total);
-        if ((float) $order->delivery_charge > 0) $L[] = "Delivery: " . $cur($order->delivery_charge);
-        if ((float) $order->discount_amount > 0) $L[] = "Discount: -" . $cur($order->discount_amount);
-        if ((float) $order->tax > 0) $L[] = (@$order->tax_name ?: 'Tax') . ": " . $cur($order->tax);
-        $L[] = "*Total: " . $cur($order->grand_total) . "*";
+        $L[] = trans('labels.wa_subtotal') . ": " . $cur($order->sub_total);
+        if ((float) $order->delivery_charge > 0) $L[] = trans('labels.wa_delivery_charge') . ": " . $cur($order->delivery_charge);
+        if ((float) $order->discount_amount > 0) $L[] = trans('labels.wa_discount') . ": -" . $cur($order->discount_amount);
+        if ((float) $order->tax > 0) $L[] = (@$order->tax_name ?: trans('labels.wa_tax')) . ": " . $cur($order->tax);
+        $L[] = "*" . trans('labels.wa_total') . ": " . $cur($order->grand_total) . "*";
         $L[] = "";
-        $L[] = "💳 Payment: " . (@$payments[$order->payment_type] ?? 'N/A');
-        $L[] = "🧾 Type: " . (@$fulfil[$order->order_type] ?? '');
+        if ($payment) $L[] = trans('labels.wa_payment') . ": " . $payment;
+        $L[] = trans('labels.wa_type') . ": " . (@$fulfil[$order->order_type] ?? '');
         if ($order->order_type == 1) {
             $addr = trim(implode(' ', array_filter([$order->address, $order->building, $order->landmark, $order->delivery_area])));
-            if ($addr !== '') $L[] = "📍 " . $addr;
+            if ($addr !== '') $L[] = trans('labels.wa_address') . ": " . $addr;
+            if (!empty($order->latitude) && !empty($order->longitude)) {
+                $L[] = trans('labels.wa_location') . ": https://www.google.com/maps?q=" . $order->latitude . "," . $order->longitude;
+            }
         }
-        if ($order->delivery_date) $L[] = "🕒 " . trim($order->delivery_date . ' ' . $order->delivery_time);
-        if ($order->order_notes) $L[] = "📝 " . $order->order_notes;
+        if ($order->delivery_date) $L[] = trans('labels.wa_time') . ": " . trim($order->delivery_date . ' ' . $order->delivery_time);
+        if ($order->order_notes) $L[] = trans('labels.wa_notes') . ": " . $order->order_notes;
+        $L[] = "";
+        $L[] = trans('labels.wa_invoice') . ": " . self::order_invoice_url($order->order_number, $vdata);
 
         return "https://wa.me/" . $number . "?text=" . rawurlencode(implode("\n", $L));
     }
@@ -1536,19 +1595,19 @@ class helper
         $storeName = @$settings->website_title ?: (@$storeinfo->name ?: '');
 
         $L = [];
-        $L[] = "*New Booking* #" . $booking->booking_number;
-        if ($storeName) $L[] = "🏪 " . $storeName;
+        $L[] = "*" . trans('labels.wa_new_booking') . "* #" . $booking->booking_number;
+        if ($storeName) $L[] = trans('labels.wa_store') . ": " . $storeName;
         $L[] = "";
-        $L[] = "*Service:* " . $booking->service_name;
-        if ($booking->staff) $L[] = "👤 Staff: " . $booking->staff;
-        $L[] = "📅 " . $booking->booking_date . ($booking->booking_time ? ' — ' . $booking->booking_time : '');
-        if ($booking->amount > 0) $L[] = "💰 " . self::currency_formate($booking->amount, $vdata);
-        if ($booking->payment_method) $L[] = "💳 " . $booking->payment_method;
+        $L[] = "*" . trans('labels.wa_service') . ":* " . $booking->service_name;
+        if ($booking->staff) $L[] = trans('labels.wa_staff') . ": " . $booking->staff;
+        $L[] = trans('labels.wa_date') . ": " . $booking->booking_date . ($booking->booking_time ? ' - ' . $booking->booking_time : '');
+        if ($booking->amount > 0) $L[] = trans('labels.wa_amount') . ": " . trim(strip_tags(self::currency_formate($booking->amount, $vdata)));
+        if ($booking->payment_method) $L[] = trans('labels.wa_payment') . ": " . $booking->payment_method;
         $L[] = "";
-        $L[] = "*Customer:* " . $booking->customer_name;
-        $L[] = "📱 " . $booking->mobile;
-        if ($booking->email) $L[] = "✉️ " . $booking->email;
-        if ($booking->notes) $L[] = "📝 " . $booking->notes;
+        $L[] = "*" . trans('labels.wa_customer') . ":* " . $booking->customer_name;
+        $L[] = trans('labels.wa_phone') . ": " . $booking->mobile;
+        if ($booking->email) $L[] = trans('labels.wa_email') . ": " . $booking->email;
+        if ($booking->notes) $L[] = trans('labels.wa_notes') . ": " . $booking->notes;
 
         return "https://wa.me/" . $number . "?text=" . rawurlencode(implode("\n", $L));
     }
@@ -1566,17 +1625,17 @@ class helper
         $storeName = @$settings->website_title ?: (@$storeinfo->name ?: '');
 
         $L = [];
-        $L[] = "*New Service Request* #" . $srequest->request_number;
-        if ($storeName) $L[] = "🏪 " . $storeName;
+        $L[] = "*" . trans('labels.wa_new_request') . "* #" . $srequest->request_number;
+        if ($storeName) $L[] = trans('labels.wa_store') . ": " . $storeName;
         $L[] = "";
-        $L[] = "*Service:* " . $srequest->service_name;
-        if ($srequest->preferred_date) $L[] = "📅 " . $srequest->preferred_date . ($srequest->preferred_time ? ' — ' . $srequest->preferred_time : '');
-        if ($srequest->address) $L[] = "📍 " . $srequest->address;
+        $L[] = "*" . trans('labels.wa_service') . ":* " . $srequest->service_name;
+        if ($srequest->preferred_date) $L[] = trans('labels.wa_date') . ": " . $srequest->preferred_date . ($srequest->preferred_time ? ' - ' . $srequest->preferred_time : '');
+        if ($srequest->address) $L[] = trans('labels.wa_address') . ": " . $srequest->address;
         $L[] = "";
-        $L[] = "*Customer:* " . $srequest->customer_name;
-        $L[] = "📱 " . $srequest->mobile;
-        if ($srequest->email) $L[] = "✉️ " . $srequest->email;
-        if ($srequest->notes) $L[] = "📝 " . $srequest->notes;
+        $L[] = "*" . trans('labels.wa_customer') . ":* " . $srequest->customer_name;
+        $L[] = trans('labels.wa_phone') . ": " . $srequest->mobile;
+        if ($srequest->email) $L[] = trans('labels.wa_email') . ": " . $srequest->email;
+        if ($srequest->notes) $L[] = trans('labels.wa_notes') . ": " . $srequest->notes;
 
         return "https://wa.me/" . $number . "?text=" . rawurlencode(implode("\n", $L));
     }
@@ -2015,19 +2074,39 @@ class helper
         return $name;
     }
     // get language list in athu pages.
+    /**
+     * The currency prices are shown in for a store. Prices are entered in the store's own currency,
+     * so that one is never converted; a customer-chosen currency (cookie) is honoured only when the
+     * store offers it, converted relative to the store currency's rate. Memoized per request.
+     */
     public static function currencyinfo($vendor_id)
     {
-        if (Cookie::get('code') == null) {
-            $currency = CurrencySettings::where('code', helper::appdata($vendor_id)->default_currency)->first();
-            session()->put('currency', $currency->currency);
-        } else {
-
-            $currency = CurrencySettings::where('code', Cookie::get('code'))->first();
-            if (empty($currency)) {
-                $currency = CurrencySettings::where('code', helper::appdata($vendor_id)->default_currency)->first();
-            }
-            session()->put('currency', $currency->currency);
+        static $memo = [];
+        $cookie = (string) Cookie::get('code');
+        $key = (int) $vendor_id . '|' . $cookie;
+        if (isset($memo[$key])) {
+            session()->put('currency', $memo[$key]->currency);
+            return $memo[$key];
         }
-        return $currency;
+
+        $settings = Settings::where('vendor_id', $vendor_id)->first() ?: Settings::where('vendor_id', 1)->first();
+        $base = CurrencySettings::where('code', $settings->default_currency ?? '')->first()
+            ?: CurrencySettings::where('code', Settings::where('vendor_id', 1)->value('default_currency'))->first()
+            ?: CurrencySettings::first();
+
+        $currency = clone $base;
+        $currency->exchange_rate = 1;
+        if ($cookie !== '' && $cookie !== $base->code && in_array($cookie, explode('|', (string) ($settings->currencies ?? '')), true)) {
+            $picked = CurrencySettings::where('code', $cookie)->where('is_available', 1)->first();
+            if ($picked && (float) $base->exchange_rate > 0) {
+                $currency = clone $picked;
+                $currency->exchange_rate = (float) $picked->exchange_rate / (float) $base->exchange_rate;
+            }
+        }
+        // Older views read the decimals as decimal_digit.
+        $currency->decimal_digit = $currency->currency_formate;
+
+        session()->put('currency', $currency->currency);
+        return $memo[$key] = $currency;
     }
 }

@@ -102,7 +102,7 @@ class WorksController extends Controller
         }
         if ($request->hasFile('image')) {
             if ($editwork->image && file_exists(storage_path('app/public/landing/images/png/' . $editwork->image))) {
-                unlink(storage_path('app/public/landing/images/png/' . $editwork->image));
+                if (is_file(storage_path('app/public/landing/images/png/' . $editwork->image))) { unlink(storage_path('app/public/landing/images/png/' . $editwork->image)); }
             }
             $editwork->image = helper::store_upload($request->file('image'), 'landing/images/png', 'work');
         }
@@ -119,7 +119,7 @@ class WorksController extends Controller
 
         $deletework = Works::where('id', $request->id)->where('vendor_id', $vendor_id)->first();
         if ($deletework->image && file_exists(storage_path('app/public/landing/images/png/' . $deletework->image))) {
-            unlink(storage_path('app/public/landing/images/png/' . $deletework->image));
+            if (is_file(storage_path('app/public/landing/images/png/' . $deletework->image))) { unlink(storage_path('app/public/landing/images/png/' . $deletework->image)); }
         }
         $deletework->delete();
         return redirect('admin/how_works')->with('success', trans('messages.success'));

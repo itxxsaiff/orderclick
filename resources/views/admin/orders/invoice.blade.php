@@ -208,6 +208,15 @@
                                                                 <p class="color-changer">{{ trans('labels.address') }}</p>
                                                                 <p class="text-muted"> {{ $getorderdata->address }}</p>
                                                             </li>
+                                                            @if (!empty($getorderdata->latitude) && !empty($getorderdata->longitude))
+                                                                {{-- The customer's pin from the checkout map. --}}
+                                                                <li class="list-group-item px-0 fs-7 fw-500 d-flex justify-content-between align-items-center">
+                                                                    <p class="color-changer">{{ trans('labels.delivery_location') }}</p>
+                                                                    <a class="btn btn-sm btn-outline-success" target="_blank" rel="noopener"
+                                                                        href="https://www.google.com/maps?q={{ $getorderdata->latitude }},{{ $getorderdata->longitude }}">
+                                                                        <i class="fa-solid fa-location-dot"></i> {{ trans('labels.open_in_maps') }}</a>
+                                                                </li>
+                                                            @endif
                                                             <li
                                                                 class="list-group-item px-0 fs-7 fw-500 d-flex justify-content-between">
                                                                 <p class="color-changer">{{ trans('labels.landmark') }}</p>

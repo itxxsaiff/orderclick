@@ -293,6 +293,40 @@ class HomeController extends Controller
         return view($view, $data);
     }
 
+    /**
+     * Remember the customer's delivery pin from the checkout map. It is attached to the order when
+     * the order is created (every payment flow, including card redirects, goes through createorder).
+     */
+    public function checkoutLocation(Request $request)
+    {
+        [$storeinfo, $vdata] = $this->resolveStore($request);
+        $lat = $request->input('lat');
+        $lng = $request->input('lng');
+        if (!is_numeric($lat) || !is_numeric($lng) || abs($lat) > 90 || abs($lng) > 180) {
+            return response()->json(['success' => false], 422);
+        }
+        session()->put('oc_checkout_location_' . $vdata, ['lat' => round((float) $lat, 7), 'lng' => round((float) $lng, 7)]);
+
+        return response()->json(['success' => true]);
+    }
+
+    /** Printable invoice for one order. The signed link is the only way in. */
+    public function orderInvoice(Request $request)
+    {
+        [$storeinfo, $vdata] = $this->resolveStore($request);
+        $number = (string) $request->route('order_number');
+        if (!helper::order_invoice_valid($number, $vdata, $request->route('sig'))) {
+            abort(404);
+        }
+        $order = Order::where('vendor_id', $vdata)->where('order_number', $number)->firstOrFail();
+        $details = \App\Models\OrderDetails::where('order_id', $order->id)->get();
+        $settings = Settings::where('vendor_id', $vdata)->first();
+        $design = \App\Services\StoreDesign::for($vdata);
+        $payment = optional(helper::getpayment($order->payment_type, $vdata))->payment_name;
+
+        return view('front.invoice', compact('order', 'details', 'settings', 'storeinfo', 'vdata', 'design', 'payment'));
+    }
+
     /** The engine's view folder number (used for partials such as the cart drawer). */
     private function themeFolder($vdata)
     {

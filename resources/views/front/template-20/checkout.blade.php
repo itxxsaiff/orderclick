@@ -118,6 +118,7 @@
                 <label class="form-label">{{ trans('labels.address') }} <span class="req">*</span></label>
                 <input type="text" class="input" name="address" id="address" placeholder="{{ trans('labels.address') }}">
               </div>
+              @include('front.partials.location_picker')
               <div class="form-grid mb-2">
                 <div class="field">
                   <label class="form-label">{{ trans('labels.landmark') }}</label>

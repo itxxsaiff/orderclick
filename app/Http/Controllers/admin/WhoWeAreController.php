@@ -56,7 +56,7 @@ class WhoWeAreController extends Controller
             }
             if ($newcontent->whoweare_image != null && file_exists(storage_path('app/public/admin-assets/images/index/' . $newcontent->whoweare_image))) {
 
-                unlink(storage_path('app/public/admin-assets/images/index/' . $newcontent->whoweare_image));
+                if (is_file(storage_path('app/public/admin-assets/images/index/' . $newcontent->whoweare_image))) { unlink(storage_path('app/public/admin-assets/images/index/' . $newcontent->whoweare_image)); }
             }
 
             $weareImage = 'whoweare-' . uniqid() . "." . $request->file('image')->getClientOriginalExtension();
@@ -103,7 +103,7 @@ class WhoWeAreController extends Controller
             }
             if ($newcontent->image != null && file_exists(storage_path('app/public/admin-assets/images/index/' . $newcontent->image))) {
 
-                unlink(storage_path('app/public/admin-assets/images/index/' . $newcontent->image));
+                if (is_file(storage_path('app/public/admin-assets/images/index/' . $newcontent->image))) { unlink(storage_path('app/public/admin-assets/images/index/' . $newcontent->image)); }
             }
 
             $weareImage = 'whoweare-' . uniqid() . "." . $request->file('image')->getClientOriginalExtension();
@@ -161,7 +161,7 @@ class WhoWeAreController extends Controller
             }
             if ($editwork->image != null && file_exists(storage_path('app/public/admin-assets/images/index/' . $editwork->image))) {
 
-                unlink(storage_path('app/public/admin-assets/images/index/' . $editwork->image));
+                if (is_file(storage_path('app/public/admin-assets/images/index/' . $editwork->image))) { unlink(storage_path('app/public/admin-assets/images/index/' . $editwork->image)); }
             }
 
             $weareImage = 'whoweare-' . uniqid() . "." . $request->file('image')->getClientOriginalExtension();
@@ -192,7 +192,7 @@ class WhoWeAreController extends Controller
 
         if ($deletework->image != null && file_exists(storage_path('app/public/admin-assets/images/index/' . $deletework->image))) {
 
-            unlink(storage_path('app/public/admin-assets/images/index/' . $deletework->image));
+            if (is_file(storage_path('app/public/admin-assets/images/index/' . $deletework->image))) { unlink(storage_path('app/public/admin-assets/images/index/' . $deletework->image)); }
         }
 
         $deletework->delete();
