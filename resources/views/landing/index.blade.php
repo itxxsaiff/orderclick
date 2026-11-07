@@ -5,17 +5,11 @@
         ->where('is_deleted', 2)
         ->orderBy('reorder_id')
         ->get();
-
-    $categoryIcons = [
-        'restaurant' => 'fa-utensils', 'cafe' => 'fa-mug-hot', 'coffee' => 'fa-mug-hot',
-        'grocery' => 'fa-basket-shopping', 'super' => 'fa-basket-shopping', 'market' => 'fa-basket-shopping',
-        'pharmac' => 'fa-prescription-bottle-medical', 'medical' => 'fa-prescription-bottle-medical',
-        'flower' => 'fa-seedling', 'cloth' => 'fa-shirt', 'fashion' => 'fa-shirt',
-        'gift' => 'fa-gift', 'baker' => 'fa-bread-slice', 'sweet' => 'fa-cake-candles',
-        'fruit' => 'fa-apple-whole', 'vegetable' => 'fa-carrot', 'dairy' => 'fa-cheese',
-        'ice' => 'fa-ice-cream', 'book' => 'fa-book', 'juice' => 'fa-glass-water',
-        'electronic' => 'fa-mobile-screen', 'perfume' => 'fa-spray-can-sparkles', 'toy' => 'fa-shapes',
-    ];
+    // Each home section lists only its own system's categories (Orders & Stores / Booking / Services).
+    $ocCatsBySystem = $landingCategories->groupBy(fn($c) => \App\Helpers\Systems::normalise($c->system ?: null));
+    $ocOrderCats = $ocCatsBySystem->get('orders', collect());
+    $ocBookingCats = $ocCatsBySystem->get('booking', collect());
+    $ocServiceCats = $ocCatsBySystem->get('service', collect());
 
     $registerUrl = env('Environment') == 'sendbox'
         ? URL::to('/admin')
@@ -114,6 +108,8 @@
         .ocl-cat p { font-size: 12.5px; color: var(--muted); margin: 0 0 14px; line-height: 1.4; }
         .ocl-cat .go { font-size: 13px; font-weight: 700; color: var(--a-ink); }
         @media (max-width: 900px) { .ocl-cats { grid-template-columns: repeat(2, 1fr); } }
+        .ocl-cats:not(.is-open) .ocl-cat--more { display: none; }
+        .ocl-cats-toggle { margin-top: 28px; }
 
         /* Services marketplace grid (icon + title) */
         .ocl-tagline { display: inline-flex; align-items: center; gap: 12px; color: var(--a-ink); font-weight: 600; font-size: 14px; margin-top: 6px; }
@@ -327,35 +323,8 @@
             <span class="eyebrow">{{ trans('landing.business_categories') }}</span>
             <h2 class="sec-title">{{ trans('landing.choose_the_right_category_for_your_store') }}</h2>
             <p class="sec-sub">{{ trans('landing.pick_any_category_to_jump_straight_to') }}</p>
-            @php
-                $ocIsAr = app()->getLocale() === 'ar';
-            @endphp
-            @if (count($landingCategories) > 0)
-                <div class="ocl-cats">
-                    @foreach ($landingCategories as $category)
-                        @php
-                            $categoryName = strtolower($category->name ?? '');
-                            $categoryDisplay = helper::category_label($category->name);
-                            $categoryIcon = 'fa-store';
-                            foreach ($categoryIcons as $keyword => $icon) {
-                                if (str_contains($categoryName, $keyword)) { $categoryIcon = $icon; break; }
-                            }
-                            $categoryImage = !empty($category->image) ? helper::image_path($category->image) : null;
-                        @endphp
-                        <a href="{{ $registerUrl }}" class="ocl-cat">
-                            <div class="ocl-cat__ic">
-                                @if ($categoryImage)
-                                    <img src="{{ $categoryImage }}" alt="{{ $category->name }}">
-                                @else
-                                    <i class="fa-solid {{ $categoryIcon }}"></i>
-                                @endif
-                            </div>
-                            <h4>{{ $categoryDisplay }}</h4>
-                            <p>{{ trans('landing.launch_your_store_in_this_category') }}</p>
-                            <span class="go">{{ trans('landing.register_now') }}</span>
-                        </a>
-                    @endforeach
-                </div>
+            @if ($ocOrderCats->count())
+                @include('landing.partials.category_grid', ['ocGridCats' => $ocOrderCats, 'ocGridSys' => 'orders', 'ocGridId' => 'oclCatsOrders'])
             @endif
                 {{-- Features tagged to this system (admin > Features). --}}
                 @php $ocSysFeatures = \App\Models\Features::forSystem('orders'); @endphp
@@ -436,6 +405,9 @@
                     ['fa-ellipsis', '#94a3b8', 'svc_more_services'],
                 ];
             @endphp
+            @if ($ocServiceCats->count())
+                @include('landing.partials.category_grid', ['ocGridCats' => $ocServiceCats, 'ocGridSys' => 'service', 'ocGridId' => 'oclCatsService'])
+            @else
             <div class="ocl-svcs">
                 @foreach ($ocServices as $s)
                     <a href="{{ $registerUrl }}" class="ocl-svc">
@@ -444,6 +416,7 @@
                     </a>
                 @endforeach
             </div>
+            @endif
                 {{-- Features tagged to this system (admin > Features). --}}
                 @php $ocSysFeatures = \App\Models\Features::forSystem('service'); @endphp
                 @if ($ocSysFeatures->count())
@@ -492,6 +465,9 @@
                     ['fa-ellipsis', '#94a3b8', 'bk_more_services', 'bk_desc_more_services'],
                 ];
             @endphp
+            @if ($ocBookingCats->count())
+                @include('landing.partials.category_grid', ['ocGridCats' => $ocBookingCats, 'ocGridSys' => 'booking', 'ocGridId' => 'oclCatsBooking'])
+            @else
             <div class="ocl-bks">
                 @foreach ($ocBookings as $b)
                     <div class="ocl-bk">
@@ -501,6 +477,7 @@
                     </div>
                 @endforeach
             </div>
+            @endif
                 {{-- Features tagged to this system (admin > Features). --}}
                 @php $ocSysFeatures = \App\Models\Features::forSystem('booking'); @endphp
                 @if ($ocSysFeatures->count())
@@ -736,6 +713,15 @@
 
 @section('scripts')
 <script>
+    document.querySelectorAll('.ocl-cats-toggle').forEach(function (btn) {
+        var grid = document.getElementById(btn.dataset.target);
+        if (!grid) return;
+        btn.addEventListener('click', function () {
+            var open = grid.classList.toggle('is-open');
+            btn.textContent = open ? btn.dataset.less : btn.dataset.more;
+            if (!open) grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
     (function () {
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         var sel = '.ocl .center, .ocl-cat, .ocl-step, .ocl-plan, .ocl-store, .ocl-theme, .ocl-tpl__img, .ocl-tpl > div:last-child, .ocl-contact__info, .ocl-form, .ocl-news, .ocl-foot .top';
@@ -755,7 +741,9 @@
             entries.forEach(function (e) {
                 if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
             });
-        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });
+        // threshold 0: a block taller than the screen (e.g. a long category list) can never be 10% visible,
+        // so a ratio threshold would leave it hidden forever (blank page).
         els.forEach(function (el) { io.observe(el); });
     })();
 </script>

@@ -13,9 +13,11 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 })
 $(document).ready(function () {
     "use strict";
+    var ocDt = window.ocDtLang || {};
     $('.zero-configuration').DataTable({
         dom: 'lBfrtip',
-        lengthMenu: [[10, 25, 50, 100, 500, -1], [10, 25, 50, 100, 500, "All"]],
+        language: ocDt,
+        lengthMenu: [[10, 25, 50, 100, 500, -1], [10, 25, 50, 100, 500, ocDt.ocAll || "All"]],
         buttons: [
             'excelHtml5',
             'pdfHtml5'

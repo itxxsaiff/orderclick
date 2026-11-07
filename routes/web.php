@@ -61,7 +61,7 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
     Route::get('/', [AdminController::class, 'login'])->middleware('guest');
     Route::post('checklogin-{logintype}', [AdminController::class, 'check_admin_login']);
     // The old single-page signup is superseded by the public wizard.
-    Route::get('register', fn() => redirect('register/1'))->middleware('guest');
+    Route::get('register', fn(\Illuminate\Http\Request $r) => redirect('register/1' . ($r->getQueryString() ? '?' . $r->getQueryString() : '')))->middleware('guest');
     Route::post('register_vendor', [VendorController::class, 'register_vendor']);
     Route::get('register/check', [VendorController::class, 'check_availability']);
     Route::get('forgot_password', [VendorController::class, 'forgot_password'])->middleware('guest');
@@ -535,7 +535,7 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
 
 // ---- Public registration wizard: system+activity -> business -> verification -> plan+payment ----
 Route::group(['prefix' => 'register'], function () {
-    Route::get('/', fn() => redirect('register/1'));
+    Route::get('/', fn(\Illuminate\Http\Request $r) => redirect('register/1' . ($r->getQueryString() ? '?' . $r->getQueryString() : '')));
     Route::get('/specializations', [\App\Http\Controllers\RegistrationController::class, 'specializations']);
     Route::get('/agreement', [\App\Http\Controllers\RegistrationController::class, 'agreement']);
     Route::post('/system', [\App\Http\Controllers\RegistrationController::class, 'save_system']);
@@ -625,6 +625,7 @@ Route::group(['namespace' => "front", 'prefix' => $prefix, 'middleware' => 'Fron
     // AI assistant inside the store page (answers from this store's data only).
     Route::post('/assistant', [StoreAssistantController::class, 'chat'])->middleware('throttle:20,1');
     Route::get('/booking', [HomeController::class, 'bookingpage'])->name('front.booking');
+    Route::get('/booking-slots', [HomeController::class, 'bookingSlots'])->middleware('throttle:60,1');
     Route::post('/save-booking', [HomeController::class, 'savebooking'])->name('front.savebooking');
     Route::get('/booking-success/{booking_number}', [HomeController::class, 'bookingsuccess'])->name('front.bookingsuccess');
     // V2 Service Request module (storefront)

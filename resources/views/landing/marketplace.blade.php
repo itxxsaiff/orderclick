@@ -192,7 +192,7 @@
                     @foreach ($heroTiles as $ca)
                         <a href="{{ $base }}?store={{ urlencode($ca->name) }}" class="mk-htile">
                             <span class="ic"><i class="fa-solid {{ $mkIcon($ca->name) }}"></i></span>
-                            <div><b>{{ helper::category_label($ca->name) }}</b><span>{{ trans('landing.browse_stores') }}</span></div>
+                            <div><b>{{ $ca->label() }}</b><span>{{ trans('landing.browse_stores') }}</span></div>
                         </a>
                     @endforeach
                     <a href="#mk-all" class="mk-htile">

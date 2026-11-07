@@ -13,6 +13,40 @@ class StoreCategory extends Model
 
     protected $table = 'store_category';
 
+    /** {"ar": "...", "de": "...", "fr": "..."} — the name in each language, edited in Admin > Store Categories. */
+    public function getNameTranslationsAttribute($value): array
+    {
+        $decoded = is_string($value) ? json_decode($value, true) : $value;
+
+        return is_array($decoded) ? $decoded : [];
+    }
+
+    /** Stored as readable UTF-8 JSON (not \u escapes) so the admin search can match Arabic. */
+    public function setNameTranslationsAttribute($value): void
+    {
+        $this->attributes['name_translations'] = is_array($value) && $value
+            ? json_encode($value, JSON_UNESCAPED_UNICODE)
+            : null;
+    }
+
+    /**
+     * The name in the current language: the admin-entered translation, else the old
+     * landing.cat_* translation key, else the stored (English) name.
+     */
+    public function label(?string $locale = null): string
+    {
+        $locale = $locale ?: app()->getLocale();
+        $t = $this->name_translations;
+        if (is_array($t) && !empty($t[$locale]) && is_string($t[$locale])) {
+            return trim($t[$locale]);
+        }
+
+        $name = trim((string) $this->name);
+        $key = 'landing.cat_' . trim(preg_replace('/_+/', '_', preg_replace('/[^a-z0-9]+/u', '_', mb_strtolower($name))), '_');
+
+        return ($name !== '' && \Illuminate\Support\Facades\Lang::has($key, $locale)) ? trans($key, [], $locale) : $name;
+    }
+
     public function activity()
     {
         return $this->belongsTo(Activity::class, 'activity_id');

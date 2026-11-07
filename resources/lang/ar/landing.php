@@ -113,6 +113,7 @@ return array (
   'search_store' => 'ابحث عن نشاط تجاري',
   'blog_desc' => 'نصائح للأعمال وتحديثات المنصة وأدلة عملية من Order Click.',
   'see_all' => 'رؤية الكل',
+  'show_less' => 'عرض أقل',
   'menu' => 'قائمة طعام',
   'select_store_category' => 'حدد فئة المتجر',
   'google_login' => 'تسجيل الدخول جوجل',

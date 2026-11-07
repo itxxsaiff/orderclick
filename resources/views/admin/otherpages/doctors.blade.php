@@ -3,9 +3,10 @@
     @php
         $isAr = app()->getLocale() === 'ar';
         $tid = Auth::user()->type == 4 ? Auth::user()->vendor_id : Auth::user()->id;
-        $oc_isSalon = optional(App\Models\Settings::where('vendor_id', $tid)->first())->business_type === 'salon';
-        $ocMemberLabel = $oc_isSalon ? ($isAr ? 'عضو الفريق' : 'Team member') : ($isAr ? 'طبيب' : 'Doctor');
-        $ocListLabel = $oc_isSalon ? ($isAr ? 'الفريق' : 'Team') : ($isAr ? 'الأطباء' : 'Doctors');
+        // Clinics manage doctors; every other booking business (salon, gym, physio, rentals...) its team.
+        $oc_isSalon = optional(App\Models\Settings::where('vendor_id', $tid)->first())->business_type !== 'clinic';
+        $ocMemberLabel = $oc_isSalon ? trans('labels.team_member') : trans('labels.doctor');
+        $ocListLabel = $oc_isSalon ? trans('labels.team') : trans('labels.doctors');
     @endphp
     <style>
         .ocdr-modal-bg { position: fixed; inset: 0; background: rgba(15,23,20,.55); z-index: 1050; display: none; }

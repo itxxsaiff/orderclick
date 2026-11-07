@@ -73,6 +73,19 @@ class RegistrationController extends Controller
         ];
 
         if ($step === 1) {
+            // Coming from a category card on the home page: pre-select its system (and activity).
+            $qSystem = (string) $request->query('system');
+            if (Systems::isValid($qSystem)) {
+                $qActivity = (int) $request->query('activity');
+                if (($d['system'] ?? null) !== $qSystem) {
+                    $data['draft']['activity_id'] = null;
+                    $data['draft']['specialization_id'] = null;
+                }
+                $data['draft']['system'] = $qSystem;
+                if ($qActivity && Systems::activityBelongsTo($qActivity, $qSystem)) {
+                    $data['draft']['activity_id'] = $qActivity;
+                }
+            }
             $data['systems'] = Systems::all();
             $data['activities'] = Activity::where('is_available', 1)->orderBy('reorder_id')->get();
         }

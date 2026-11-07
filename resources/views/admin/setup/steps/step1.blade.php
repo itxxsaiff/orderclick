@@ -9,7 +9,7 @@
         <div class="row g-3">
             <div class="col-12 col-md-4">
                 <label class="form-label">{{ trans('labels.business_name') }}<span class="text-danger"> *</span></label>
-                <input type="text" class="form-control" name="business_name"
+                <input type="text" class="form-control" dir="auto" name="business_name"
                     value="{{ old('business_name', $vendor->trade_name ?: optional($settings)->website_title) }}"
                     placeholder="{{ trans('labels.business_name') }}">
             </div>
@@ -40,7 +40,7 @@
                     <option value="">{{ trans('labels.select') }}</option>
                     @foreach ($categories as $c)
                         <option value="{{ $c->id }}" {{ (string) $vendor->store_id === (string) $c->id ? 'selected' : '' }}>
-                            {{ $c->name }}</option>
+                            {{ $c->label() }}</option>
                     @endforeach
                 </select>
                 <small class="text-muted">{{ trans('messages.category_auto_hint') }}</small>
@@ -55,15 +55,17 @@
                         @endforeach
                     </select>
                     <input type="tel" class="form-control @error('mobile') is-invalid @enderror"
-                        name="mobile" value="{{ old('mobile', $vendor->mobile) }}">
+                        name="mobile" dir="ltr" value="{{ old('mobile', $vendor->mobile) }}">
                 </div>
                 @error('mobile')<span class="text-danger fs-7">{{ $message }}</span>@enderror
             </div>
             <div class="col-12 col-md-8">
                 <label class="form-label">{{ trans('labels.personlized_link') }}</label>
-                <div class="input-group">
+                {{-- Links, e-mails and phone numbers are Latin text: keep them left-to-right in Arabic too
+                     (in a right-to-left box the cursor jumps and letters get lost while typing). --}}
+                <div class="input-group" dir="ltr">
                     <span class="input-group-text bg-light">{{ URL::to('/') }}/</span>
-                    <input type="text" class="form-control" name="slug" id="ocSetupSlug"
+                    <input type="text" class="form-control" dir="ltr" name="slug" id="ocSetupSlug"
                         value="{{ old('slug', $vendor->slug) }}" placeholder="my-store">
                     <input type="hidden" name="slug_custom" id="ocSetupSlugCustom"
                         value="{{ old('slug_custom', \App\Helpers\Onboarding::slugIsCustom($vendor) ? 1 : 0) }}">
@@ -74,7 +76,7 @@
             <div class="col-12 col-md-4">
                 <label class="form-label">{{ trans('labels.email') }}<span class="text-danger"> *</span></label>
                 <input type="email" class="form-control @error('email') is-invalid @enderror"
-                    name="email" value="{{ old('email', $vendor->email) }}" placeholder="example@yourbusiness.com">
+                    name="email" dir="ltr" value="{{ old('email', $vendor->email) }}" placeholder="example@yourbusiness.com">
                 @error('email')<span class="text-danger fs-7">{{ $message }}</span>@enderror
             </div>
         </div>

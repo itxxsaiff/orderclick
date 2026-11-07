@@ -27,6 +27,12 @@
         .ocb-submit { width: 100%; height: 52px; border: 0; border-radius: var(--r-btn, 12px); background: var(--brand); color: var(--on-brand, #fff); font-weight: 650; font-size: 16px; cursor: pointer; margin-top: 12px; }
         .ocb-submit:hover { filter: brightness(.93); }
         @media (max-width: 560px) { .ocb-grid2 { grid-template-columns: 1fr; } }
+        .ocb-err { background: #FDECEC; color: #B42318; border: 1px solid #F5C2C0; border-radius: var(--r-sm); padding: 12px 14px; margin-bottom: 16px; font-size: 14px; }
+        .ocb-slots { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ocb-slots button { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: var(--r-sm);
+            padding: 9px 13px; font-size: 14px; font-weight: 600; cursor: pointer; direction: ltr; }
+        .ocb-slots button.sel { background: var(--brand); border-color: var(--brand); color: var(--on-brand, #fff); }
+        .ocb-hint { color: var(--text-2); font-size: 13.5px; }
     </style>
 
     <div class="ocb-wrap">
@@ -35,7 +41,10 @@
                 <h1>{{ trans('labels.book_an_appointment') }}</h1>
                 <p class="ocb-sub">{{ trans('labels.choose_a_service_and_a_time_that') }}</p>
 
-                <form action="{{ URL::to(@$storeinfo->slug . '/save-booking') }}" method="POST">
+                @if (session('error') || $errors->any())
+                    <div class="ocb-err">{{ session('error') ?: $errors->first() }}</div>
+                @endif
+                <form action="{{ URL::to(@$storeinfo->slug . '/save-booking') }}" method="POST" id="ocbForm">
                     @csrf
                     <div class="ocb-field">
                         <label>{{ trans('labels.service') }} <span class="req">*</span></label>
@@ -55,16 +64,40 @@
                         @endif
                     </div>
 
+                    @if (collect($doctors ?? [])->count())
+                        {{-- Team member: each has an own calendar; "any" takes whoever is free. --}}
+                        <div class="ocb-field">
+                            <label>{{ trans('labels.team_member') }}</label>
+                            <select name="staff_id" id="ocb_staff" class="ocb-in">
+                                <option value="">{{ trans('labels.any_available') }}</option>
+                                @foreach ($doctors as $d)
+                                    <option value="{{ $d->id }}" {{ (string) old('staff_id', $selectedDoctor) === (string) $d->id ? 'selected' : '' }}>
+                                        {{ $d->name }}@if ($d->specialty) — {{ $d->specialty }}@endif</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+
                     <div class="ocb-grid2">
                         <div class="ocb-field">
                             <label>{{ trans('labels.date') }} <span class="req">*</span></label>
-                            <input type="date" name="booking_date" class="ocb-in" required min="{{ date('Y-m-d') }}">
+                            <input type="date" name="booking_date" id="ocb_date" class="ocb-in" required min="{{ date('Y-m-d') }}" value="{{ old('booking_date') }}">
                         </div>
-                        <div class="ocb-field">
-                            <label>{{ trans('labels.time') }}</label>
-                            <input type="time" name="booking_time" class="ocb-in">
-                        </div>
+                        @unless ($slotsOn ?? false)
+                            <div class="ocb-field">
+                                <label>{{ trans('labels.time') }}</label>
+                                <input type="time" name="booking_time" class="ocb-in" value="{{ old('booking_time') }}">
+                            </div>
+                        @endunless
                     </div>
+                    @if ($slotsOn ?? false)
+                        {{-- Free times from the opening hours, the service length and the team's bookings. --}}
+                        <div class="ocb-field">
+                            <label>{{ trans('labels.time') }} <span class="req">*</span></label>
+                            <input type="hidden" name="booking_time" id="ocb_time" value="{{ old('booking_time') }}">
+                            <div class="ocb-slots" id="ocb_slots"><span class="ocb-hint">{{ trans('labels.pick_a_date_to_see_times') }}</span></div>
+                        </div>
+                    @endif
 
                     <div class="ocb-grid2">
                         <div class="ocb-field">
@@ -175,6 +208,48 @@
         (function () {
             var sel = document.getElementById('ocb_service');
             if (sel && sel.value) ocbService(sel);
+        })();
+        // Free time slots for the chosen date / service / team member.
+        (function () {
+            var box = document.getElementById('ocb_slots');
+            if (!box) return;
+            var url = @json(URL::to(@$storeinfo->slug . '/booking-slots'));
+            var t = { pick: @json(trans('labels.pick_a_date_to_see_times')), none: @json(trans('labels.no_free_times_this_day')),
+                load: @json(trans('labels.loading')), choose: @json(trans('labels.please_choose_a_time')) };
+            var date = document.getElementById('ocb_date'), time = document.getElementById('ocb_time');
+            var svc = document.getElementById('ocb_service_id'), staff = document.getElementById('ocb_staff');
+            function hint(msg) { box.innerHTML = ''; var s = document.createElement('span'); s.className = 'ocb-hint'; s.textContent = msg; box.appendChild(s); }
+            function load() {
+                if (!date.value) { hint(t.pick); return; }
+                hint(t.load);
+                var q = '?date=' + encodeURIComponent(date.value) + '&service_id=' + encodeURIComponent(svc ? svc.value : '') +
+                    '&staff=' + encodeURIComponent(staff ? staff.value : '');
+                fetch(url + q, { headers: { 'Accept': 'application/json' } }).then(function (r) { return r.json(); }).then(function (d) {
+                    var slots = d.slots || [];
+                    if (!slots.length) { time.value = ''; hint(t.none); return; }
+                    box.innerHTML = '';
+                    var keep = false;
+                    slots.forEach(function (s) {
+                        var b = document.createElement('button');
+                        b.type = 'button'; b.textContent = s.label; b.dataset.time = s.time;
+                        if (s.time === time.value) { b.classList.add('sel'); keep = true; }
+                        b.addEventListener('click', function () {
+                            box.querySelectorAll('button').forEach(function (x) { x.classList.remove('sel'); });
+                            b.classList.add('sel'); time.value = s.time;
+                        });
+                        box.appendChild(b);
+                    });
+                    if (!keep) time.value = '';
+                }).catch(function () { hint(t.none); });
+            }
+            date.addEventListener('change', load);
+            if (staff) staff.addEventListener('change', load);
+            var sel = document.getElementById('ocb_service');
+            if (sel) sel.addEventListener('change', load);
+            document.getElementById('ocbForm').addEventListener('submit', function (e) {
+                if (!time.value) { e.preventDefault(); hint(t.choose); box.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(load, 1200); }
+            });
+            if (date.value) load();
         })();
     </script>
 @endsection

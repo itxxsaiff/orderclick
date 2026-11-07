@@ -8,11 +8,12 @@
     <title>{{ trans('labels.set_up_your_store_with_ai') }}</title>
     <link rel="stylesheet" href="{{ url(env('ASSETSPATHURL') . 'web-assets/font-awesome/css/all.min.css') }}">
     @php
-        $ar = app()->getLocale() === 'ar';
-        $ssMessages = $ar
-            ? ['يتم قراءة معلومات نشاطك', 'إنشاء الأقسام المناسبة', 'إضافة المنتجات والخدمات', 'كتابة أوصاف احترافية', 'اختيار ألوان متجرك', 'اللمسات الأخيرة على متجرك']
-            : ['Reading your business info', 'Creating the right categories', 'Adding products & services', 'Writing professional descriptions', 'Picking your store colours', 'Putting the finishing touches'];
-        $ssRetry = $ar ? 'يمكنك المحاولة مرة أخرى أو المتابعة إلى لوحة التحكم.' : 'You can try again or continue to your dashboard.';
+        // Wording follows the merchant's system (products / bookable services / service packages).
+        $ssSys = $ssSystem ?? 'orders';
+        $ssT = function (string $orders, string $booking, string $service) use ($ssSys) {
+            return trans($ssSys === 'booking' ? $booking : ($ssSys === 'service' ? $service : $orders));
+        };
+        $ssRetry = trans('labels.ai_retry_or_dashboard');
     @endphp
     <style>
         :root { --a:#1f9d55; --a-ink:#137a40; --a-soft:#e8f5ee; --ink:#17201a; --muted:#67736a; --line:#e4eae2; }
@@ -91,15 +92,15 @@
         {{-- ===== Step 1: quick question ===== --}}
         <div class="ss-form" id="ssForm">
             <span class="ss-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> {{ trans('labels.ai_setup') }}</span>
-            <h1>{{ trans('labels.let_s_set_up') }} <b>{{ $storeName }}</b> {{ $ar ? 'لك' : '' }}</h1>
-            <p class="sub">{{ trans('labels.tell_us_what_your_business_offers_and') }}</p>
+            <h1>{{ trans('labels.let_s_set_up') }} <b>{{ $storeName }}</b></h1>
+            <p class="sub">{{ $ssT('labels.tell_us_what_your_business_offers_and', 'labels.ai_sub_booking', 'labels.ai_sub_service') }}</p>
 
             {{-- AI file upload: read a menu / product list (image or PDF) and pre-fill the form --}}
             <div class="ss-field">
                 <div class="ss-drop" id="ssDrop">
                     <div class="ss-drop__idle">
                         <div class="ss-drop__ic"><i class="fa-solid fa-file-arrow-up"></i></div>
-                        <div class="ss-drop__t">{{ trans('labels.upload_your_menu_or_product_list') }}</div>
+                        <div class="ss-drop__t">{{ $ssT('labels.upload_your_menu_or_product_list', 'labels.ai_upload_service_list', 'labels.ai_upload_service_list') }}</div>
                         <div class="ss-drop__s">{{ trans('labels.photo_or_pdf_ai_reads_it_and') }}</div>
                     </div>
                     <div class="ss-drop__steps">
@@ -116,23 +117,23 @@
 
             <div class="ss-field">
                 <label>{{ trans('labels.what_products_or_services_do_you_offer') }}</label>
-                <textarea id="ssOfferings" placeholder="{{ trans('labels.e_g_italian_restaurant_margherita_pizza_3') }}"></textarea>
+                <textarea id="ssOfferings" placeholder="{{ $ssT('labels.e_g_italian_restaurant_margherita_pizza_3', 'labels.ai_placeholder_booking', 'labels.ai_placeholder_service') }}"></textarea>
                 <div class="ss-hint">{{ trans('labels.list_a_few_products_with_prices_if') }}</div>
             </div>
             <div class="ss-field">
                 <label>{{ trans('labels.main_categories_optional') }}</label>
-                <input type="text" id="ssCategories" placeholder="{{ trans('labels.e_g_pizzas_burgers_drinks') }}">
+                <input type="text" id="ssCategories" placeholder="{{ $ssT('labels.e_g_pizzas_burgers_drinks', 'labels.ai_cats_placeholder_booking', 'labels.ai_cats_placeholder_service') }}">
                 <div class="ss-hint">{{ trans('labels.leave_blank_and_ai_will_choose_sensible') }}</div>
             </div>
             <div class="ss-field">
-                <label>{{ trans('labels.whatsapp_number_for_orders') }} <span style="color:#d64545">*</span></label>
+                <label>{{ $ssT('labels.whatsapp_number_for_orders', 'labels.whatsapp_number_for_bookings', 'labels.whatsapp_number_for_requests') }} <span style="color:#d64545">*</span></label>
                 <div class="ss-wa">
                     <select id="ssWaCode" class="ss-code">
                         @foreach (helper::countries() as $c)
                             <option value="{{ ltrim($c['dial'], '+') }}" {{ $c['iso'] === 'BH' ? 'selected' : '' }}>{{ $c['flag'] }} {{ $c['dial'] }}</option>
                         @endforeach
                     </select>
-                    <input type="text" id="ssWhatsapp" inputmode="numeric" placeholder="{{ trans('labels.e_g_33001234') }}">
+                    <input type="text" id="ssWhatsapp" inputmode="numeric" dir="ltr" placeholder="{{ trans('labels.e_g_33001234') }}">
                 </div>
                 <div id="ssWaErr" style="display:none;color:#d64545;font-size:12.5px;margin-top:6px;">{{ trans('labels.whatsapp_number_is_required') }}</div>
             </div>
@@ -157,7 +158,7 @@
                 <li data-i="0"><i class="fa-regular fa-circle"></i> {{ trans('labels.reading_your_business_info') }}</li>
                 <li data-i="1"><i class="fa-regular fa-circle"></i> {{ trans('labels.creating_categories') }}</li>
                 <li data-i="2"><i class="fa-regular fa-circle"></i> {{ trans('labels.adding_products_services') }}</li>
-                <li data-i="3"><i class="fa-regular fa-circle"></i> {{ trans('labels.writing_descriptions_colours') }}</li>
+                <li data-i="3"><i class="fa-regular fa-circle"></i> {{ trans('labels.ai_step_design') }}</li>
                 <li data-i="4"><i class="fa-regular fa-circle"></i> {{ trans('labels.finishing_touches') }}</li>
             </ul>
             <p class="ss-note">{{ trans('labels.this_can_take_up_to_a_minute') }}</p>
@@ -167,9 +168,35 @@
     <script>
         var ssUrl = "{{ url('admin/store-setup/build') }}";
         var ssToken = document.querySelector('meta[name="csrf-token"]').content;
-        var ssLang = "{{ trans('labels.english') }}";
-        var ssMessages = @json($ssMessages);
+        var ssT = {
+            unreach: @json(trans('labels.could_not_reach_the_ai_service_please')),
+            adding: @json(trans('labels.ai_adding_category')),
+            design: @json(trans('labels.ai_step_design')),
+            done: @json(trans('labels.done_opening_your_dashboard')),
+            planning: @json(trans('labels.ai_step_planning'))
+        };
 
+        function ssPost(body) {
+            return fetch(ssUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': ssToken, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                body: JSON.stringify(body)
+            }).then(function (r) {
+                return r.json().then(function (d) { return { ok: r.ok && d && d.success, d: d || {} }; },
+                    function () { return { ok: false, d: { error: ssT.unreach } }; });
+            }, function () { return { ok: false, d: { error: ssT.unreach } }; });
+        }
+
+        function ssTick(n) {
+            var steps = document.querySelectorAll('#ssSteps li');
+            for (var i = 0; i < n && i < steps.length; i++) {
+                steps[i].classList.add('done');
+                steps[i].querySelector('i').className = 'fa-solid fa-circle-check';
+            }
+        }
+
+        // The store is built in small steps (plan -> each category -> design), so a long price list
+        // never turns into one request that times out.
         function ssBuild() {
             // WhatsApp number is required — always keep a country code with it.
             var waNum = document.getElementById('ssWhatsapp').value.replace(/[^0-9]/g, '');
@@ -179,46 +206,61 @@
                 return;
             }
             document.getElementById('ssWaErr').style.display = 'none';
+            document.getElementById('ssErr').style.display = 'none';
 
             document.getElementById('ssForm').classList.add('off');
             document.getElementById('ssWorking').classList.add('on');
-
-            // animate progress messages + step ticks while the request runs
-            var steps = document.querySelectorAll('#ssSteps li');
-            var mi = 0, si = 0;
             var prog = document.getElementById('ssProgress');
-            var timer = setInterval(function () {
-                mi = (mi + 1) % ssMessages.length;
-                prog.style.opacity = 0;
-                setTimeout(function () { prog.textContent = ssMessages[mi]; prog.style.opacity = 1; }, 200);
-                if (si < steps.length) {
-                    steps[si].classList.add('done');
-                    steps[si].querySelector('i').className = 'fa-solid fa-circle-check';
-                    si++;
-                }
-            }, 2200);
+            prog.textContent = ssT.planning;
 
-            fetch(ssUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': ssToken, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
-                body: JSON.stringify({
-                    offerings: document.getElementById('ssOfferings').value,
-                    categories: document.getElementById('ssCategories').value,
-                    whatsapp: document.getElementById('ssWaCode').value + document.getElementById('ssWhatsapp').value.replace(/[^0-9]/g, ''),
-                    prefix: document.getElementById('ssPrefix').value,
-                    lang: ssLang
-                })
-            }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
-                .then(function (res) {
-                    clearInterval(timer);
-                    steps.forEach(function (s) { s.classList.add('done'); s.querySelector('i').className = 'fa-solid fa-circle-check'; });
-                    if (res.ok && res.d.success) {
-                        prog.textContent = "{{ trans('labels.done_opening_your_dashboard') }}";
-                        setTimeout(function () { window.location.href = res.d.redirect || "{{ url('admin/dashboard') }}"; }, 900);
-                    } else {
-                        ssFail((res.d && res.d.error) ? res.d.error : 'Something went wrong.');
-                    }
-                }).catch(function () { clearInterval(timer); ssFail('Could not reach the AI service.'); });
+            var offerings = document.getElementById('ssOfferings').value;
+            ssPost({
+                stage: 'plan',
+                offerings: offerings,
+                categories: document.getElementById('ssCategories').value,
+                whatsapp: document.getElementById('ssWaCode').value + waNum,
+                prefix: document.getElementById('ssPrefix').value
+            }).then(function (res) {
+                if (!res.ok) { ssFail(res.d.error || ssT.unreach); return; }
+                ssTick(2);
+                var cats = res.d.categories || [];
+                // groups: the merchant's own lines already sorted into each category (when they gave a list)
+                var groups = res.d.groups || null;
+                var made = 0, failed = 0, i = 0;
+
+                function next() {
+                    if (i >= cats.length) { return finish(); }
+                    var cat = cats[i];
+                    prog.textContent = ssT.adding.replace(':n', i + 1).replace(':total', cats.length) + ' — ' + cat;
+                    var body = groups
+                        ? { stage: 'items', category: cat, all_categories: cats, offerings: (groups[cat] || []).join('\n'), assigned: 1 }
+                        : { stage: 'items', category: cat, all_categories: cats, offerings: offerings };
+                    ssPost(body).then(function (r) {
+                        // one retry per category before moving on
+                        return r.ok ? r : ssPost(body);
+                    }).then(function (r) {
+                        if (r.ok) { made++; } else { failed++; }
+                        i++;
+                        next();
+                    });
+                }
+
+                function finish() {
+                    if (made === 0) { ssFail(ssT.unreach); return; }
+                    ssTick(3);
+                    prog.textContent = ssT.design;
+                    // The website look is a bonus: the store is already built if this step fails.
+                    ssPost({ stage: 'design', offerings: offerings }).then(function (r) {
+                        ssTick(5);
+                        prog.textContent = ssT.done;
+                        setTimeout(function () {
+                            window.location.href = (r.d && r.d.redirect) || "{{ url('admin/dashboard') }}";
+                        }, 900);
+                    });
+                }
+
+                next();
+            });
         }
 
         function ssFail(msg) {
@@ -239,7 +281,7 @@
             var okEl = document.getElementById('ssDropOk');
             var msgEl = document.getElementById('ssDropMsg');
             var extractUrl = "{{ url('admin/store-setup/extract') }}";
-            @php $ssBusySteps = $ar ? ['جارٍ رفع الملف…', 'قراءة النص…', 'استخراج العناصر والأسعار…', 'اللمسات الأخيرة…'] : ['Uploading your file…', 'Reading the text…', 'Finding items & prices…', 'Almost done…']; @endphp
+            @php $ssBusySteps = [trans('labels.ai_file_uploading'), trans('labels.ai_file_reading'), trans('labels.ai_file_finding'), trans('labels.ai_file_almost')]; @endphp
             var busySteps = @json($ssBusySteps);
 
             drop.addEventListener('click', function () { if (!drop.classList.contains('busy')) fileInput.click(); });
@@ -262,7 +304,6 @@
 
                 var fd = new FormData();
                 fd.append('file', file);
-                fd.append('lang', ssLang);
 
                 fetch(extractUrl, {
                     method: 'POST',

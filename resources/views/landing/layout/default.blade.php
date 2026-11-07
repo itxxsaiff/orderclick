@@ -129,7 +129,7 @@
                                                 @foreach (@helper::storecategory() as $store)
                                                     <option value="{{ $store->name }}"
                                                         {{ request()->get('store') == $store->name ? 'selected' : '' }}>
-                                                        {{ helper::category_label($store->name) }}</option>
+                                                        {{ $store->label() }}</option>
                                                 @endforeach
                                             </select>
                                         </div>

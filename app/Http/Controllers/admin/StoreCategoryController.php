@@ -53,7 +53,9 @@ class StoreCategoryController extends Controller
         }
 
         if ($search = trim((string) $request->get('q'))) {
-            $query->where('name', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')->orWhere('name_translations', 'like', '%' . $search . '%');
+            });
         }
 
         $allcategories = $query->orderBy('reorder_id')->get();
@@ -91,6 +93,17 @@ class StoreCategoryController extends Controller
     private function applyScope(StoreCategory $category, Request $request): void
     {
         $category->system = Systems::normalise($request->system);
+
+        // Name per language; empty boxes are dropped so that language falls back to the English name.
+        $translations = [];
+        foreach ((array) $request->input('name_translations', []) as $code => $value) {
+            $value = trim((string) $value);
+            if (is_string($code) && preg_match('/^[a-z]{2,5}$/', $code) && $value !== '') {
+                $translations[$code] = mb_substr($value, 0, 150);
+            }
+        }
+        $category->name_translations = $translations ?: null;
+
         $category->is_other = (int) $request->is_other === 1 ? 1 : 2;
 
         $activityId = $request->activity_id ?: null;

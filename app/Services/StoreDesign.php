@@ -351,8 +351,15 @@ class StoreDesign
         $flow = self::flow($vendorId);
         $vendor = User::find($vendorId);
         $settings = Settings::where('vendor_id', $vendorId)->first();
-        $cats = Category::where('vendor_id', $vendorId)->where('is_deleted', 2)->orderBy('reorder_id')->limit(12)->pluck('name')->implode(', ');
-        $items = Item::where('vendor_id', $vendorId)->where('is_available', 1)->orderBy('reorder_id')->limit(15)->pluck('item_name')->implode(', ');
+        if ($flow === 'booking') {
+            // Booking stores keep their catalogue as booking services, not products.
+            $svc = \App\Models\BookingService::where('vendor_id', $vendorId)->where('is_available', 1)->orderBy('reorder_id')->limit(40)->get(['name', 'category']);
+            $cats = $svc->pluck('category')->filter()->unique()->take(12)->implode(', ');
+            $items = $svc->pluck('name')->take(15)->implode(', ');
+        } else {
+            $cats = Category::where('vendor_id', $vendorId)->where('is_deleted', 2)->orderBy('reorder_id')->limit(12)->pluck('name')->implode(', ');
+            $items = Item::where('vendor_id', $vendorId)->where('is_available', 1)->orderBy('reorder_id')->limit(15)->pluck('item_name')->implode(', ');
+        }
 
         $business = implode("\n", array_filter([
             'Business name: ' . StoreKnowledge::businessName($vendorId),

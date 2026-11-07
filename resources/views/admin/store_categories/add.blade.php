@@ -34,6 +34,7 @@
 
                         </div>
 
+@include('admin.store_categories._name_translations', ['category' => null])
 @include('admin.store_categories._system_fields', ['category' => null])
 
                         <div class="form-group mt-3">

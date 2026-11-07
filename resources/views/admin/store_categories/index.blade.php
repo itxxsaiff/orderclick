@@ -98,6 +98,9 @@
 
                                     <td>
                                         {{ $category->name }}
+                                        @if ($category->label() !== $category->name)
+                                            <div class="text-muted fs-8">{{ $category->label() }}</div>
+                                        @endif
                                         @if ($category->is_other == 1)
                                             <span class="badge bg-secondary">{{ trans('labels.other') }}</span>
                                         @endif

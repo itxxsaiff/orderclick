@@ -362,7 +362,22 @@ class HomeController extends Controller
         $doctors = \App\Models\Doctor::where('vendor_id', $vdata)->where('is_available', 1)
             ->orderBy('reorder_id')->orderByDesc('id')->get();
         $selectedDoctor = $request->query('doctor');
-        return $this->themedView($vdata, 'listing', 'front.booking', compact('storeinfo', 'vdata', 'services', 'paymentlist', 'selected', 'doctors', 'selectedDoctor'));
+        $slotsOn = \App\Helpers\BookingSlots::configured($vdata);
+        return $this->themedView($vdata, 'listing', 'front.booking', compact('storeinfo', 'vdata', 'services', 'paymentlist', 'selected', 'doctors', 'selectedDoctor', 'slotsOn'));
+    }
+
+    /** Free start times for a booking (opening hours, service length, team member's calendar). */
+    public function bookingSlots(Request $request)
+    {
+        [$storeinfo, $vdata] = $this->resolveStore($request);
+        $date = (string) $request->query('date');
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            return response()->json(['slots' => []]);
+        }
+
+        return response()->json([
+            'slots' => \App\Helpers\BookingSlots::free($vdata, $date, $request->query('service_id'), $request->query('staff')),
+        ]);
     }
 
     public function savebooking(Request $request)
@@ -372,8 +387,20 @@ class HomeController extends Controller
             'customer_name' => 'required',
             'mobile' => 'required',
             'service_name' => 'required',
-            'booking_date' => 'required',
+            'booking_date' => 'required|date_format:Y-m-d',
         ]);
+
+        // Team member: only one of this store's own (the name is what the booking keeps).
+        $member = $request->filled('staff_id')
+            ? \App\Models\Doctor::where('vendor_id', $vdata)->where('is_available', 1)->find($request->staff_id)
+            : null;
+        // With opening hours set up, the time must be one of the free slots (re-checked here so
+        // two customers cannot take the same slot).
+        if (\App\Helpers\BookingSlots::configured($vdata)) {
+            if (!$request->filled('booking_time') || !\App\Helpers\BookingSlots::isFree($vdata, $request->booking_date, (string) $request->booking_time, $request->service_id, optional($member)->id)) {
+                return redirect()->back()->withInput()->with('error', trans('messages.booking_slot_taken'));
+            }
+        }
         $settings = Settings::where('vendor_id', $vdata)->first();
         $prefix = @$settings->order_prefix ?: 'BK';
         $booking_number = $prefix . '-' . (\App\Models\Booking::where('vendor_id', $vdata)->count() + 1001);
@@ -402,7 +429,7 @@ class HomeController extends Controller
         $booking->payment_type = $request->payment_type;
         $booking->payment_method = $payment_method;
         $booking->payment_status = 1; // pay at location / unpaid until merchant confirms
-        $booking->staff = $request->staff;
+        $booking->staff = $member ? $member->name : null;
         $booking->customer_name = $request->customer_name;
         $booking->mobile = $request->mobile;
         $booking->email = $request->email;

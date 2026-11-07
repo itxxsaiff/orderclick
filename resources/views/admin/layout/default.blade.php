@@ -28,6 +28,11 @@
     <!-- Bootstrap CSS -->
 
     <link rel="stylesheet" href="{{ url(env('ASSETSPATHURL') . 'admin-assets/css/bootstrap/bootstrap.min.css') }}">
+    {{-- Arabic (RTL): the panel loads the LTR Bootstrap build, so dropdown arrows sat on top of the text. --}}
+    <style>
+        [dir="rtl"] .form-select { background-position: left .75rem center; padding-left: 2.25rem; padding-right: .75rem; }
+        [dir="rtl"] .form-select[multiple], [dir="rtl"] .form-select[size]:not([size="1"]) { padding-left: .75rem; }
+    </style>
     <link rel="stylesheet"
         href="{{ url(env('ASSETSPATHURL') . 'admin-assets/css/bootstrap/bootstrap-select.min.css') }}">
 
@@ -468,7 +473,22 @@
     <script src="{{ url(env('ASSETSPATHURL') . 'admin-assets/js/sound.js') }}"></script>
     @endif
 
-    <script src="{{ url(env('ASSETSPATHURL') . 'admin-assets/js/common.js') }}"></script><!-- Common JS -->
+    {{-- Table texts ("Show 10 entries", "Search", paging) in the admin's language. --}}
+    <script>
+        window.ocDtLang = {
+            lengthMenu: @json(trans('labels.dt_length')),
+            search: @json(trans('labels.dt_search')),
+            info: @json(trans('labels.dt_info')),
+            infoEmpty: @json(trans('labels.dt_info_empty')),
+            infoFiltered: @json(trans('labels.dt_info_filtered')),
+            zeroRecords: @json(trans('labels.dt_zero_records')),
+            emptyTable: @json(trans('labels.dt_empty_table')),
+            paginate: { first: @json(trans('labels.dt_first')), last: @json(trans('labels.dt_last')),
+                next: @json(trans('labels.next')), previous: @json(trans('labels.previous')) },
+            ocAll: @json(trans('labels.all'))
+        };
+    </script>
+    <script src="{{ url(env('ASSETSPATHURL') . 'admin-assets/js/common.js') }}?v=20261107"></script><!-- Common JS -->
     @yield('scripts')
 </body>
 

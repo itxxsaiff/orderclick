@@ -20,16 +20,52 @@
                     @csrf
                     <div class="row">
 
+                        @if (Auth::user()->type == 1)
+                            {{-- Super admin: move the account to another System / Activity. --}}
+                            @php $ocUserSystem = \App\Helpers\Systems::normalise($getuserdata->system); @endphp
+                            <div class="form-group col-md-4">
+                                <label class="form-label">{{ trans('labels.system') }}</label>
+                                <select name="system" id="ocSystem" class="form-select" data-orig="{{ $ocUserSystem }}">
+                                    @foreach (\App\Helpers\Systems::all() as $ocSys)
+                                        <option value="{{ $ocSys['key'] }}" {{ $ocUserSystem === $ocSys['key'] ? 'selected' : '' }}>{{ $ocSys['name'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="form-label">{{ trans('labels.activity') }}</label>
+                                <select name="activity_id" id="ocActivity" class="form-select">
+                                    <option value="">{{ trans('labels.select') }}</option>
+                                    @foreach ($activities as $ocAct)
+                                        <option value="{{ $ocAct->id }}" data-system="{{ $ocAct->system }}"
+                                            {{ (string) $getuserdata->activity_id === (string) $ocAct->id ? 'selected' : '' }}>{{ $ocAct->display_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label class="form-label">{{ trans('labels.specialization') }}</label>
+                                <select name="specialization_id" id="ocSpecialization" class="form-select">
+                                    <option value="">{{ trans('labels.select') }}</option>
+                                    @foreach ($specializations as $ocSpec)
+                                        <option value="{{ $ocSpec->id }}" data-activity="{{ $ocSpec->activity_id }}"
+                                            {{ (string) $getuserdata->specialization_id === (string) $ocSpec->id ? 'selected' : '' }}>{{ $ocSpec->display_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <small class="text-muted">{{ trans('messages.vendor_system_change_hint') }}</small>
+                            </div>
+                        @endif
+
                         <div class="form-group col-md-6">
                             <label for="store" class="form-label">{{ trans('labels.store_categories') }}<span
                                     class="text-danger">
                                     * </span></label>
-                            <select name="store" class="form-select" required>
+                            <select name="store" id="ocStore" class="form-select" required>
                                 <option value="">{{ trans('labels.select') }}</option>
                                 @foreach ($stores as $store)
-                                    <option value="{{ $store->id }}"
+                                    <option value="{{ $store->id }}" data-system="{{ \App\Helpers\Systems::normalise($store->system ?: null) }}"
                                         {{ $store->id == $getuserdata->store_id ? 'selected' : '' }}>
-                                        {{ $store->name }}
+                                        {{ $store->label() }}
                                     </option>
                                 @endforeach
                             </select>
@@ -47,7 +83,7 @@
                         <div class="col-sm-6 form-group">
                             <label class="form-label">{{ trans('labels.email') }}<span class="text-danger"> *
                                 </span></label>
-                            <input type="email" class="form-control" name="email" value="{{ $getuserdata->email }}"
+                            <input type="email" class="form-control" dir="ltr" name="email" value="{{ $getuserdata->email }}"
                                 placeholder="{{ trans('labels.email') }}" required>
                             @error('email')
                                 <span class="text-danger">{{ $message }}</span>
@@ -58,7 +94,7 @@
                             <div class="form-group">
                                 <label class="form-label">{{ trans('labels.mobile') }}<span class="text-danger"> *
                                     </span></label>
-                                <input type="number" class="form-control" name="mobile"
+                                <input type="number" class="form-control" dir="ltr" name="mobile"
                                     value="{{ $getuserdata->mobile }}" placeholder="{{ trans('labels.mobile') }}"
                                     required>
                                 @error('mobile')
@@ -75,25 +111,16 @@
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
+                        {{-- City / area as the merchant typed them at signup (the old fixed city list is not used for new stores). --}}
                         <div class="form-group col-md-6">
-                            <label for="city" class="form-label">{{ trans('labels.city') }}<span class="text-danger"> *
-                                </span></label>
-                            <select name="city" class="form-select" id="city" required>
-                                <option value="">{{ trans('labels.select') }}</option>
-                                @foreach ($cities as $city)
-                                    <option value="{{ $city->id }}"
-                                        {{ $city->id == $getuserdata->city_id ? 'selected' : '' }}>
-                                        {{ $city->name }}</option>
-                                @endforeach
-                            </select>
-
+                            <label for="city_name" class="form-label">{{ trans('labels.city') }}</label>
+                            <input type="text" class="form-control" name="city_name" id="city_name" maxlength="120"
+                                value="{{ $getuserdata->city_name ?: optional($cities->firstWhere('id', $getuserdata->city_id))->name }}">
                         </div>
                         <div class="form-group col-md-6">
-                            <label for="area" class="form-label">{{ trans('labels.area') }}<span class="text-danger">
-                                    * </span></label>
-                            <select name="area" class="form-select" id="area" required>
-                                <option value="">{{ trans('labels.select') }}</option>
-                            </select>
+                            <label for="area_name" class="form-label">{{ trans('labels.area') }}</label>
+                            <input type="text" class="form-control" name="area_name" id="area_name" maxlength="120"
+                                value="{{ $getuserdata->area_name }}">
                         </div>
                         @if (App\Models\SystemAddons::where('unique_identifier', 'unique_slug')->first() != null &&
                                 App\Models\SystemAddons::where('unique_identifier', 'unique_slug')->first()->activated == 1)
@@ -104,7 +131,7 @@
                                     @if (env('Environment') == 'sendbox')
                                         <span class="badge badge bg-danger ms-2 mb-0">{{ trans('labels.addon') }}</span>
                                     @endif
-                                    <div class="input-group ">
+                                    <div class="input-group" dir="ltr">
                                         <span
                                             class="input-group-text col-5 col-lg-auto overflow-x-auto {{ session()->get('direction') == 2 ? 'rounded-start-0 rounded-end-5' : 'rounded-start-5 rounded-end-0' }}">{{ URL::to('/') }}/</span>
                                         <input type="text"
@@ -199,4 +226,31 @@
         var areaid = "{{ $getuserdata->area_id }}";
     </script>
     <script src="{{ url('storage/app/public/admin-assets/js/user.js') }}"></script>
+    <script>
+        // Super admin: Activity, Specialization and Category lists follow the chosen System.
+        (function () {
+            var sys = document.getElementById('ocSystem');
+            if (!sys) return;
+            var act = document.getElementById('ocActivity'), spec = document.getElementById('ocSpecialization'),
+                store = document.getElementById('ocStore');
+            function filter(select, attr, value) {
+                Array.prototype.forEach.call(select.options, function (o) {
+                    if (!o.value) return;
+                    var show = o.getAttribute(attr) === value;
+                    o.hidden = !show; o.disabled = !show;
+                    if (!show && o.selected) select.value = '';
+                });
+            }
+            function refresh() {
+                filter(act, 'data-system', sys.value);
+                filter(spec, 'data-activity', act.value);
+                if (store) filter(store, 'data-system', sys.value);
+                // Moving to another system needs an activity in that system.
+                act.required = sys.value !== sys.getAttribute('data-orig');
+            }
+            sys.addEventListener('change', refresh);
+            act.addEventListener('change', function () { filter(spec, 'data-activity', act.value); });
+            refresh();
+        })();
+    </script>
 @endsection

@@ -32,9 +32,10 @@ class AiBuildController extends Controller
         if (!AiAssistant::enabled()) {
             return redirect('admin/dashboard');
         }
-        $storeName = ($settings && $settings->website_title) ? $settings->website_title : Auth::user()->name;
+        $storeName = \App\Services\StoreKnowledge::businessName($vid);
         $businessType = ($settings && $settings->business_type) ? $settings->business_type : 'food';
-        return view('admin.auth.store_setup', compact('storeName', 'businessType'));
+        [$ssSystem] = $this->businessContext($vid, $settings);
+        return view('admin.auth.store_setup', compact('storeName', 'businessType', 'ssSystem'));
     }
 
     /**
@@ -58,8 +59,8 @@ class AiBuildController extends Controller
 
         $vid = $this->vendorId();
         $settings = Settings::where('vendor_id', $vid)->first();
-        $businessType = ($settings && $settings->business_type) ? $settings->business_type : 'food';
-        $lang = $request->input('lang', 'English');
+        [, $businessType] = $this->businessContext($vid, $settings);
+        $lang = $this->contentLanguage();
 
         try {
             $file = $request->file('file');
@@ -104,31 +105,103 @@ class AiBuildController extends Controller
         ]);
     }
 
-    /** AJAX: generate + save the starter store. */
+    /** The language AI content is written in: the language the merchant is using the panel in. */
+    private function contentLanguage(): string
+    {
+        $names = ['ar' => 'Arabic', 'en' => 'English', 'de' => 'German', 'fr' => 'French', 'es' => 'Spanish', 'tr' => 'Turkish', 'ur' => 'Urdu'];
+
+        return $names[app()->getLocale()] ?? 'English';
+    }
+
+    /** System + a plain description of the business, for the AI. */
+    private function businessContext($vid, $settings): array
+    {
+        $vendor = User::find($vid);
+        $businessType = optional($settings)->business_type ?: 'food';
+        // Same rule the storefront uses to decide what it shows (cart, booking or service requests),
+        // so the AI always creates what the website will display.
+        $system = \App\Services\StoreKnowledge::flow($vid);
+        $about = trim(implode(' / ', array_filter([
+            optional(\App\Models\Activity::find(optional($vendor)->activity_id))->name,
+            optional(\App\Models\Specialization::find(optional($vendor)->specialization_id))->name,
+            optional(\App\Models\StoreCategory::find(optional($vendor)->store_id))->name,
+        ]))) ?: $businessType;
+
+        return [$system, $about];
+    }
+
+    /**
+     * AJAX: build the store in small steps, driven by the page so that no request is long enough
+     * to time out (a big price list used to make one huge AI call that failed):
+     *   stage=plan   description, About text, colour and the category list
+     *   stage=items  the items of one category (called once per category)
+     *   stage=design the website look, when the store has none yet
+     */
     public function build(Request $request, AiAssistant $ai)
     {
+        @set_time_limit(180);
         $vid = $this->vendorId();
         $settings = Settings::where('vendor_id', $vid)->first();
         if (empty($settings)) {
             return response()->json(['success' => false, 'error' => 'Store not found.'], 422);
         }
-        $storeName = $settings->website_title ?: Auth::user()->name;
-        $businessType = $settings->business_type ?: 'food';
-        $offerings = trim((string) $request->input('offerings', ''));
-        $categories = trim((string) $request->input('categories', ''));
+        $storeName = \App\Services\StoreKnowledge::businessName($vid);
+        $offerings = mb_substr(trim((string) $request->input('offerings', '')), 0, 6000);
+        $lang = $this->contentLanguage();
+        [$system, $about] = $this->businessContext($vid, $settings);
+        $stage = (string) $request->input('stage', 'plan');
+
+        if ($stage === 'items') {
+            $category = mb_substr(trim((string) $request->input('category', '')), 0, 60);
+            $all = array_values(array_filter(array_map(fn($c) => mb_substr(trim((string) $c), 0, 60), (array) $request->input('all_categories', []))));
+            if ($category === '') {
+                return response()->json(['success' => false, 'error' => 'Missing category.'], 422);
+            }
+            $res = $ai->buildItems($system, $about, $storeName, $category, $all, $offerings, $lang, $request->boolean('assigned'));
+            if (!$res['success']) {
+                return response()->json(['success' => false, 'error' => $res['error']], 422);
+            }
+            $items = array_map(fn($it) => (is_array($it) ? $it : []) + ['category' => $category], $res['items']);
+            foreach ($items as &$it) {
+                $it['category'] = $category;
+            }
+            unset($it);
+            // Booking stores keep a Services catalogue (sessions with a duration); service and
+            // product stores keep categories + items (services show a "Request" button).
+            $count = $system === \App\Helpers\Systems::BOOKING
+                ? $this->saveBookingServices($vid, $items)
+                : $this->saveProducts($vid, [$category], $items);
+
+            return response()->json(['success' => true, 'count' => $count]);
+        }
+
+        if ($stage === 'design') {
+            // The whole website look in the same run — only when the store has no design yet, so a
+            // merchant who already designed their site never loses it.
+            if (empty($settings->ai_design)) {
+                $design = \App\Services\StoreDesign::generate($vid, ['describe' => mb_substr($offerings, 0, 700)]);
+                if (!empty($design['success'])) {
+                    $settings->ai_design = json_encode($design['design'], JSON_UNESCAPED_UNICODE);
+                    $settings->save();
+                }
+            }
+
+            return response()->json(['success' => true, 'redirect' => url('admin/dashboard')]);
+        }
+
+        // stage=plan
+        $categories = mb_substr(trim((string) $request->input('categories', '')), 0, 500);
         $whatsapp = trim((string) $request->input('whatsapp', ''));
         $prefix = trim((string) $request->input('prefix', ''));
-        $lang = $request->input('lang', 'English');
 
-        $res = $ai->buildStore($businessType, $storeName, $offerings, $lang, $categories);
+        $res = $ai->planStore($system, $about, $storeName, $offerings, $categories, $lang);
         if (!$res['success']) {
             return response()->json(['success' => false, 'error' => $res['error']], 422);
         }
         $data = $res['data'];
 
-        // Store description + brand colour.
         if (!empty($data['description'])) {
-            $settings->description = $data['description'];
+            $settings->description = mb_substr(trim((string) $data['description']), 0, 600);
         }
         if (!empty($data['primary_color']) && preg_match('/^#[0-9a-fA-F]{6}$/', $data['primary_color'])) {
             $settings->primary_color = $data['primary_color'];
@@ -145,21 +218,19 @@ class AiBuildController extends Controller
         }
         $settings->save();
 
-        $items = is_array($data['items'] ?? null) ? $data['items'] : [];
-
-        // Decide from the account's System, not the storefront template. business_type only
-        // listed food/grocery/retail/booking, so a pharmacy, clinic or salon fell through to
-        // "do nothing" - the assistant reported success and created no products at all.
-        $system = \App\Helpers\Systems::normalise(optional(User::find($vid))->system ?: $businessType);
-        if ($system === \App\Helpers\Systems::BOOKING) {
-            $count = $this->saveBookingServices($vid, $items);
-        } elseif ($system === \App\Helpers\Systems::SERVICE) {
-            $count = 0; // a service profile has no catalogue; description + colours are enough
-        } else {
-            $count = $this->saveProducts($vid, $data['categories'] ?? [], $items);
+        // About page text, unless the merchant already wrote one.
+        $aboutText = trim((string) ($data['about'] ?? ''));
+        if ($aboutText !== '') {
+            $page = \App\Models\About::where('vendor_id', $vid)->first();
+            if (!$page || trim(strip_tags((string) $page->about_content)) === '') {
+                $page = $page ?: new \App\Models\About();
+                $page->vendor_id = $vid;
+                $page->about_content = '<p>' . nl2br(e(mb_substr($aboutText, 0, 2000))) . '</p>';
+                $page->save();
+            }
         }
 
-        return response()->json(['success' => true, 'count' => $count, 'redirect' => url('admin/dashboard')]);
+        return response()->json(['success' => true, 'categories' => $data['categories'], 'groups' => $data['groups'] ?? null, 'system' => $system]);
     }
 
 
@@ -222,6 +293,10 @@ class AiBuildController extends Controller
         foreach ($items as $i => $it) {
             $name = trim((string) ($it['name'] ?? ''));
             if ($name === '') continue;
+            // Running the assistant again should not duplicate services that already exist.
+            if (BookingService::where('vendor_id', $vid)->where('name', Str::limit($name, 120, ''))->exists()) {
+                continue;
+            }
             $s = new BookingService;
             $s->vendor_id = $vid;
             $s->name = Str::limit($name, 120, '');

@@ -26,7 +26,7 @@
                             <option value="">{{ trans('labels.select') }}</option>
                             @foreach ($stores as $store)
                                 <option value="{{ $store->id }}" {{ old('store') == $store->id ? 'selected' : '' }}>
-                                    {{ $store->name }}
+                                    {{ $store->label() }}
                                 </option>
                             @endforeach
                         </select>

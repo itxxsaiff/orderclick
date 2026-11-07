@@ -12,6 +12,11 @@
         .ocw__head { padding: 22px 30px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
         .ocw__brand { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 700; color: #17201a; }
         .ocw__brand img { height: 34px; width: auto; }
+        .ocw__lang { display: flex; gap: 6px; flex-wrap: wrap; }
+        .ocw__lang a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border: 1px solid #e5e9e2;
+            border-radius: 20px; font-size: 13px; font-weight: 600; color: #39443c; text-decoration: none; background: #fff; }
+        .ocw__lang a img { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
+        .ocw__lang a.on, .ocw__lang a:hover { border-color: #1f9d55; color: #137a40; background: #f4fbf7; }
 
         /* Stepper */
         .ocw__steps { display: flex; gap: 14px; padding: 18px 30px 0; flex-wrap: wrap; }
@@ -90,6 +95,19 @@
                     <img src="{{ helper::image_path(helper::appdata('')->logo) }}" alt="">
                     {{ helper::appdata('')->website_title ?: 'Order Click' }}
                 </div>
+                {{-- Language switch (same /lang/change route as the website header). --}}
+                @php $ocWzLangs = helper::listoflanguage(); @endphp
+                @if ($ocWzLangs->count() > 1)
+                    <div class="ocw__lang">
+                        @foreach ($ocWzLangs as $ocWzLang)
+                            <a href="{{ URL::to('/lang/change?lang=' . $ocWzLang->code) }}"
+                                class="{{ app()->getLocale() == $ocWzLang->code ? 'on' : '' }}" title="{{ $ocWzLang->name }}">
+                                <img src="{{ helper::image_path($ocWzLang->image) }}" alt="">
+                                <span>{{ $ocWzLang->name }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
 
             </div>
 

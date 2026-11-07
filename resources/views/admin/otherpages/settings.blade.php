@@ -1539,9 +1539,8 @@
                                         </div>
                                         @if (Auth::user()->type == 2 || (Auth::user()->type == 4 && Auth::user()->vendor_id != 1))
                                             <div class="form-group col-md-6">
-                                                <label for="city" class="form-label">{{ trans('labels.city') }}<span
-                                                        class="text-danger"> * </span></label>
-                                                <select name="city" class="form-select" id="city" required>
+                                                <label for="city" class="form-label">{{ trans('labels.city') }}</label>
+                                                <select name="city" class="form-select" id="city">
                                                     <option value="">{{ trans('labels.select') }}</option>
                                                     @foreach ($city as $city)
                                                         <option value="{{ $city->id }}"
@@ -1552,10 +1551,8 @@
                                                 </select>
                                             </div>
                                             <div class="form-group col-md-6">
-                                                <label for="area" class="form-label">{{ trans('labels.area') }}<span
-                                                        class="text-danger">
-                                                        * </span></label>
-                                                <select name="area" class="form-select" id="area" required>
+                                                <label for="area" class="form-label">{{ trans('labels.area') }}</label>
+                                                <select name="area" class="form-select" id="area">
                                                     <option value="">{{ trans('labels.select') }}</option>
                                                 </select>
                                             </div>

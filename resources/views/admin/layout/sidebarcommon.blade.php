@@ -276,19 +276,20 @@
                     <span class="px-2">{{ trans('labels.services') }}</span>
                 </a>
             </li>
-            {{-- Clinics: Doctors manager · Salons: Team/specialists manager (same doctors module) --}}
-            @if ($oc_is_clinic || $oc_is_salon)
+            {{-- Clinics: Doctors · every other booking business: Team (same module). Customers pick
+                 a team member when booking, and each member's calendar is kept separately. --}}
+            @if ($oc_is_booking)
                 <li class="nav-item mb-2 fs-7">
                     <a class="nav-link d-flex align-items-center {{ request()->is('admin/doctors*') ? 'active' : '' }}"
                         href="{{ URL::to('admin/doctors') }}" aria-current="page">
                         <span class="{{ request()->is('admin/doctors*') ? 'sidebariconbox' : 'sidebariconbox1' }}">
-                            <i class="fa-solid {{ $oc_is_salon ? 'fa-scissors' : 'fa-user-doctor' }}"></i>
+                            <i class="fa-solid {{ $oc_is_clinic ? 'fa-user-doctor' : ($oc_is_salon ? 'fa-scissors' : 'fa-user-group') }}"></i>
                         </span>
                         <span class="px-2">
-                            @if ($oc_is_salon)
-                                {{ trans('labels.team') }}
-                            @else
+                            @if ($oc_is_clinic)
                                 {{ trans('labels.doctors') }}
+                            @else
+                                {{ trans('labels.team') }}
                             @endif
                         </span>
                     </a>

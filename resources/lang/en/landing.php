@@ -113,6 +113,7 @@ return array (
   'search_store' => 'Find Business',
   'blog_desc' => 'Business insights, platform updates, and practical guides from Order Click.',
   'see_all' => 'See All',
+  'show_less' => 'Show less',
   'menu' => 'Menu',
   'select_store_category' => 'Select Store Category',
   'google_login' => 'Google Login',

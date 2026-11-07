@@ -153,7 +153,9 @@ class VendorController extends Controller
         $getplanlist = PricingPlan::where('is_available', 1)->get();
         $cities = City::where('Is_deleted', 2)->where('is_available', 1)->orderBy('reorder_id')->get();
         $stores = StoreCategory::where('is_deleted', 2)->where('is_available', 1)->orderBy('reorder_id')->get();
-        return view('admin.user.edit', compact('getuserdata', 'getplanlist', 'cities', 'stores'));
+        $activities = \App\Models\Activity::orderBy('reorder_id')->get();
+        $specializations = \App\Models\Specialization::orderBy('reorder_id')->get();
+        return view('admin.user.edit', compact('getuserdata', 'getplanlist', 'cities', 'stores', 'activities', 'specializations'));
     }
     public function update(Request $request)
     {
@@ -190,8 +192,19 @@ class VendorController extends Controller
         $edituser->name = $request->name;
         $edituser->email = $request->email;
         $edituser->mobile = $request->mobile;
-        $edituser->city_id = $request->city;
-        $edituser->area_id = $request->area;
+        // Only change what the form actually sent (the admin form uses typed city/area names).
+        if ($request->filled('city')) {
+            $edituser->city_id = $request->city;
+        }
+        if ($request->filled('area')) {
+            $edituser->area_id = $request->area;
+        }
+        if ($request->has('city_name')) {
+            $edituser->city_name = mb_substr(trim((string) $request->city_name), 0, 120) ?: null;
+        }
+        if ($request->has('area_name')) {
+            $edituser->area_name = mb_substr(trim((string) $request->area_name), 0, 120) ?: null;
+        }
         if ($request->store != null && $request->store != "") {
             $edituser->store_id = $request->store;
         }
@@ -277,7 +290,41 @@ class VendorController extends Controller
         if (helper::checkcustomdomain($edituser->id) == null && trim((string) $request->slug) !== '') {
             $edituser->slug = $request->slug;
         }
+        // Super admin only: move the account to another System / Activity (e.g. a merchant who signed up
+        // under Services but runs a booking business). The activity sets the store type
+        // (settings.business_type), which decides the dashboard menus and the storefront.
+        $ocNewSystem = (string) $request->input('system');
+        $ocMove = Auth::user()->type == 1 && Systems::isValid($ocNewSystem) && $request->filled('activity_id')
+            && Systems::activityBelongsTo($request->activity_id, $ocNewSystem)
+            && (Systems::normalise($edituser->system) !== $ocNewSystem
+                || (string) $edituser->activity_id !== (string) $request->activity_id
+                || (string) $edituser->specialization_id !== (string) $request->input('specialization_id'));
+        $ocOld = $ocMove ? [
+            'system' => $edituser->system,
+            'activity' => $edituser->activity_id,
+            'specialization' => $edituser->specialization_id,
+        ] : null;
+        if ($ocMove) {
+            $edituser->system = $ocNewSystem;
+        }
         $edituser->update();
+        if ($ocMove) {
+            Systems::applyActivity($edituser->id, $request->activity_id, $request->specialization_id);
+            // A category picked in the form wins over the automatic one, if it belongs to the system.
+            $ocCat = $request->filled('store') ? StoreCategory::find($request->store) : null;
+            if ($ocCat && Systems::normalise($ocCat->system) === $ocNewSystem) {
+                User::where('id', $edituser->id)->update(['store_id' => $ocCat->id]);
+            }
+            if (!$request->filled('specialization_id')) {
+                User::where('id', $edituser->id)->update(['specialization_id' => null]);
+            }
+            $ocNew = User::select('system', 'activity_id', 'specialization_id')->find($edituser->id);
+            foreach (['system' => 'system', 'activity' => 'activity_id', 'specialization' => 'specialization_id'] as $ocKey => $ocCol) {
+                if ((string) $ocOld[$ocKey] !== (string) $ocNew->$ocCol) {
+                    VendorAuditLog::record($edituser->id, $ocKey, $ocOld[$ocKey], $ocNew->$ocCol, 'Changed by super admin');
+                }
+            }
+        }
         if ($request->has('updateprofile') && $request->updateprofile == 1) {
             return redirect('admin/settings')->with('success', trans('messages.success'));
         } else {

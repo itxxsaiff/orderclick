@@ -342,7 +342,7 @@ class HomeController extends Controller
         $timings = Timing::whereIn('vendor_id', $pool->pluck('id'))->get()->groupBy('vendor_id');
 
         // category name lookup for cards
-        $catNames = $categories->pluck('name', 'id');
+        $catNames = $categories->mapWithKeys(fn($c) => [$c->id => $c->label()]);
 
         // decorate each store with rating / open-now / distance / display bits
         $decorate = function ($s) use ($ratings, $timings, $catNames, $lat, $lng) {
