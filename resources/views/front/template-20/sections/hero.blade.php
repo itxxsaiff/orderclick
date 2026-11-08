@@ -4,9 +4,10 @@
     // The vendor's own banner or cover photo; stock photos only where they fit (food).
     $ocBanner = optional(collect($bannerimage ?? [])->first())->image;
     $ocFood = in_array(optional($tApp)->business_type, ['food', 'cafe', 'grocery', null, ''], true) && $tFlow === 'orders';
-    $ocHeroImg = !empty($ocBanner) ? helper::image_path($ocBanner)
+    // Photos the AI made for this design come first (the merchant asked for them in the designer).
+    $ocHeroImg = \App\Services\StoreDesign::imageUrl($tDesign, 'hero') ?: (!empty($ocBanner) ? helper::image_path($ocBanner)
         : (!empty(optional($tApp)->cover_image) ? helper::image_path($tApp->cover_image)
-        : ($ocFood ? helper::food_image($tName . ' ' . optional($tApp)->business_type, $storeinfo->id) : null));
+        : ($ocFood ? helper::food_image($tName . ' ' . optional($tApp)->business_type, $storeinfo->id) : null)));
     $ocDefaultText = ['orders' => trans('labels.eng_hero_text_orders'), 'booking' => trans('labels.eng_hero_text_booking'), 'service' => trans('labels.eng_hero_text_service')][$tFlow];
 @endphp
 <section class="hero oce-hero {{ $ocHeroImg ? '' : 'oce-hero-noimg' }}">

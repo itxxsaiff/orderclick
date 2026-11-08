@@ -147,6 +147,7 @@ class StoreDesign
             'sections' => self::SECTIONS[$flow],
             'trust'    => [['icon' => 'bolt'], ['icon' => 'lock'], ['icon' => 'whatsapp'], ['icon' => 'star']],
             'copy'     => [],
+            'images'   => [],
         ];
     }
 
@@ -235,7 +236,169 @@ class StoreDesign
             }
         }
 
+        // AI photos: only this store's own generated files that still exist on disk.
+        foreach (self::IMAGE_SLOTS as $slot) {
+            $f = $in['images'][$slot] ?? null;
+            if (is_string($f) && preg_match('/^ai-' . (int) $vendorId . '-' . $slot . '-[a-z0-9]+\.(jpg|png|webp)$/', $f) && is_file(self::imageDir() . $f)) {
+                $d['images'][$slot] = $f;
+            }
+        }
+
         return $d;
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // AI photos (hero + about) made for this business
+    // ---------------------------------------------------------------------------------------
+
+    public const IMAGE_SLOTS = ['hero', 'about'];
+
+    public static function imageDir(): string
+    {
+        return storage_path('app/public/admin-assets/images/ai-design/');
+    }
+
+    /** Public URL of the plan's AI photo for a slot, or null (then the store's own photos are used). */
+    public static function imageUrl(array $d, string $slot): ?string
+    {
+        $f = $d['images'][$slot] ?? null;
+
+        return $f ? asset('storage/app/public/admin-assets/images/ai-design/' . $f) : null;
+    }
+
+    /**
+     * Create the hero and about photos for this business with the OpenAI Images API (both at once).
+     * The prompts are built from what the store really is — activity, specialization, category,
+     * services/products, the merchant's description and the design's colours — so a rehab centre
+     * gets rehab photos and a pizzeria gets pizza. No text or logos are drawn into the photos.
+     * Returns ['success' => bool, 'images' => [slot => file], 'error' => string].
+     */
+    public static function generateImages($vendorId, array $design, array $brief = []): array
+    {
+        $key = config('services.openai.key');
+        if (empty($key)) {
+            return ['success' => false, 'images' => [], 'error' => trans('messages.assistant_unavailable')];
+        }
+        $vendor = User::find($vendorId);
+        $settings = Settings::where('vendor_id', $vendorId)->first();
+        $flow = self::flow($vendorId);
+        if ($flow === 'booking') {
+            $offers = \App\Models\BookingService::where('vendor_id', $vendorId)->where('is_available', 1)->orderBy('reorder_id')->limit(40)->get(['name', 'category']);
+            $cats = $offers->pluck('category')->filter()->unique()->take(8)->implode(', ');
+            $items = $offers->pluck('name')->take(10)->implode(', ');
+        } else {
+            $cats = Category::where('vendor_id', $vendorId)->where('is_deleted', 2)->orderBy('reorder_id')->limit(8)->pluck('name')->implode(', ');
+            $items = Item::where('vendor_id', $vendorId)->where('is_available', 1)->orderBy('reorder_id')->limit(10)->pluck('item_name')->implode(', ');
+        }
+        $activity = optional(\App\Models\Activity::find(optional($vendor)->activity_id))->name;
+        $special = optional(\App\Models\Specialization::find(optional($vendor)->specialization_id))->name;
+        $storeCat = optional(\App\Models\StoreCategory::find(optional($vendor)->store_id))->name;
+
+        $about = implode('. ', array_filter([
+            'Business: ' . StoreKnowledge::businessName($vendorId),
+            $activity ? 'Activity: ' . $activity . ($special ? ' / ' . $special : '') : 'Type: ' . (optional($settings)->business_type ?: $flow),
+            $storeCat ? 'Category: ' . $storeCat : null,
+            $cats ? 'Main sections: ' . self::clean($cats, 300) : null,
+            $items ? 'Offers: ' . self::clean($items, 400) : null,
+            optional($settings)->description ? 'About: ' . self::clean($settings->description, 300) : null,
+            !empty($brief['describe']) ? 'Owner\'s words: ' . self::clean($brief['describe'], 300) : null,
+        ]));
+        $mood = implode(', ', array_filter([
+            !empty($brief['style']) ? self::clean($brief['style'], 40) . ' style' : null,
+            $design['mode'] === 'dark' ? 'moody, darker tones' : 'bright, airy',
+            'colour accents harmonising with ' . ($design['palette']['brand'] ?? '#1F9D55'),
+        ]));
+        $rules = 'Realistic, high-end commercial photograph, natural light, authentic and tasteful. '
+            . 'Absolutely no text, letters, numbers, signs, logos or watermarks. No graphic, medical-injury or distressing imagery. '
+            . 'It must clearly show THIS kind of business, matching its offers — never a generic or unrelated scene.';
+        $prompts = [
+            'hero' => "Wide website hero photograph for the business below: its signature space or most typical scene, "
+                . "with calm empty space on one side for a headline. {$about}. Mood: {$mood}. {$rules}",
+            'about' => "Photograph for the 'About us' section of the business below: the people and care behind it — "
+                . "a professional at work with a customer or a close detail of the service or product. "
+                . "Different from a wide room shot. {$about}. Mood: {$mood}. {$rules}",
+        ];
+
+        $model = (string) config('services.openai.image_model', 'gpt-image-2');
+        $error = '';
+        $files = self::requestImages($key, $model, $vendorId, $prompts, $error);
+        // If that model is unavailable or busy, the small model still gives the store its photos.
+        if (!$files && $model !== 'gpt-image-1-mini') {
+            $files = self::requestImages($key, 'gpt-image-1-mini', $vendorId, $prompts, $error);
+        }
+        if (!$files) {
+            \Illuminate\Support\Facades\Log::warning('AI design images failed', ['vendor' => $vendorId, 'error' => $error]);
+
+            return ['success' => false, 'images' => [], 'error' => trans('messages.design_photos_failed')];
+        }
+
+        return ['success' => true, 'images' => $files, 'error' => ''];
+    }
+
+    /** One Images API call per slot, in parallel. Saves the files and returns [slot => file]. */
+    private static function requestImages(string $key, string $model, $vendorId, array $prompts, &$error): array
+    {
+        $dalle = str_starts_with($model, 'dall-e');
+        $payload = fn($prompt) => $dalle
+            ? ['model' => $model, 'prompt' => mb_substr($prompt, 0, 3800), 'n' => 1, 'size' => '1792x1024', 'quality' => 'standard', 'response_format' => 'b64_json']
+            : ['model' => $model, 'prompt' => $prompt, 'n' => 1, 'size' => '1536x1024', 'quality' => 'medium', 'output_format' => 'jpeg', 'output_compression' => 85];
+        $url = 'https://api.openai.com/v1/images/generations';
+
+        try {
+            $responses = \Illuminate\Support\Facades\Http::pool(function (\Illuminate\Http\Client\Pool $pool) use ($prompts, $payload, $key, $url) {
+                $calls = [];
+                foreach ($prompts as $slot => $prompt) {
+                    $calls[] = $pool->as($slot)->withToken($key)->acceptJson()->timeout(170)->post($url, $payload($prompt));
+                }
+
+                return $calls;
+            });
+        } catch (\Throwable $e) {
+            $error = trim($error . ' | ' . $model . ': ' . $e->getMessage(), ' |');
+
+            return [];
+        }
+
+        if (!is_dir(self::imageDir())) {
+            @mkdir(self::imageDir(), 0755, true);
+        }
+        $files = [];
+        foreach ($prompts as $slot => $prompt) {
+            $res = $responses[$slot] ?? null;
+            if (!$res instanceof \Illuminate\Http\Client\Response || !$res->successful()) {
+                $error = trim($error . ' | ' . $model . ': ' . ($res instanceof \Illuminate\Http\Client\Response
+                    ? ($res->json('error.message') ?: 'HTTP ' . $res->status())
+                    : ($res instanceof \Throwable ? $res->getMessage() : 'no response')), ' |');
+                continue;
+            }
+            $bin = base64_decode((string) $res->json('data.0.b64_json'), true);
+            if (!$bin || !@imagecreatefromstring($bin)) {
+                $error = trim($error . ' | ' . $model . ': empty image', ' |');
+                continue;
+            }
+            $ext = str_starts_with($bin, "\x89PNG") ? 'png' : (substr($bin, 8, 4) === 'WEBP' ? 'webp' : 'jpg');
+            $name = 'ai-' . (int) $vendorId . '-' . $slot . '-' . strtolower(uniqid()) . '.' . $ext;
+            if (@file_put_contents(self::imageDir() . $name, $bin)) {
+                $files[$slot] = $name;
+            }
+        }
+
+        return $files;
+    }
+
+    /** Delete this store's AI photos that neither the live design nor the draft uses any more. */
+    public static function pruneImages($vendorId): void
+    {
+        $settings = Settings::where('vendor_id', $vendorId)->first();
+        $keep = [];
+        foreach ([optional($settings)->ai_design, optional($settings)->ai_design_draft] as $json) {
+            $keep = array_merge($keep, array_values((array) (json_decode((string) $json, true)['images'] ?? [])));
+        }
+        foreach (glob(self::imageDir() . 'ai-' . (int) $vendorId . '-*') ?: [] as $path) {
+            if (!in_array(basename($path), $keep, true)) {
+                @unlink($path);
+            }
+        }
     }
 
     private static function clean($text, int $limit): string

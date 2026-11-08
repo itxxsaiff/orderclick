@@ -118,4 +118,26 @@
     .ocl-reveal { opacity: 0; transform: translateY(26px); transition: opacity .6s ease, transform .7s cubic-bezier(.22,.61,.36,1); will-change: opacity, transform; }
     .ocl-reveal.in { opacity: 1; transform: none; }
     @media (prefers-reduced-motion: reduce) { .ocl-reveal { opacity: 1 !important; transform: none !important; transition: none !important; } }
+
+    /* Feature cards (landing.partials.feature_cards): centred, wide, icon beside the text. */
+    .ocl-feats { display: flex; flex-wrap: wrap; justify-content: center; gap: 18px; margin-top: 36px; }
+    .ocl-feat { flex: 1 1 300px; max-width: 370px; display: flex; align-items: flex-start; gap: 16px; text-align: start;
+        background: #fff; border: 1px solid var(--line, #e4eae2); border-radius: 18px; padding: 22px 22px; transition: .18s; }
+    .ocl-feat:hover { transform: translateY(-3px); border-color: #bfe0cd; box-shadow: 0 22px 44px -30px rgba(20,40,28,.5); }
+    .ocl-feat__ic { flex: none; width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+        background: var(--a-soft, #e8f5ee); color: var(--a, #1f9d55); font-size: 21px; }
+    .ocl-feat__ic img { width: 28px; height: 28px; object-fit: contain; }
+    .ocl-feat h4 { font-size: 16px; font-weight: 700; color: var(--ink, #17201a); margin: 2px 0 6px; line-height: 1.3; }
+    .ocl-feat p { font-size: 13.5px; color: var(--muted, #67736a); margin: 0; line-height: 1.55; }
+    /* Only one feature: a wide green highlight band instead of a lonely small box. */
+    .ocl-feats--single .ocl-feat { flex-basis: 100%; max-width: 760px; align-items: center; gap: 22px; padding: 28px 32px;
+        border-color: #cfe9da; background: linear-gradient(135deg, #f1faf4, #e3f4ea); }
+    .ocl-feats--single .ocl-feat__ic { width: 64px; height: 64px; border-radius: 18px; font-size: 26px; background: #fff; color: var(--a, #1f9d55);
+        box-shadow: 0 12px 26px -16px rgba(20,40,28,.45); }
+    .ocl-feats--single .ocl-feat__ic img { width: 34px; height: 34px; }
+    .ocl-feats--single .ocl-feat h4 { font-size: 19px; }
+    .ocl-feats--single .ocl-feat p { font-size: 14.5px; }
+    @media (max-width: 560px) {
+        .ocl-feats--single .ocl-feat { flex-direction: column; align-items: center; text-align: center; padding: 24px 20px; }
+    }
 </style>

@@ -1,7 +1,8 @@
 @php
     $T = fn($k, $f = '') => \App\Services\StoreDesign::text($tDesign, $k, $f);
     $ocAbout = $T('about_text', \Illuminate\Support\Str::limit(strip_tags((string) $tDesc), 600));
-    $ocImg = !empty(optional($tApp)->cover_image) ? helper::image_path($tApp->cover_image) : null;
+    $ocImg = \App\Services\StoreDesign::imageUrl($tDesign, 'about')
+        ?: (!empty(optional($tApp)->cover_image) ? helper::image_path($tApp->cover_image) : null);
 @endphp
 @if ($ocAbout !== '')
 <section class="section oce-about">

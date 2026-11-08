@@ -83,6 +83,8 @@ class StoreDesignController extends Controller
         }
 
         unset($brief['refine']);
+        // A refinement keeps the photos already made; a brand-new design gets new ones (or none).
+        $result['design']['images'] = $refining ? $this->working($settings)['images'] : [];
         $settings->ai_design_draft = json_encode($result['design'], JSON_UNESCAPED_UNICODE);
         if (!$refining) {
             $settings->ai_design_brief = json_encode($brief, JSON_UNESCAPED_UNICODE);
@@ -90,6 +92,44 @@ class StoreDesignController extends Controller
         $settings->save();
 
         return response()->json(['success' => true, 'design' => $result['design']]);
+    }
+
+    /** Create the hero + about photos for this business with AI and put them in the draft. */
+    public function images()
+    {
+        $vid = $this->vendorId();
+        $settings = $this->settings();
+        if (!AiAssistant::enabled()) {
+            return response()->json(['success' => false, 'message' => trans('messages.assistant_unavailable')]);
+        }
+
+        @set_time_limit(300);
+        $design = $this->working($settings);
+        $result = StoreDesign::generateImages($vid, $design, json_decode((string) $settings->ai_design_brief, true) ?: []);
+        if (empty($result['success'])) {
+            return response()->json(['success' => false, 'message' => $result['error'] ?: trans('messages.design_photos_failed')]);
+        }
+
+        $design['images'] = array_merge($design['images'], $result['images']);
+        $settings = $this->settings();
+        $settings->ai_design_draft = json_encode(StoreDesign::normalize($design, $vid), JSON_UNESCAPED_UNICODE);
+        $settings->save();
+        StoreDesign::pruneImages($vid);
+
+        return response()->json(['success' => true]);
+    }
+
+    /** Stop using AI photos in the draft: the store's own banner / cover photo shows again. */
+    public function removeImages()
+    {
+        $settings = $this->settings();
+        $design = $this->working($settings);
+        $design['images'] = [];
+        $settings->ai_design_draft = json_encode($design, JSON_UNESCAPED_UNICODE);
+        $settings->save();
+        StoreDesign::pruneImages($this->vendorId());
+
+        return response()->json(['success' => true]);
     }
 
     /** Manual fine-tuning from the panel; merged into the draft and validated like AI output. */
@@ -142,6 +182,7 @@ class StoreDesignController extends Controller
             $settings->save();
         }
         StoreDesign::endPreview($this->vendorId());
+        StoreDesign::pruneImages($this->vendorId());
 
         return redirect('admin/design')->with('success', trans('messages.design_published'));
     }
@@ -152,6 +193,7 @@ class StoreDesignController extends Controller
         $settings->ai_design_draft = null;
         $settings->save();
         StoreDesign::endPreview($this->vendorId());
+        StoreDesign::pruneImages($this->vendorId());
 
         return redirect('admin/design')->with('success', trans('messages.success'));
     }
@@ -164,6 +206,7 @@ class StoreDesignController extends Controller
         $settings->ai_design_draft = null;
         $settings->save();
         StoreDesign::endPreview($this->vendorId());
+        StoreDesign::pruneImages($this->vendorId());
 
         return redirect('admin/design')->with('success', trans('messages.success'));
     }

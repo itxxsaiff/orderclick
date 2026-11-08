@@ -383,6 +383,8 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
                     Route::get('/design', [\App\Http\Controllers\admin\StoreDesignController::class, 'index']);
                     Route::post('/design/generate', [\App\Http\Controllers\admin\StoreDesignController::class, 'generate'])->middleware('throttle:12,1');
                     Route::post('/design/tweak', [\App\Http\Controllers\admin\StoreDesignController::class, 'tweak']);
+                    Route::post('/design/images', [\App\Http\Controllers\admin\StoreDesignController::class, 'images'])->middleware('throttle:6,1');
+                    Route::post('/design/images/remove', [\App\Http\Controllers\admin\StoreDesignController::class, 'removeImages']);
                     Route::post('/design/publish', [\App\Http\Controllers\admin\StoreDesignController::class, 'publish']);
                     Route::post('/design/discard', [\App\Http\Controllers\admin\StoreDesignController::class, 'discard']);
                     Route::post('/design/reset', [\App\Http\Controllers\admin\StoreDesignController::class, 'reset']);

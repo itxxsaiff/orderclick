@@ -337,4 +337,10 @@ return array (
   'ai_store_designer_text' => 'Tell us your style and the AI designs your whole store around your products in about a minute. Preview it, adjust anything, then publish.',
   'unique_design_for_your_business' => 'A unique design for your business',
   'products_prices_stay_live' => 'Your products and prices stay live',
+  'tap_a_system_to_see_its_categories' => 'Tap an image to open its categories.',
+  'n_categories' => ':n categories',
+  'all_categories' => 'All categories',
+  'browse_marketplace' => 'Browse Marketplace',
+  'search_categories' => 'Search categories…',
+  'no_categories_match' => 'No categories match your search.',
 );

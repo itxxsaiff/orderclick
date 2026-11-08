@@ -33,7 +33,66 @@
             padding: 9px 13px; font-size: 14px; font-weight: 600; cursor: pointer; direction: ltr; }
         .ocb-slots button.sel { background: var(--brand); border-color: var(--brand); color: var(--on-brand, #fff); }
         .ocb-hint { color: var(--text-2); font-size: 13.5px; }
+        /* Full services catalog, grouped by the merchant's own sections. */
+        .ocb-cat-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; }
+        .ocb-cat-nav a { border: 1px solid var(--line-strong); background: var(--surface); color: var(--text); border-radius: 999px;
+            padding: 7px 14px; font-size: 13.5px; font-weight: 600; text-decoration: none; }
+        .ocb-cat-nav a:hover { border-color: var(--brand); color: var(--brand); }
+        .ocb-group { margin-bottom: 34px; scroll-margin-top: 90px; }
+        .ocb-group h3 { font-size: 19px; font-weight: 750; color: var(--text); margin: 0 0 14px; }
+        .ocb-group .grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+        .ocb-group .product-card__desc { -webkit-line-clamp: unset; display: block; overflow: visible; }
+        /* The "overlay" card style puts white text over the photo; catalog cards often have no photo,
+           so their text always sits below in the normal colours. */
+        .ocb-group .product-card__body { position: static; background: none; color: var(--text); }
+        .ocb-group .product-card__body h4, .ocb-group .product-card__body .price,
+        .ocb-group .product-card__desc { color: inherit; }
+        .ocb-group .product-card__desc { color: var(--text-2); }
+        .ocb-group .product-card__media::after { display: none; }
+        .ocb-wrap form { scroll-margin-top: 90px; }
     </style>
+
+    @php
+        // Group by the service's Type / Category in the merchant's own order (first appearance wins).
+        $ocbGroups = collect($services)->groupBy(fn($s) => trim((string) $s->category));
+    @endphp
+    @if (count($services) > 1)
+        <section class="section bg-alt" id="services">
+            <div class="container">
+                <div class="section-head">
+                    <h2>{{ trans('labels.eng_services_title') }}</h2>
+                </div>
+                @if ($ocbGroups->count() > 1)
+                    <nav class="ocb-cat-nav">
+                        @foreach ($ocbGroups as $ocbCat => $ocbList)
+                            @if ($ocbCat !== '')<a href="#svc-{{ $loop->index }}">{{ $ocbCat }} ({{ $ocbList->count() }})</a>@endif
+                        @endforeach
+                    </nav>
+                @endif
+                @foreach ($ocbGroups as $ocbCat => $ocbList)
+                    <div class="ocb-group" id="svc-{{ $loop->index }}">
+                        @if ($ocbCat !== '')<h3>{{ $ocbCat }}</h3>@endif
+                        <div class="grid g-4 products">
+                            @foreach ($ocbList as $s)
+                                @php $img = !empty($s->image) ? url(env('ASSETSPATHURL') . 'item/' . $s->image) : null; @endphp
+                                <article class="product-card">
+                                    @if ($img)<div class="product-card__media"><img src="{{ $img }}" alt="{{ $s->name }}" loading="lazy"></div>@endif
+                                    <div class="product-card__body">
+                                        <h4>{{ $s->name }}</h4>
+                                        @if (!empty($s->description))<p class="product-card__desc">{!! nl2br(e(strip_tags($s->description))) !!}</p>@endif
+                                        <div class="product-card__foot">
+                                            <span class="price">@if ($s->price > 0){{ helper::currency_formate($s->price, $vdata) }}@endif @if (!empty($s->duration))<small> · {{ $s->duration }}</small>@endif</span>
+                                            <a href="?service={{ $s->id }}#ocbForm" class="btn btn-primary btn-sm" data-ocb-pick="{{ $s->id }}">{{ __('Book') }}</a>
+                                        </div>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     <div class="ocb-wrap">
         <div class="container">
@@ -208,6 +267,23 @@
         (function () {
             var sel = document.getElementById('ocb_service');
             if (sel && sel.value) ocbService(sel);
+            // Coming from a "Book" button elsewhere: the catalog sits above the form, so jump to it.
+            if (sel && sel.value && location.search.indexOf('service=') !== -1) {
+                document.getElementById('ocbForm').scrollIntoView({ block: 'start' });
+            }
+            // "Book" in the catalog: pick that service in the form without reloading the page.
+            document.querySelectorAll('[data-ocb-pick]').forEach(function (a) {
+                a.addEventListener('click', function (e) {
+                    if (!sel) return;
+                    var opt = sel.querySelector('option[data-id="' + a.getAttribute('data-ocb-pick') + '"]');
+                    if (!opt) return;
+                    e.preventDefault();
+                    sel.value = opt.value;
+                    ocbService(sel);
+                    sel.dispatchEvent(new Event('change'));
+                    document.getElementById('ocbForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                });
+            });
         })();
         // Free time slots for the chosen date / service / team member.
         (function () {

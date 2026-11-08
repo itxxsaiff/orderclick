@@ -320,4 +320,5 @@ return array (
   'qty_required' => 'The quantity is required.',
   'token_required' => 'The token is required.',
   'variation_required' => 'Please add at least one variation.',
+  'design_photos_failed' => 'The photos could not be created this time. Your design is saved; try "Create new AI photos" again later.',
 );

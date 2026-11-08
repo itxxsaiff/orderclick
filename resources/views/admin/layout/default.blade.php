@@ -401,7 +401,7 @@
                 tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
                 <div class="offcanvas-header pb-0 border-bottom align-items-start">
                     <div class="navbar-header-logoc pb-2 d-flex justify-content-center">
-                        <img src="{{ @helper::image_path(helper::appdata('')->logo) }}" alt="">
+                        <img src="{{ helper::dashboard_logo() }}" alt="">
                     </div>
                     <button type="button" class="bg-transparent border-0 m-0" data-bs-dismiss="offcanvas"
                         aria-label="Close">

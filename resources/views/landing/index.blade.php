@@ -329,21 +329,7 @@
                 {{-- Features tagged to this system (admin > Features). --}}
                 @php $ocSysFeatures = \App\Models\Features::forSystem('orders'); @endphp
                 @if ($ocSysFeatures->count())
-                    <div class="ocl-svcs" style="margin-top:18px;">
-                        @foreach ($ocSysFeatures as $f)
-                            <div class="ocl-svc">
-                                <span class="ocl-ic" style="background:#1f9d551a;color:#1f9d55;">
-                                    @if ($f->hasImage())
-                                        <img src="{{ helper::image_path($f->image) }}" alt="" style="width:26px;height:26px;object-fit:contain;">
-                                    @else
-                                        <i class="fa-solid fa-star"></i>
-                                    @endif
-                                </span>
-                                <h4>{{ $f->title }}</h4>
-                                <p class="fs-7 text-muted">{{ \Illuminate\Support\Str::limit(strip_tags($f->description), 90) }}</p>
-                            </div>
-                        @endforeach
-                    </div>
+                    @include('landing.partials.feature_cards', ['ocFeats' => $ocSysFeatures])
                 @endif
         </div>
     </section>
@@ -359,21 +345,7 @@
             <div class="wrap center">
                 <span class="eyebrow">{{ trans('landing.features') }}</span>
                 <h2 class="sec-title">{{ trans('labels.features_general') }}</h2>
-                <div class="ocl-svcs">
-                    @foreach ($ocGeneralFeatures as $f)
-                        <div class="ocl-svc">
-                            <span class="ocl-ic" style="background:#1f9d551a;color:#1f9d55;">
-                                @if ($f->hasImage())
-                                    <img src="{{ helper::image_path($f->image) }}" alt="" style="width:26px;height:26px;object-fit:contain;">
-                                @else
-                                    <i class="fa-solid fa-star"></i>
-                                @endif
-                            </span>
-                            <h4>{{ $f->title }}</h4>
-                            <p class="fs-7 text-muted">{{ \Illuminate\Support\Str::limit(strip_tags($f->description), 90) }}</p>
-                        </div>
-                    @endforeach
-                </div>
+                @include('landing.partials.feature_cards', ['ocFeats' => $ocGeneralFeatures])
             </div>
         </section>
     @endif
@@ -420,21 +392,7 @@
                 {{-- Features tagged to this system (admin > Features). --}}
                 @php $ocSysFeatures = \App\Models\Features::forSystem('service'); @endphp
                 @if ($ocSysFeatures->count())
-                    <div class="ocl-svcs" style="margin-top:18px;">
-                        @foreach ($ocSysFeatures as $f)
-                            <div class="ocl-svc">
-                                <span class="ocl-ic" style="background:#1f9d551a;color:#1f9d55;">
-                                    @if ($f->hasImage())
-                                        <img src="{{ helper::image_path($f->image) }}" alt="" style="width:26px;height:26px;object-fit:contain;">
-                                    @else
-                                        <i class="fa-solid fa-star"></i>
-                                    @endif
-                                </span>
-                                <h4>{{ $f->title }}</h4>
-                                <p class="fs-7 text-muted">{{ \Illuminate\Support\Str::limit(strip_tags($f->description), 90) }}</p>
-                            </div>
-                        @endforeach
-                    </div>
+                    @include('landing.partials.feature_cards', ['ocFeats' => $ocSysFeatures])
                 @endif
         </div>
     </section>
@@ -481,21 +439,7 @@
                 {{-- Features tagged to this system (admin > Features). --}}
                 @php $ocSysFeatures = \App\Models\Features::forSystem('booking'); @endphp
                 @if ($ocSysFeatures->count())
-                    <div class="ocl-svcs" style="margin-top:18px;">
-                        @foreach ($ocSysFeatures as $f)
-                            <div class="ocl-svc">
-                                <span class="ocl-ic" style="background:#1f9d551a;color:#1f9d55;">
-                                    @if ($f->hasImage())
-                                        <img src="{{ helper::image_path($f->image) }}" alt="" style="width:26px;height:26px;object-fit:contain;">
-                                    @else
-                                        <i class="fa-solid fa-star"></i>
-                                    @endif
-                                </span>
-                                <h4>{{ $f->title }}</h4>
-                                <p class="fs-7 text-muted">{{ \Illuminate\Support\Str::limit(strip_tags($f->description), 90) }}</p>
-                            </div>
-                        @endforeach
-                    </div>
+                    @include('landing.partials.feature_cards', ['ocFeats' => $ocSysFeatures])
                 @endif
         </div>
     </section>

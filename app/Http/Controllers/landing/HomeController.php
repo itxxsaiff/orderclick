@@ -283,6 +283,8 @@ class HomeController extends Controller
         $filter  = trim((string) $request->filter);  // near | open | top | featured | new
         $lat     = $request->lat;                     // optional (Near Me)
         $lng     = $request->lng;
+        // orders | booking | service — from the three home images. Stores of other systems never mix in.
+        $system  = \App\Helpers\Systems::isValid($request->system) ? (string) $request->system : '';
 
         // ---- base: live/approved merchant stores ----
         $storeCols = [
@@ -310,6 +312,9 @@ class HomeController extends Controller
             ->distinct()->orderBy('city')->pluck('city')
             ->map(fn($c) => (object) ['name' => $c])->values();
         $categories = StoreCategory::where('is_deleted', 2)->where('is_available', 1)->orderBy('reorder_id')->get();
+        if ($system !== '') {
+            $categories = $categories->filter(fn($c) => \App\Helpers\Systems::normalise($c->system ?: null) === $system)->values();
+        }
         $banners    = Promotionalbanner::with('vendor_info')->orderBy('reorder_id')->get();
 
         // ---- ratings (approved reviews) keyed by vendor ----
@@ -319,6 +324,13 @@ class HomeController extends Controller
 
         // ---- main query with location/category/search filters ----
         $query = $base();
+        if ($system !== '') {
+            $query->where(function ($w) use ($system) {
+                $w->where('users.system', $system);
+                // Older accounts have no system yet: they are Orders & Stores.
+                if ($system === \App\Helpers\Systems::ORDERS) $w->orWhereNull('users.system')->orWhere('users.system', '');
+            });
+        }
         if ($country !== '') $query->where('users.country', $country);
         if ($city !== '') {
             $legacy = City::where('name', $city)->first();
@@ -399,7 +411,7 @@ class HomeController extends Controller
 
         return view('landing.marketplace', compact(
             'stores', 'featured', 'latest', 'popular', 'countries', 'cities', 'categories',
-            'banners', 'ratings', 'country', 'city', 'store', 'q', 'filter', 'totalStores', 'platformTitle'
+            'banners', 'ratings', 'country', 'city', 'store', 'q', 'filter', 'totalStores', 'platformTitle', 'system'
         ));
     }
 

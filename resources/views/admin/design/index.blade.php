@@ -25,6 +25,8 @@
         .ocd-swatch input[type=color] { width: 54px; height: 36px; border: 1px solid #ddd; border-radius: 8px; padding: 2px; background: #fff; }
         .ocd-sec { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--bs-border-color, #e3e7e2); border-radius: 9px; margin-bottom: 6px; font-size: 13.5px; }
         .ocd-sec .ocd-move { margin-inline-start: auto; display: flex; gap: 4px; }
+        .ocd-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .ocd-photos img { width: 100%; aspect-ratio: 3/2; object-fit: cover; border-radius: 10px; display: block; }
         .ocd-sec .ocd-move button { border: 1px solid #ddd; background: #fff; border-radius: 6px; width: 28px; height: 26px; line-height: 1; }
     </style>
 
@@ -77,6 +79,11 @@
                             <label class="form-label fw-600">{{ trans('labels.design_describe') }}</label>
                             <textarea name="describe" class="form-control" rows="3" maxlength="800" placeholder="{{ trans('labels.design_describe_ph') }}">{{ $brief['describe'] ?? '' }}</textarea>
                         </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="ocdAiPhotos" checked>
+                            <label class="form-check-label fw-600" for="ocdAiPhotos">{{ trans('labels.design_ai_photos') }}</label>
+                            <div class="fs-7 text-muted">{{ trans('labels.design_ai_photos_hint') }}</div>
+                        </div>
                         <button type="submit" class="btn btn-success w-100" {{ $aiReady ? '' : 'disabled' }}>
                             <i class="fa-solid fa-wand-magic-sparkles"></i> {{ trans('labels.design_generate') }}
                         </button>
@@ -92,6 +99,28 @@
                         <input type="text" name="refine" class="form-control" maxlength="400" required placeholder="{{ trans('labels.design_refine_ph') }}">
                         <button type="submit" class="btn btn-outline-success text-nowrap" {{ $aiReady ? '' : 'disabled' }}>{{ trans('labels.design_refine_btn') }}</button>
                     </form>
+                </div>
+            </div>
+
+            {{-- Photos the AI made for this business --}}
+            <div class="card border-0 box-shadow mb-3">
+                <div class="card-body">
+                    <h6 class="fw-700 mb-2"><i class="fa-solid fa-image text-success"></i> {{ trans('labels.design_photos') }}</h6>
+                    @php $ocdImgs = array_filter([\App\Services\StoreDesign::imageUrl($design, 'hero'), \App\Services\StoreDesign::imageUrl($design, 'about')]); @endphp
+                    @if ($ocdImgs)
+                        <div class="ocd-photos mb-2">
+                            @foreach ($ocdImgs as $ocdImg)<a href="{{ $ocdImg }}" target="_blank"><img src="{{ $ocdImg }}" alt=""></a>@endforeach
+                        </div>
+                    @else
+                        <p class="fs-7 text-muted mb-2">{{ trans('labels.design_photos_none') }}</p>
+                    @endif
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-success" id="ocdPhotosNew" {{ $aiReady ? '' : 'disabled' }}>
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> {{ trans('labels.design_photos_regenerate') }}</button>
+                        @if ($ocdImgs)
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="ocdPhotosRemove">{{ trans('labels.design_photos_remove') }}</button>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -186,7 +215,7 @@
 
     <div class="ocd-busy" id="ocdBusy">
         <div class="spinner-border" role="status"></div>
-        <div class="fw-600">{{ trans('labels.design_generating') }}</div>
+        <div class="fw-600" id="ocdBusyText">{{ trans('labels.design_generating') }}</div>
     </div>
 @endsection
 
@@ -208,17 +237,41 @@
             }
             function fail(msg) { if (window.toastr) toastr.error(msg); else alert(msg); }
 
+            var busyText = document.getElementById('ocdBusyText');
+            // Photos: a second call after the design (images take longer). A failure keeps the design.
+            function makePhotos() {
+                busyText.textContent = @js(trans('labels.design_creating_photos'));
+                busy.classList.add('show');
+                return post(@js(URL::to('admin/design/images')), new FormData()).then(function (res) {
+                    if (res.success) { location.reload(); return; }
+                    busy.classList.remove('show');
+                    fail(res.message || @js(trans('messages.design_photos_failed')));
+                    setTimeout(function () { location.reload(); }, 3500);
+                }).catch(function () {
+                    busy.classList.remove('show');
+                    fail(@js(trans('messages.design_photos_failed')));
+                    setTimeout(function () { location.reload(); }, 3500);
+                });
+            }
             // Generate / refine with the AI: a new draft, then reload to show it everywhere.
-            function aiRequest(form) {
+            function aiRequest(form, withPhotos) {
+                busyText.textContent = @js(trans('labels.design_generating'));
                 busy.classList.add('show');
                 post(@js(URL::to('admin/design/generate')), new FormData(form)).then(function (res) {
-                    if (res.success) { location.reload(); return; }
+                    if (res.success) { if (withPhotos) makePhotos(); else location.reload(); return; }
                     busy.classList.remove('show');
                     fail(res.message || @js(trans('messages.design_generate_failed')));
                 }).catch(function () { busy.classList.remove('show'); fail(@js(trans('messages.design_generate_failed'))); });
             }
-            document.getElementById('ocdGenerate').addEventListener('submit', function (e) { e.preventDefault(); aiRequest(this); });
-            document.getElementById('ocdRefine').addEventListener('submit', function (e) { e.preventDefault(); aiRequest(this); });
+            document.getElementById('ocdGenerate').addEventListener('submit', function (e) {
+                e.preventDefault(); aiRequest(this, document.getElementById('ocdAiPhotos').checked);
+            });
+            document.getElementById('ocdRefine').addEventListener('submit', function (e) { e.preventDefault(); aiRequest(this, false); });
+            document.getElementById('ocdPhotosNew').addEventListener('click', makePhotos);
+            var removeBtn = document.getElementById('ocdPhotosRemove');
+            if (removeBtn) removeBtn.addEventListener('click', function () {
+                post(@js(URL::to('admin/design/images/remove')), new FormData()).then(function () { location.reload(); });
+            });
 
             // Fine-tune: save the draft on every change and refresh only the preview.
             var tweakForm = document.getElementById('ocdTweak');

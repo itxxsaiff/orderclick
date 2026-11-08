@@ -75,6 +75,11 @@
         .mk-pill { display:inline-flex; align-items:center; gap:7px; background:#fff; border:1.5px solid var(--line); color:var(--ink); border-radius:30px; padding:9px 17px; font-weight:600; font-size:13.5px; cursor:pointer; transition:.15s; }
         .mk-pill:hover { border-color:var(--a); color:var(--a); }
         .mk-pill.active { background:var(--a); border-color:var(--a); color:#fff; }
+        .mk-systems { margin-bottom: 0; }
+        .mk-sys { display:inline-flex; align-items:center; gap:7px; border-radius:12px; padding:10px 18px; font-weight:700; font-size:14px;
+            background:var(--a-soft, #e8f5ee); color:var(--ink); border:1.5px solid transparent; text-decoration:none; }
+        .mk-sys:hover { border-color:var(--a); color:var(--ink); }
+        .mk-sys.active { background:var(--ink, #17201a); color:#fff; }
 
         /* ===== offers banner ===== */
         .mk-offer { margin:26px 0 4px; background:linear-gradient(120deg, var(--a), color-mix(in srgb, var(--a) 60%, #000)); border-radius:20px; padding:30px 34px; color:#fff; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; overflow:hidden; position:relative; }
@@ -145,7 +150,8 @@
             foreach ($catIcons as $k => $ic) { if (str_contains($n, $k)) return $ic; }
             return 'fa-store';
         };
-        $hasFilter = $q !== '' || $store !== '' || $filter !== '';
+        $system = $system ?? '';
+        $hasFilter = $q !== '' || $store !== '' || $filter !== '' || $system !== '';
         $base = URL::to('marketplace');
         $heroTiles = $categories->take(5);
     @endphp
@@ -160,6 +166,7 @@
 
                     <form method="get" action="{{ $base }}" id="mkForm">
                         <input type="hidden" name="filter" id="mkFilter" value="{{ $filter }}">
+                        @if ($system !== '')<input type="hidden" name="system" value="{{ $system }}">@endif
                         <input type="hidden" name="lat" id="mkLat" value="{{ request('lat') }}">
                         <input type="hidden" name="lng" id="mkLng" value="{{ request('lng') }}">
                         <div class="mk-hsearch" id="find-store">
@@ -190,7 +197,7 @@
                 {{-- hero category tiles --}}
                 <div class="mk-htiles">
                     @foreach ($heroTiles as $ca)
-                        <a href="{{ $base }}?store={{ urlencode($ca->name) }}" class="mk-htile">
+                        <a href="{{ $base }}?store={{ urlencode($ca->name) }}{{ $system !== '' ? '&system=' . $system : '' }}" class="mk-htile">
                             <span class="ic"><i class="fa-solid {{ $mkIcon($ca->name) }}"></i></span>
                             <div><b>{{ $ca->label() }}</b><span>{{ trans('landing.browse_stores') }}</span></div>
                         </a>
@@ -223,6 +230,14 @@
         </div>
 
         <div class="wrap">
+            {{-- ===== system tabs: stores, bookings and services are listed separately ===== --}}
+            <div class="mk-filters mk-systems">
+                <a href="{{ $base }}" class="mk-sys {{ $system === '' ? 'active' : '' }}"><i class="fa-solid fa-layer-group"></i> {{ trans('landing.all_stores') }}</a>
+                @foreach (\App\Helpers\Systems::all() as $sysKey => $sys)
+                    <a href="{{ $base }}?system={{ $sysKey }}" class="mk-sys {{ $system === $sysKey ? 'active' : '' }}">{{ $sys['name'] }}</a>
+                @endforeach
+            </div>
+
             {{-- ===== filter pills ===== --}}
             <div class="mk-filters">
                 @php $pills = [

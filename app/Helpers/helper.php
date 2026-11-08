@@ -471,6 +471,27 @@ class helper
         return $path;
     }
 
+    /**
+     * Logo in the admin panel's sidebar. A merchant (and their staff) sees their own store logo;
+     * the super admin, and any store without its own logo yet, sees the Order Click logo.
+     * The store is always the signed-in account's own, never one taken from the request.
+     */
+    public static function dashboard_logo(): string
+    {
+        $platform = @self::appdata('')->logo;
+        $user = Auth::user();
+        if ($user && ((int) $user->type === 2 || ((int) $user->type === 4 && (int) $user->vendor_id !== 1))) {
+            $vendorId = (int) $user->type === 4 ? $user->vendor_id : $user->id;
+            $logo = Settings::where('vendor_id', $vendorId)->value('logo');
+            if (!empty($logo) && $logo !== $platform
+                && file_exists(storage_path('app/public/admin-assets/images/about/logo/' . $logo))) {
+                return self::image_path($logo);
+            }
+        }
+
+        return self::image_path($platform);
+    }
+
     public static function currency_formate($price, $vendor_id)
     {
         $price = floatval($price) * helper::currencyinfo($vendor_id)->exchange_rate;

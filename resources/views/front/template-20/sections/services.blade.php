@@ -1,7 +1,8 @@
 {{-- Booking: bookable services, drawn with the product-card styles so every card variant applies. --}}
 @php
     $T = fn($k, $f = '') => \App\Services\StoreDesign::text($tDesign, $k, $f);
-    $ocSvcs = collect($services ?? [])->take(8);
+    $ocAllSvcs = collect($services ?? []);
+    $ocSvcs = $ocAllSvcs->take(8);
 @endphp
 @if ($ocSvcs->count())
 <section class="section bg-alt">
@@ -12,7 +13,7 @@
         @php $ocSub = $T('services_text'); @endphp
         @if ($ocSub !== '')<p>{{ $ocSub }}</p>@endif
       </div>
-      <a href="{{ URL::to($tSlug . '/booking') }}" class="link-arrow">{{ __('See all') }}
+      <a href="{{ URL::to($tSlug . '/booking') }}#services" class="link-arrow">{{ __('See all') }}@if ($ocAllSvcs->count() > $ocSvcs->count()) ({{ $ocAllSvcs->count() }})@endif
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
     </div>

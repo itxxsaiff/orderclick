@@ -2,7 +2,7 @@
 <nav class="sidebar sidebar-lg bg-change-mode">
     <div class="d-flex justify-content-center align-items-center mb-3 border-bottom">
         <div class="navbar-header-logoc py-2">
-            <img src="{{ @helper::image_path(helper::appdata('')->logo) }}" alt="">
+            <img src="{{ helper::dashboard_logo() }}" alt="">
         </div>
     </div>
     @include('admin.layout.sidebarcommon')

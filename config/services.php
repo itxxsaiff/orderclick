@@ -50,6 +50,8 @@ return [
         // The AI store designer can use a stronger model than everyday text help.
         'design_model' => env('OPENAI_DESIGN_MODEL', env('OPENAI_MODEL', 'gpt-5-mini')),
         'endpoint' => env('OPENAI_ENDPOINT', 'https://api.openai.com/v1/responses'),
+        // Photos for the AI store designer (hero + about). Falls back to gpt-image-1-mini when unavailable.
+        'image_model' => env('OPENAI_IMAGE_MODEL', 'gpt-image-2'),
     ],
 
 ];

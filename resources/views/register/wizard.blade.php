@@ -12,11 +12,23 @@
         .ocw__head { padding: 22px 30px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
         .ocw__brand { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 700; color: #17201a; }
         .ocw__brand img { height: 34px; width: auto; }
-        .ocw__lang { display: flex; gap: 6px; flex-wrap: wrap; }
-        .ocw__lang a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border: 1px solid #e5e9e2;
-            border-radius: 20px; font-size: 13px; font-weight: 600; color: #39443c; text-decoration: none; background: #fff; }
-        .ocw__lang a img { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
-        .ocw__lang a.on, .ocw__lang a:hover { border-color: #1f9d55; color: #137a40; background: #f4fbf7; }
+        /* Language: one globe button, list opens on click. */
+        .ocw__lang { position: relative; }
+        .ocw__lang summary { list-style: none; display: inline-flex; align-items: center; gap: 7px; cursor: pointer; padding: 8px 12px;
+            border: 1px solid #e5e9e2; border-radius: 20px; font-size: 13px; font-weight: 600; color: #39443c; background: #fff; user-select: none; }
+        .ocw__lang summary::-webkit-details-marker { display: none; }
+        .ocw__lang summary:hover, .ocw__lang[open] summary { border-color: #1f9d55; color: #137a40; }
+        .ocw__lang summary .fa-globe { font-size: 16px; color: #1f9d55; }
+        .ocw__lang summary .fa-chevron-down { font-size: 10px; opacity: .6; }
+        .ocw__lang-menu { position: absolute; top: calc(100% + 6px); inset-inline-end: 0; z-index: 30; min-width: 190px; max-height: 300px;
+            overflow-y: auto; background: #fff; border: 1px solid #e5e9e2; border-radius: 14px; padding: 6px;
+            box-shadow: 0 18px 40px -20px rgba(20,32,24,.45); }
+        .ocw__lang-menu a { display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-radius: 9px; font-size: 13.5px;
+            color: #39443c; text-decoration: none; }
+        .ocw__lang-menu a img { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
+        .ocw__lang-menu a:hover { background: #f4fbf7; color: #137a40; }
+        .ocw__lang-menu a.on { color: #137a40; font-weight: 700; }
+        .ocw__lang-menu a.on::after { content: '\2713'; margin-inline-start: auto; }
 
         /* Stepper */
         .ocw__steps { display: flex; gap: 14px; padding: 18px 30px 0; flex-wrap: wrap; }
@@ -98,15 +110,30 @@
                 {{-- Language switch (same /lang/change route as the website header). --}}
                 @php $ocWzLangs = helper::listoflanguage(); @endphp
                 @if ($ocWzLangs->count() > 1)
-                    <div class="ocw__lang">
-                        @foreach ($ocWzLangs as $ocWzLang)
-                            <a href="{{ URL::to('/lang/change?lang=' . $ocWzLang->code) }}"
-                                class="{{ app()->getLocale() == $ocWzLang->code ? 'on' : '' }}" title="{{ $ocWzLang->name }}">
-                                <img src="{{ helper::image_path($ocWzLang->image) }}" alt="">
-                                <span>{{ $ocWzLang->name }}</span>
-                            </a>
-                        @endforeach
-                    </div>
+                    @php $ocWzCurrent = $ocWzLangs->firstWhere('code', app()->getLocale()); @endphp
+                    <details class="ocw__lang" id="ocwLang">
+                        <summary aria-label="{{ trans('labels.language') }}">
+                            <i class="fa-solid fa-globe"></i>
+                            <span>{{ strtoupper(app()->getLocale()) }}</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </summary>
+                        <div class="ocw__lang-menu">
+                            @foreach ($ocWzLangs as $ocWzLang)
+                                <a href="{{ URL::to('/lang/change?lang=' . $ocWzLang->code) }}"
+                                    class="{{ app()->getLocale() == $ocWzLang->code ? 'on' : '' }}">
+                                    <img src="{{ helper::image_path($ocWzLang->image) }}" alt="">
+                                    <span>{{ $ocWzLang->name }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </details>
+                    <script>
+                        // Close the language list when clicking anywhere else.
+                        document.addEventListener('click', function (e) {
+                            var d = document.getElementById('ocwLang');
+                            if (d && d.open && !d.contains(e.target)) d.open = false;
+                        });
+                    </script>
                 @endif
 
             </div>
