@@ -29,15 +29,17 @@
           @foreach ($searchItems as $item)
             @php
               $cat = $catNames[$item->cat_id] ?? '';
+              $catLabel = optional(collect($getcategory ?? [])->firstWhere('id', $item->cat_id))->tr('name') ?: $cat;
+              $itemName = $item->tr('item_name');
               $up = @$item['item_image']->image;
               $img = !empty($up) ? helper::image_path($up) : \App\Services\StoreDesign::stockImage($item->item_name . ' ' . $cat, $item->id, $storeinfo->id ?? ($vdata ?? null));
               $detail = URL::to($tSlug . '/details-' . $item->slug);
               $hasVar = isset($item['variation']) && $item['variation']->count() > 0;
               $price = $hasVar ? $item['variation'][0]->price : $item->item_price;
             @endphp
-            <a href="{{ $detail }}" class="qs-item" data-qs-item="{{ strtolower($item->item_name . ' ' . $cat) }}">
-              <img src="{{ $img }}" alt="{{ $item->item_name }}" loading="lazy">
-              <div><strong>{{ \Illuminate\Support\Str::limit($item->item_name, 32) }}</strong><span>{{ $cat }}</span></div>
+            <a href="{{ $detail }}" class="qs-item" data-qs-item="{{ mb_strtolower($itemName . ' ' . $item->item_name . ' ' . $catLabel) }}">
+              <img src="{{ $img }}" alt="{{ $itemName }}" loading="lazy">
+              <div><strong>{{ \Illuminate\Support\Str::limit($itemName, 32) }}</strong><span>{{ $catLabel }}</span></div>
               <span class="price">{{ helper::currency_formate($price, $storeinfo->id) }}</span>
             </a>
           @endforeach
@@ -47,7 +49,7 @@
       @if (($getcategory ?? collect())->count())
         <div class="qs-terms">
           @foreach (($getcategory ?? collect())->take(6) as $c)
-            <a href="{{ URL::to($tSlug . '/categories') }}#cat-{{ $c->id }}" class="chip">{{ $c->name }}</a>
+            <a href="{{ URL::to($tSlug . '/categories') }}#cat-{{ $c->id }}" class="chip">{{ $c->tr('name') }}</a>
           @endforeach
         </div>
       @endif

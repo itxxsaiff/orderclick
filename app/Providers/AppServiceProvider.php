@@ -110,16 +110,19 @@ class AppServiceProvider extends ServiceProvider
                 'tApp'    => $app,
                 'tName'   => $storeName,
                 'tLogo'   => optional($app)->logo,
-                'tDesc'   => optional($app)->description,
+                // The store description in the visitor's language (translated on the Languages page).
+                'tDesc'   => $app ? $app->tr('description') : null,
                 'tPhone'  => $phone,
                 'tWa'     => preg_replace('/[^0-9]/', '', (string) $phone),
-                'tEmail'  => optional($app)->email,
-                'tAddr'   => optional($app)->address,
+                // New stores start with sample contact details ("youremail@gmail.com", "Your address");
+                // customers must never see those, so they count as empty until the owner fills them in.
+                'tEmail'  => in_array(strtolower(trim((string) optional($app)->email)), ['', '-', 'youremail@gmail.com'], true) ? null : optional($app)->email,
+                'tAddr'   => in_array(strtolower(trim((string) optional($app)->address)), ['', '-', 'your address'], true) ? null : optional($app)->address,
                 'tSlug'   => $storeinfo->slug ?? '',
                 'tBase'   => url($storeinfo->slug ?? ''),
                 'tCount'  => helper::getcartcount($vid, optional(Auth::user())->id),
                 'tCss'    => env('ASSETSPATHURL') . 'web-assets/templates/' . $tplFolder . '/',
-                'tCats'   => \App\Models\Category::where('vendor_id', $vid)->where('is_available', '1')->where('is_deleted', '2')->orderBy('reorder_id')->get(['id', 'name', 'image']),
+                'tCats'   => \App\Models\Category::where('vendor_id', $vid)->where('is_available', '1')->where('is_deleted', '2')->orderBy('reorder_id')->get(['id', 'name', 'image', 'translations']),
                 'tActive' => $activeMap[$pageKey] ?? 'home',
             ]);
         });

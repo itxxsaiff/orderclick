@@ -13,7 +13,7 @@
     <div class="section-head center reveal"><h2>{{ $T('steps_title', trans('labels.eng_steps_title')) }}</h2></div>
     <div class="steps reveal oce-steps-{{ count($ocSteps) }}">
       @foreach ($ocSteps as $i => $st)
-        <div class="step"><span class="ic oce-step-n">{{ $i + 1 }}</span><h4>{{ $st['title'] }}</h4>@if (!empty($st['text']))<p>{{ $st['text'] }}</p>@endif</div>
+        <div class="step"><span class="ic oce-step-n">{{ $i + 1 }}</span><h4>{{ preg_replace('/^\s*\d+\s*[.)\-:]\s*/u', '', (string) $st['title']) }}</h4>@if (!empty($st['text']))<p>{{ $st['text'] }}</p>@endif</div>
       @endforeach
     </div>
   </div>

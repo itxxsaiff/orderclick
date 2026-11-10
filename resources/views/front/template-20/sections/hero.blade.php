@@ -29,7 +29,7 @@
       @if ($tFlow === 'orders' && collect($getcategory ?? [])->count())
         <div class="hero-chips">
           @foreach (collect($getcategory)->take(4) as $c)
-            <a href="{{ URL::to($tSlug . '/categories') }}#cat-{{ $c->id }}" class="chip">{{ $c->name }}</a>
+            <a href="{{ URL::to($tSlug . '/categories') }}#cat-{{ $c->id }}" class="chip">{{ $c->tr('name') }}</a>
           @endforeach
         </div>
       @endif

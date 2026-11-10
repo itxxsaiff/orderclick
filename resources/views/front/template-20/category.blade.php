@@ -15,6 +15,7 @@
         $cats = collect($getcategory ?? []);
         $items = collect($getitem ?? []);
         $catNames = $cats->pluck('name', 'id');
+        $catLabels = $cats->mapWithKeys(fn($c) => [$c->id => $c->tr('name')]); // shown in the visitor's language
         // price bounds for the range slider
         $prices = $items->map(function ($i) {
             $hasVar = isset($i['variation']) && $i['variation']->count() > 0;
@@ -60,7 +61,7 @@
                 <label class="check">
                   <input type="checkbox" data-cat-filter="cat{{ $c->id }}" checked>
                   <span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
-                  <span class="lbl">{{ $c->name }}</span><span class="num">{{ $cnt }}</span>
+                  <span class="lbl">{{ $c->tr('name') }}</span><span class="num">{{ $cnt }}</span>
                 </label>
               @endforeach
             </div>
@@ -102,7 +103,7 @@
             <div class="hero-chips mb-3">
               <button class="chip active" data-menu-chip="all">{{ __('All dishes') }}</button>
               @foreach ($cats as $c)
-                <button class="chip" data-menu-chip="cat{{ $c->id }}">{{ $c->name }}</button>
+                <button class="chip" data-menu-chip="cat{{ $c->id }}">{{ $c->tr('name') }}</button>
               @endforeach
             </div>
           @endif
@@ -110,7 +111,7 @@
           @if ($items->count())
             <div class="grid g-3 products" id="productGrid">
               @foreach ($items as $item)
-                @include('front.template-20.partials.product_card', ['item' => $item, 'catNames' => $catNames])
+                @include('front.template-20.partials.product_card', ['item' => $item, 'catNames' => $catNames, 'catLabels' => $catLabels])
               @endforeach
             </div>
             <div data-menu-empty style="display:none;text-align:center;padding:60px 20px" class="muted">

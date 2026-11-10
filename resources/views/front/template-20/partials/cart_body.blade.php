@@ -1,5 +1,7 @@
 @php
     $slug = $storeinfo->slug;
+    // Product names in the visitor's language (the cart row keeps the original for the order).
+    $ocNames = \App\Models\Item::whereIn('id', collect($cartdata)->pluck('item_id')->filter()->unique())->get(['id', 'item_name', 'description', 'translations'])->mapWithKeys(fn($i) => [$i->id => $i->tr('item_name')]);
 @endphp
 @if ($cartdata->count())
   <div class="drawer__body">
@@ -11,9 +13,9 @@
           $opts = trim(collect([$c->variants_name, $c->extras_name])->filter()->implode(' · '));
       @endphp
       <div class="cart-item" data-cart-id="{{ $c->id }}" data-item-id="{{ $c->item_id }}">
-        <img class="cart-item__img" src="{{ $img }}" alt="{{ $c->item_name }}">
+        <img class="cart-item__img" src="{{ $img }}" alt="{{ $ocNames[$c->item_id] ?? $c->item_name }}">
         <div>
-          <h4>{{ \Illuminate\Support\Str::limit($c->item_name, 28) }}</h4>
+          <h4>{{ \Illuminate\Support\Str::limit($ocNames[$c->item_id] ?? $c->item_name, 28) }}</h4>
           @if ($opts)<p class="opts">{{ $opts }}</p>@endif
           <span class="price" style="font-size:.98rem">{{ helper::currency_formate($c->price * $c->qty, $storeinfo->id) }}</span>
         </div>

@@ -206,8 +206,9 @@ class StoreDesign
             }
         }
 
-        // Copy, per language: plain text, length-limited.
-        foreach (['en', 'ar'] as $lang) {
+        // Copy, per language: plain text, length-limited. The AI writes en + ar; de / fr are
+        // added by StoreTranslator.
+        foreach (array_keys(StoreTranslator::LANGS) as $lang) {
             $c = $in['copy'][$lang] ?? null;
             if (!is_array($c)) {
                 continue;
@@ -405,7 +406,22 @@ class StoreDesign
     {
         $text = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $text)));
 
-        return Str::limit($text, $limit, '');
+        return self::clip($text, $limit);
+    }
+
+    /** Shorten at a word boundary with "…", never in the middle of a word. */
+    private static function clip(string $text, int $limit): string
+    {
+        if (mb_strlen($text) <= $limit) {
+            return $text;
+        }
+        $cut = mb_substr($text, 0, $limit - 1);
+        $space = mb_strrpos($cut, ' ');
+        if ($space !== false && $space > $limit * 0.6) {
+            $cut = mb_substr($cut, 0, $space);
+        }
+
+        return rtrim($cut, " \t,.;:،-–—") . '…';
     }
 
     // ---------------------------------------------------------------------------------------
@@ -416,8 +432,16 @@ class StoreDesign
     public static function text(array $design, string $key, $fallback = '')
     {
         $lang = app()->getLocale();
+        $text = $design['copy'][$lang][$key] ?? $design['copy']['en'][$key] ?? $fallback;
 
-        return $design['copy'][$lang][$key] ?? $design['copy']['en'][$key] ?? $fallback;
+        // Designs saved before clip() existed were cut mid-word at the field limit ("… والـ").
+        $limit = self::COPY_LIMITS[$key] ?? null;
+        if ($limit && is_string($text) && mb_strlen($text) >= $limit - 2 && !preg_match('/[.!?؟…]$/u', $text)) {
+            $space = mb_strrpos($text, ' ');
+            $text = rtrim($space !== false ? mb_substr($text, 0, $space) : $text, " \t,.;:،-–—") . '…';
+        }
+
+        return $text;
     }
 
     /** CSS custom properties that restyle the whole engine (the template CSS reads these tokens). */

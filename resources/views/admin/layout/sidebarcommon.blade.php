@@ -314,6 +314,15 @@
                     <span class="mx-2">{{ trans('labels.design_menu') }}</span>
                 </a>
             </li>
+            <li class="nav-item mb-2 fs-7">
+                <a class="nav-link d-flex align-items-center {{ request()->is('admin/translations*') ? 'active' : '' }}"
+                    aria-current="page" href="{{ URL::to('admin/translations') }}">
+                    <span class="{{ request()->is('admin/translations*') ? 'sidebariconbox' : 'sidebariconbox1' }}">
+                        <i class="fa-solid fa-language"></i>
+                    </span>
+                    <span class="mx-2">{{ trans('labels.tr_menu') }}</span>
+                </a>
+            </li>
         @endif
         @if (Auth::user()->type != 1 && $vendor_id != 1 && \App\Services\AiAssistant::enabled())
             <li class="nav-item mb-2 fs-7">

@@ -388,6 +388,11 @@ Route::group(['namespace' => 'admin', 'prefix' => 'admin'], function () {
                     Route::post('/design/publish', [\App\Http\Controllers\admin\StoreDesignController::class, 'publish']);
                     Route::post('/design/discard', [\App\Http\Controllers\admin\StoreDesignController::class, 'discard']);
                     Route::post('/design/reset', [\App\Http\Controllers\admin\StoreDesignController::class, 'reset']);
+                    // Store content in every website language (AI translation + owner corrections).
+                    Route::get('/translations', [\App\Http\Controllers\admin\TranslationController::class, 'index']);
+                    Route::post('/translations/step', [\App\Http\Controllers\admin\TranslationController::class, 'step'])->middleware('throttle:40,1');
+                    Route::post('/translations/reset', [\App\Http\Controllers\admin\TranslationController::class, 'reset'])->middleware('throttle:6,1');
+                    Route::post('/translations/save', [\App\Http\Controllers\admin\TranslationController::class, 'save']);
                     // V2 Booking module (dashboard)
                     Route::get('/bookings', [BookingController::class, 'index']);
                     Route::post('/bookings/status', [BookingController::class, 'updatestatus']);

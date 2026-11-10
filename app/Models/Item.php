@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Item extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\Translatable;
     protected $table = 'items';
+
+    public const TRANSLATABLE = ['item_name', 'description'];
 
     public function extras()
     {

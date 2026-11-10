@@ -49,6 +49,12 @@
         .ocb-group .product-card__desc { color: inherit; }
         .ocb-group .product-card__desc { color: var(--text-2); }
         .ocb-group .product-card__media::after { display: none; }
+        /* Services are often written in English on an Arabic page: keep each text's own direction
+           (full stop at the end, not the start) while the block stays aligned with the page. */
+        .ocb-group .product-card h4, .ocb-group .product-card__desc { unicode-bidi: plaintext; }
+        html[dir="rtl"] .ocb-group .product-card h4, html[dir="rtl"] .ocb-group .product-card__desc { text-align: right; }
+        /* Phones: one card per row, so the full description has room. */
+        @media (max-width: 560px) { .ocb-group .products { grid-template-columns: 1fr !important; } }
         .ocb-wrap form { scroll-margin-top: 90px; }
     </style>
 
@@ -65,21 +71,21 @@
                 @if ($ocbGroups->count() > 1)
                     <nav class="ocb-cat-nav">
                         @foreach ($ocbGroups as $ocbCat => $ocbList)
-                            @if ($ocbCat !== '')<a href="#svc-{{ $loop->index }}">{{ $ocbCat }} ({{ $ocbList->count() }})</a>@endif
+                            @if ($ocbCat !== '')<a href="#svc-{{ $loop->index }}">{{ $ocbList->first()->tr('category') }} ({{ $ocbList->count() }})</a>@endif
                         @endforeach
                     </nav>
                 @endif
                 @foreach ($ocbGroups as $ocbCat => $ocbList)
                     <div class="ocb-group" id="svc-{{ $loop->index }}">
-                        @if ($ocbCat !== '')<h3>{{ $ocbCat }}</h3>@endif
+                        @if ($ocbCat !== '')<h3>{{ $ocbList->first()->tr('category') }}</h3>@endif
                         <div class="grid g-4 products">
                             @foreach ($ocbList as $s)
                                 @php $img = !empty($s->image) ? url(env('ASSETSPATHURL') . 'item/' . $s->image) : null; @endphp
                                 <article class="product-card">
-                                    @if ($img)<div class="product-card__media"><img src="{{ $img }}" alt="{{ $s->name }}" loading="lazy"></div>@endif
+                                    @if ($img)<div class="product-card__media"><img src="{{ $img }}" alt="{{ $s->tr('name') }}" loading="lazy"></div>@endif
                                     <div class="product-card__body">
-                                        <h4>{{ $s->name }}</h4>
-                                        @if (!empty($s->description))<p class="product-card__desc">{!! nl2br(e(strip_tags($s->description))) !!}</p>@endif
+                                        <h4>{{ $s->tr('name') }}</h4>
+                                        @if (!empty($s->description))<p class="product-card__desc">{!! nl2br(e(strip_tags($s->tr('description')))) !!}</p>@endif
                                         <div class="product-card__foot">
                                             <span class="price">@if ($s->price > 0){{ helper::currency_formate($s->price, $vdata) }}@endif @if (!empty($s->duration))<small> · {{ $s->duration }}</small>@endif</span>
                                             <a href="?service={{ $s->id }}#ocbForm" class="btn btn-primary btn-sm" data-ocb-pick="{{ $s->id }}">{{ __('Book') }}</a>
@@ -113,7 +119,7 @@
                                 @foreach ($services as $s)
                                     <option value="{{ $s->name }}" data-id="{{ $s->id }}" data-price="{{ $s->price }}"
                                         {{ (string) $selected === (string) $s->id ? 'selected' : '' }}>
-                                        {{ $s->name }}@if ($s->price > 0) — {{ helper::currency_formate($s->price, $vdata) }}@endif
+                                        {{ $s->tr('name') }}@if ($s->price > 0) — {{ helper::currency_formate($s->price, $vdata) }}@endif
                                     </option>
                                 @endforeach
                             </select>

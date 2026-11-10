@@ -21,8 +21,8 @@
       @foreach ($cats as $c)
         @php $cimg = !empty($c->image) ? helper::image_path($c->image) : (in_array(optional($tApp)->business_type, ['food', 'cafe', 'grocery', null, ''], true) ? helper::food_image($c->name, $c->id) : null); @endphp
         <a href="{{ URL::to($tSlug . '/categories') }}#cat-{{ $c->id }}" class="cat-card">
-          @if ($cimg)<img src="{{ $cimg }}" alt="{{ $c->name }}" loading="lazy">@else<span class="oce-ph">{{ mb_strtoupper(mb_substr($c->name, 0, 1)) }}</span>@endif
-          <span class="cat-card__label"><strong>{{ $c->name }}</strong><span>{{ $items->where('cat_id', $c->id)->count() }} {{ __('items') }}</span></span>
+          @if ($cimg)<img src="{{ $cimg }}" alt="{{ $c->tr('name') }}" loading="lazy">@else<span class="oce-ph">{{ mb_strtoupper(mb_substr($c->tr('name'), 0, 1)) }}</span>@endif
+          <span class="cat-card__label"><strong>{{ $c->tr('name') }}</strong><span>{{ $items->where('cat_id', $c->id)->count() }} {{ __('items') }}</span></span>
         </a>
       @endforeach
     </div>

@@ -25,8 +25,8 @@
           <div class="acc">
             @foreach ($faqs as $i => $f)
               <div class="acc-item {{ $i === 0 ? 'open' : '' }}">
-                <button class="acc-head">{{ $f->question ?? $f->title ?? '' }} <span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
-                <div class="acc-body"><div><p>{!! nl2br(e($f->answer ?? $f->description ?? '')) !!}</p></div></div>
+                <button class="acc-head">{{ method_exists($f, 'tr') ? $f->tr('question') : ($f->question ?? $f->title ?? '') }} <span class="pm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span></button>
+                <div class="acc-body"><div><p>{!! nl2br(e(strip_tags(method_exists($f, 'tr') ? $f->tr('answer') : ($f->answer ?? $f->description ?? '')))) !!}</p></div></div>
               </div>
             @endforeach
           </div>

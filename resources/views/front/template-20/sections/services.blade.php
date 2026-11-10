@@ -24,11 +24,11 @@
           $url = URL::to($tSlug . '/booking') . '?service=' . $s->id;
         @endphp
         <article class="product-card">
-          <div class="product-card__media"><a href="{{ $url }}">@if ($img)<img src="{{ $img }}" alt="{{ $s->name }}" loading="lazy">@else<span class="oce-ph">{{ mb_strtoupper(mb_substr($s->name, 0, 1)) }}</span>@endif</a></div>
+          <div class="product-card__media"><a href="{{ $url }}">@if ($img)<img src="{{ $img }}" alt="{{ $s->tr('name') }}" loading="lazy">@else<span class="oce-ph">{{ mb_strtoupper(mb_substr($s->tr('name'), 0, 1)) }}</span>@endif</a></div>
           <div class="product-card__body">
-            @if ($s->category)<span class="product-card__meta">{{ $s->category }}</span>@endif
-            <h4><a href="{{ $url }}">{{ $s->name }}</a></h4>
-            @if (!empty($s->description))<p class="product-card__desc">{{ \Illuminate\Support\Str::limit(strip_tags($s->description), 80) }}</p>@endif
+            @if ($s->category)<span class="product-card__meta">{{ $s->tr('category') }}</span>@endif
+            <h4><a href="{{ $url }}">{{ $s->tr('name') }}</a></h4>
+            @if (!empty($s->description))<p class="product-card__desc">{{ \Illuminate\Support\Str::limit(strip_tags($s->tr('description')), 80) }}</p>@endif
             <div class="product-card__foot">
               <span class="price">{{ helper::currency_formate($s->price, $storeinfo->id) }}@if (!empty($s->duration))<small> · {{ $s->duration }}</small>@endif</span>
               <a href="{{ $url }}" class="btn btn-primary btn-sm">{{ __('Book') }}</a>

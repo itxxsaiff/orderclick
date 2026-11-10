@@ -4,7 +4,12 @@
 @section('content')
     @php
         $it = $getitem;
-        $catName = optional(\App\Models\Category::find($it->cat_id))->name;
+        $ocCat = \App\Models\Category::find($it->cat_id);
+        $catName = optional($ocCat)->name;
+        // Shown in the visitor's language; the original names stay for the cart / order and stock photo.
+        $itName = $it->tr('item_name');
+        $itDesc = $it->tr('description');
+        $itDescTranslated = $itDesc !== (string) $it->description;
         $imgs = collect($itemimages ?? []);
         $mainUp = @$it['item_image']->image ?: $it->image;
         $mainImg = !empty($mainUp) ? helper::image_path($mainUp) : \App\Services\StoreDesign::stockImage($it->item_name . ' ' . $catName, $it->id, $storeinfo->id ?? ($vdata ?? null));
@@ -25,7 +30,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
           <a href="{{ URL::to($tSlug . '/categories') }}">{{ __('Menu') }}</a>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
-          <span class="now">{{ \Illuminate\Support\Str::limit($it->item_name, 30) }}</span>
+          <span class="now">{{ \Illuminate\Support\Str::limit($itName, 30) }}</span>
         </div>
       </div>
     </section>
@@ -40,7 +45,7 @@
 
         <div data-gallery>
           <div class="gallery__main">
-            <img src="{{ $mainImg }}" alt="{{ $it->item_name }}" data-gallery-main>
+            <img src="{{ $mainImg }}" alt="{{ $itName }}" data-gallery-main>
           </div>
           @if ($imgs->count())
           <div class="gallery__thumbs">
@@ -58,10 +63,10 @@
             <span class="open-badge"><span class="pulse"></span> {{ $it->is_available == 1 ? __('Available now') : __('Currently unavailable') }}</span>
             @if (!empty($it->avg_ratting))<span class="small muted">⭐ {{ number_format($it->avg_ratting, 1) }}@if ($totalReviews) · {{ $totalReviews }} {{ __('reviews') }}@endif</span>@endif
           </div>
-          <h1 style="font-size:clamp(1.9rem,3.6vw,2.8rem)">{{ $it->item_name }}</h1>
+          <h1 style="font-size:clamp(1.9rem,3.6vw,2.8rem)">{{ $itName }}</h1>
 
           @if (!empty($it->description))
-            <p class="lead mt-2">{{ strip_tags($it->description) }}</p>
+            <p class="lead mt-2">{{ strip_tags($itDesc) }}</p>
           @endif
 
           <div class="pd-price">
@@ -150,7 +155,7 @@
           </div>
         </div>
         <div class="tab-panel active" data-panel="desc">
-          <div class="prose">{!! $it->description ?: '<p>' . e($it->item_name) . '</p>' !!}</div>
+          <div class="prose">{!! $itDescTranslated ? nl2br(e($itDesc)) : ($it->description ?: '<p>' . e($itName) . '</p>') !!}</div>
         </div>
         @if ($totalReviews)
         <div class="tab-panel" data-panel="reviews">
@@ -183,7 +188,7 @@
         </div>
         <div class="grid g-4 products">
           @foreach ($related as $ritem)
-            @include('front.template-20.partials.product_card', ['item' => $ritem, 'catNames' => collect([$it->cat_id => $catName])])
+            @include('front.template-20.partials.product_card', ['item' => $ritem, 'catNames' => collect([$it->cat_id => $catName]), 'catLabels' => collect([$it->cat_id => optional($ocCat)->tr('name')])])
           @endforeach
         </div>
       </div>

@@ -30,6 +30,7 @@
             <a href="{{ URL::to($tSlug . '/categories') }}" class="link-arrow" style="margin-left:auto;font-size:.88rem">{{ __('Add more') }}</a>
           </div>
           <div class="panel__body" style="padding-top:4px" id="cartPageList">
+            @php $ocNames = \App\Models\Item::whereIn('id', collect($cd)->pluck('item_id')->filter()->unique())->get(['id', 'item_name', 'description', 'translations'])->mapWithKeys(fn($i) => [$i->id => $i->tr('item_name')]); @endphp
             @foreach ($cd as $c)
               @php
                 $img = filter_var($c->item_image, FILTER_VALIDATE_URL)
@@ -38,9 +39,9 @@
                 $opts = trim(collect([$c->variants_name, $c->extras_name])->filter()->implode(' · '));
               @endphp
               <div class="cart-item" data-cart-id="{{ $c->id }}" data-item-id="{{ $c->item_id }}">
-                <img class="cart-item__img" src="{{ $img }}" alt="{{ $c->item_name }}">
+                <img class="cart-item__img" src="{{ $img }}" alt="{{ $ocNames[$c->item_id] ?? $c->item_name }}">
                 <div>
-                  <h4><a href="{{ URL::to($tSlug . '/details-' . ($c->slug ?? $c->item_id)) }}">{{ $c->item_name }}</a></h4>
+                  <h4><a href="{{ URL::to($tSlug . '/details-' . ($c->slug ?? $c->item_id)) }}">{{ $ocNames[$c->item_id] ?? $c->item_name }}</a></h4>
                   @if ($opts)<p class="opts">{{ $opts }}</p>@endif
                   <span class="small muted">{{ helper::currency_formate($c->price, $storeinfo->id) }} {{ __('each') }}</span>
                 </div>

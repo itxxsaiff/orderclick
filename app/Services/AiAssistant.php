@@ -426,7 +426,7 @@ class AiAssistant
     /**
      * Core OpenAI call (Responses API). Returns ['success'=>bool, 'text'=>string] or ['success'=>false,'error'=>string].
      */
-    public function run(string $instructions, string $input, int $maxTokens = 1500, int $timeout = 45): array
+    public function run(string $instructions, string $input, int $maxTokens = 1500, int $timeout = 45, bool $json = false): array
     {
         $key = config('services.openai.key');
         if (empty($key)) {
@@ -445,7 +445,7 @@ class AiAssistant
                     // writes the copy directly (fast + cheap); the budget covers the output text.
                     'reasoning' => ['effort' => 'minimal'],
                     'max_output_tokens' => $maxTokens,
-                ]);
+                ] + ($json ? ['text' => ['format' => ['type' => 'json_object']]] : []));
 
             if (!$response->successful()) {
                 $msg = $response->json('error.message') ?? ('AI request failed (' . $response->status() . ').');

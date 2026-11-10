@@ -93,7 +93,9 @@
         #oca .oca-legal { font-size: 10.5px; color: #8a968c; text-align: center; margin: 7px 0 0; }
         [dir="rtl"] #oca .oca-send svg { transform: scaleX(-1); }
         @media (max-width: 520px) {
-            #oca { bottom: 16px; }
+            #oca { bottom: 14px; }
+            #oca .oca-launch { width: 50px; height: 50px; }
+            #oca .oca-launch svg { width: 23px; height: 23px; }
             #oca .oca-panel { position: fixed; inset: 10px; width: auto; height: auto; bottom: 10px; }
             #oca.is-open .oca-launch { display: none; }
         }

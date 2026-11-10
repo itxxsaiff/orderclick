@@ -411,6 +411,8 @@ class HomeController extends Controller
             $svc = \App\Models\BookingService::where('id', $request->service_id)->where('vendor_id', $vdata)->first();
             if ($svc) {
                 $amount = $svc->price;
+                // The form shows the name in the visitor's language; the owner gets the original.
+                $request->merge(['service_name' => $svc->name]);
             }
         }
         // Resolve the chosen payment method's display name.
@@ -770,6 +772,7 @@ class HomeController extends Controller
             'items.low_qty',
             'items.stock_management',
             'items.item_name',
+            'items.translations', // product name / description in the visitor's language
             'items.item_price',
             'items.item_original_price',
             'items.vendor_id',
@@ -2113,6 +2116,7 @@ class HomeController extends Controller
             'items.low_qty',
             'items.stock_management',
             'items.item_name',
+            'items.translations', // product name / description in the visitor's language
             'items.item_price',
             'items.item_original_price',
             'items.vendor_id',

@@ -20,7 +20,7 @@
     </div>
     <div class="grid g-4 products reveal">
       @foreach ($ocList as $item)
-        @include('front.template-20.partials.product_card', ['item' => $item, 'catNames' => $cats->pluck('name', 'id')])
+        @include('front.template-20.partials.product_card', ['item' => $item, 'catNames' => $cats->pluck('name', 'id'), 'catLabels' => $cats->mapWithKeys(fn($c) => [$c->id => $c->tr('name')])])
       @endforeach
     </div>
   </div>

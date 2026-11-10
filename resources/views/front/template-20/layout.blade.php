@@ -24,7 +24,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="{{ \App\Services\StoreDesign::fontUrl($tDesign) }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ url($tCss . 'css/style.css') }}">
-    <link rel="stylesheet" href="{{ url(env('ASSETSPATHURL') . 'web-assets/engine/engine.css') }}?v=1">
+    <link rel="stylesheet" href="{{ url(env('ASSETSPATHURL') . 'web-assets/engine/engine.css') }}?v=2">
     {{-- The design plan: these tokens restyle every page of the engine. --}}
     <style>html[data-theme], :root { {!! \App\Services\StoreDesign::cssVars($tDesign) !!} }</style>
     @include('front.partials.responsive_fix')

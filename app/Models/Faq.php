@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Faq extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\Translatable;
     protected $table = 'faqs';
+
+    public const TRANSLATABLE = ['question', 'answer'];
 }

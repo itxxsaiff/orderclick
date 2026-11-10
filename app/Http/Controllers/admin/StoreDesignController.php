@@ -76,7 +76,7 @@ class StoreDesignController extends Controller
             $brief = (json_decode((string) $settings->ai_design_brief, true) ?: []) + ['refine' => $request->refine];
         }
 
-        @set_time_limit(180);
+        @set_time_limit(360); // design + its German / French texts
         $result = StoreDesign::generate($vid, $brief, $refining ? $this->working($settings) : null);
         if (empty($result['success'])) {
             return response()->json(['success' => false, 'message' => $result['error'] ?? trans('messages.design_generate_failed')]);
@@ -85,6 +85,9 @@ class StoreDesignController extends Controller
         unset($brief['refine']);
         // A refinement keeps the photos already made; a brand-new design gets new ones (or none).
         $result['design']['images'] = $refining ? $this->working($settings)['images'] : [];
+        // The AI writes English + Arabic; add the other website languages (German, French).
+        // A failure here only means those languages show English until "Translate" is run.
+        $result['design'] = \App\Services\StoreTranslator::translateDesign($result['design'], $vid) ?? $result['design'];
         $settings->ai_design_draft = json_encode($result['design'], JSON_UNESCAPED_UNICODE);
         if (!$refining) {
             $settings->ai_design_brief = json_encode($brief, JSON_UNESCAPED_UNICODE);

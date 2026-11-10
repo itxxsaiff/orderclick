@@ -271,7 +271,7 @@
         en.target.classList.add('in');
         io.unobserve(en.target);
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -60px' });
+    }, { threshold: 0, rootMargin: '0px 0px -60px' });
     reveals.forEach(function (el, i) {
       el.style.transitionDelay = (i % 4) * 70 + 'ms';
       io.observe(el);
