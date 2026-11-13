@@ -28,7 +28,9 @@
                         <tbody>
                             @foreach ($requests as $r)
                                 <tr>
-                                    <td class="fw-600">{{ $r->request_number }}</td>
+                                    <td class="fw-600">{{ $r->request_number }}
+                                        <br><a href="{{ helper::doc_invoice_url('service', $r->request_number, Auth::user()->type == 4 ? Auth::user()->vendor_id : Auth::user()->id) }}" target="_blank" rel="noopener" class="small fw-normal"><i class="fa-solid fa-file-invoice me-1"></i>{{ trans('labels.invoice') }}</a>
+                                    </td>
                                     <td>{{ $r->customer_name }}
                                         @if ($r->email)<br><small class="text-muted">{{ $r->email }}</small>@endif
                                     </td>

@@ -656,6 +656,9 @@ Route::group(['namespace' => "front", 'prefix' => $prefix, 'middleware' => 'Fron
     Route::get('/success/{order_number}', [HomeController::class, 'ordersuccess']);
     // Public, signed invoice for one order (linked from the WhatsApp order message).
     Route::get('/invoice/{order_number}/{sig}', [HomeController::class, 'orderInvoice']);
+    // Same for bookings and service requests (linked from their WhatsApp messages, success pages and the dashboard).
+    Route::get('/booking-invoice/{number}/{sig}', [HomeController::class, 'bookingInvoice']);
+    Route::get('/service-invoice/{number}/{sig}', [HomeController::class, 'serviceInvoice']);
     Route::get('/privacypolicy', [HomeController::class, 'privacyshow']);
     Route::get('/refundprivacypolicy', [HomeController::class, 'refundprivacypolicy']);
     Route::get('/terms_condition', [HomeController::class, 'terms_condition']);

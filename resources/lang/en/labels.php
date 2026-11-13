@@ -1841,6 +1841,7 @@ return array (
   'wa_service' => 'Service',
   'wa_staff' => 'Staff',
   'wa_amount' => 'Amount',
+  'view_invoice' => 'View invoice',
   'currency_store_hint' => 'Tick "Default" on the currency your prices are in. Your whole store, checkout, invoices and WhatsApp orders use it. Prices are never converted.',
   'dt_length' => 'Show _MENU_ entries',
   'dt_search' => 'Search:',

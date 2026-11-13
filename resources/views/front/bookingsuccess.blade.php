@@ -30,6 +30,8 @@
         .ocs-btn { display: flex; align-items: center; justify-content: center; gap: 10px; height: 54px; border-radius: 12px; font-weight: 600; font-size: 15.5px; text-decoration: none; }
         .ocs-btn--wa { background: #25d366; color: #fff; }
         .ocs-btn--wa:hover { background: #1eb457; color: #fff; }
+        .ocs-btn--invoice { background: var(--bs-primary, #1f9d55); color: #fff; }
+        .ocs-btn--invoice:hover { filter: brightness(.93); color: #fff; }
         .ocs-continue { display: inline-flex; align-items: center; gap: 8px; color: #67736a; font-size: 14.5px; text-decoration: none; font-weight: 500; }
         .ocs-continue:hover { color: var(--bs-primary); }
     </style>
@@ -64,6 +66,12 @@
                     <a href="{{ $booking_whatsapp_url }}" target="_blank" rel="noopener" class="ocs-btn ocs-btn--wa">
                         <i class="fa-brands fa-whatsapp"></i>
                         {{ $ocsAr ? 'إرسال الحجز عبر واتساب' : 'Send booking on WhatsApp' }}
+                    </a>
+                @endif
+                @if (!empty($invoice_url))
+                    <a href="{{ $invoice_url }}" target="_blank" rel="noopener" class="ocs-btn ocs-btn--invoice">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        {{ trans('labels.view_invoice') }}
                     </a>
                 @endif
             </div>

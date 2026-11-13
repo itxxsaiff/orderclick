@@ -327,6 +327,67 @@ class HomeController extends Controller
         return view('front.invoice', compact('order', 'details', 'settings', 'storeinfo', 'vdata', 'design', 'payment'));
     }
 
+    /** Public, signed invoice for one booking. */
+    public function bookingInvoice(Request $request)
+    {
+        [$storeinfo, $vdata] = $this->resolveStore($request);
+        $number = (string) $request->route('number');
+        if (!helper::doc_invoice_valid('booking', $number, $vdata, $request->route('sig'))) {
+            abort(404);
+        }
+        $b = \App\Models\Booking::where('vendor_id', $vdata)->where('booking_number', $number)->firstOrFail();
+        $doc = [
+            'number'   => $b->booking_number,
+            'created'  => $b->created_at,
+            'customer' => [$b->customer_name, $b->mobile, $b->email],
+            'service'  => $b->service_name,
+            'staff'    => $b->staff,
+            'when'     => trim($b->booking_date . ($b->booking_time ? ' - ' . $b->booking_time : '')),
+            'address'  => null,
+            'amount'   => (float) $b->amount,
+            'payment'  => $b->payment_method,
+            'status'   => \App\Models\Booking::STATUS[$b->status] ?? null,
+            'notes'    => $b->notes,
+        ];
+
+        return $this->docInvoice($storeinfo, $vdata, $doc);
+    }
+
+    /** Public, signed invoice for one service request (price = the service's listed price, when it has one). */
+    public function serviceInvoice(Request $request)
+    {
+        [$storeinfo, $vdata] = $this->resolveStore($request);
+        $number = (string) $request->route('number');
+        if (!helper::doc_invoice_valid('service', $number, $vdata, $request->route('sig'))) {
+            abort(404);
+        }
+        $r = \App\Models\ServiceRequest::where('vendor_id', $vdata)->where('request_number', $number)->firstOrFail();
+        $price = $r->service_id ? (float) Item::where('id', $r->service_id)->where('vendor_id', $vdata)->value('item_price') : 0;
+        $doc = [
+            'number'   => $r->request_number,
+            'created'  => $r->created_at,
+            'customer' => [$r->customer_name, $r->mobile, $r->email],
+            'service'  => $r->service_name,
+            'staff'    => null,
+            'when'     => trim($r->preferred_date . ($r->preferred_time ? ' - ' . $r->preferred_time : '')),
+            'address'  => $r->address,
+            'amount'   => $price,
+            'payment'  => null,
+            'status'   => \App\Models\ServiceRequest::STATUS[$r->status] ?? null,
+            'notes'    => $r->notes,
+        ];
+
+        return $this->docInvoice($storeinfo, $vdata, $doc);
+    }
+
+    private function docInvoice($storeinfo, $vdata, array $doc)
+    {
+        $settings = Settings::where('vendor_id', $vdata)->first();
+        $design = \App\Services\StoreDesign::for($vdata);
+
+        return view('front.invoice-booking', compact('doc', 'settings', 'storeinfo', 'vdata', 'design'));
+    }
+
     /** The engine's view folder number (used for partials such as the cart drawer). */
     private function themeFolder($vdata)
     {
@@ -453,7 +514,8 @@ class HomeController extends Controller
             abort(404);
         }
         $booking_whatsapp_url = helper::booking_whatsapp_url($booking, $vdata, $storeinfo);
-        return $this->themedView($vdata, 'bookingsuccess', 'front.bookingsuccess', compact('storeinfo', 'vdata', 'booking', 'booking_whatsapp_url'));
+        $invoice_url = helper::doc_invoice_url('booking', $booking->booking_number, $vdata);
+        return $this->themedView($vdata, 'bookingsuccess', 'front.bookingsuccess', compact('storeinfo', 'vdata', 'booking', 'booking_whatsapp_url', 'invoice_url'));
     }
 
     public function servicepage(Request $request)
@@ -503,7 +565,8 @@ class HomeController extends Controller
             abort(404);
         }
         $service_whatsapp_url = helper::service_whatsapp_url($srequest, $vdata, $storeinfo);
-        return view('front.servicesuccess', compact('storeinfo', 'vdata', 'srequest', 'service_whatsapp_url'));
+        $invoice_url = helper::doc_invoice_url('service', $srequest->request_number, $vdata);
+        return view('front.servicesuccess', compact('storeinfo', 'vdata', 'srequest', 'service_whatsapp_url', 'invoice_url'));
     }
 
     public function aboutus(Request $request)

@@ -1535,6 +1535,27 @@ class helper
         return hash_equals(substr(hash_hmac('sha256', $vdata . '|' . $order_number, (string) config('app.key')), 0, 20), (string) $sig);
     }
 
+    /**
+     * Public, signed invoice link for a booking ($kind 'booking') or a service request ('service').
+     * The kind is part of the signature, so an order's link can never open a booking and vice versa.
+     */
+    public static function doc_invoice_url(string $kind, $number, $vdata): string
+    {
+        $slug = (string) \App\Models\User::where('id', $vdata)->value('slug');
+
+        return \Illuminate\Support\Facades\URL::to($slug . '/' . $kind . '-invoice/' . rawurlencode((string) $number) . '/' . self::doc_invoice_sig($kind, $number, $vdata));
+    }
+
+    public static function doc_invoice_valid(string $kind, $number, $vdata, $sig): bool
+    {
+        return hash_equals(self::doc_invoice_sig($kind, $number, $vdata), (string) $sig);
+    }
+
+    private static function doc_invoice_sig(string $kind, $number, $vdata): string
+    {
+        return substr(hash_hmac('sha256', $kind . '|' . $vdata . '|' . $number, (string) config('app.key')), 0, 20);
+    }
+
     public static function order_whatsapp_url($order_number, $vdata, $storeinfo = null)
     {
         $order = \App\Models\Order::where('order_number', $order_number)->where('vendor_id', $vdata)->first();
@@ -1629,6 +1650,8 @@ class helper
         $L[] = trans('labels.wa_phone') . ": " . $booking->mobile;
         if ($booking->email) $L[] = trans('labels.wa_email') . ": " . $booking->email;
         if ($booking->notes) $L[] = trans('labels.wa_notes') . ": " . $booking->notes;
+        $L[] = "";
+        $L[] = trans('labels.wa_invoice') . ": " . self::doc_invoice_url('booking', $booking->booking_number, $vdata);
 
         return "https://wa.me/" . $number . "?text=" . rawurlencode(implode("\n", $L));
     }
@@ -1657,6 +1680,8 @@ class helper
         $L[] = trans('labels.wa_phone') . ": " . $srequest->mobile;
         if ($srequest->email) $L[] = trans('labels.wa_email') . ": " . $srequest->email;
         if ($srequest->notes) $L[] = trans('labels.wa_notes') . ": " . $srequest->notes;
+        $L[] = "";
+        $L[] = trans('labels.wa_invoice') . ": " . self::doc_invoice_url('service', $srequest->request_number, $vdata);
 
         return "https://wa.me/" . $number . "?text=" . rawurlencode(implode("\n", $L));
     }

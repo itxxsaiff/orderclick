@@ -18,6 +18,9 @@
                 {{ __('Send booking on WhatsApp') }}
               </a>
             @endif
+            @if (!empty($invoice_url))
+              <a href="{{ $invoice_url }}" target="_blank" rel="noopener" class="btn btn-dark btn-lg btn-block">{{ __('View invoice') }}</a>
+            @endif
             <a href="{{ URL::to($tSlug . '/booking') }}" class="btn btn-dark btn-lg btn-block">{{ __('Make another booking') }}</a>
             <a href="{{ $tBase }}" class="link-arrow" style="justify-content:center;margin-top:6px">{{ __('Back to home') }}</a>
           </div>
